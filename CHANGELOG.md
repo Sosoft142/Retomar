@@ -1,3 +1,7 @@
+# 0.5.6 · Seta dos seletores no celular
+
+Substituída a seta nativa dos seletores de prioridade e status por uma seta com espaço explicitamente reservado. A captura de revisão mostrou que a seta nativa ainda cortava a última letra de Urgente em 320 px, apesar de o cálculo da largura do texto indicar espaço suficiente. Urgente e Em andamento conferidos novamente na imagem final em 320 e 390 px. Cache atualizado para v13.
+
 # 0.5.5 · Controles legíveis e nuvem sem texto
 
 Seletores de prioridade e status passam a usar largura mínima relativa à fonte, espaço reservado para a seta e quebra de linha quando necessário. Corrigido o corte de Urgente e Em andamento no celular, inclusive com texto ampliado.
