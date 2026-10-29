@@ -1,3 +1,10 @@
+# Verificação 0.5.2 — transporte nativo
+
+- Reproduzido em Chrome: armazenar fetch nativo como método do adaptador causava TypeError/Illegal invocation antes de enviar a requisição. Uma chamada global ao mesmo recurso respondeu HTTP 200.
+- Após vincular a função a globalThis, o adaptador padrão passou a receber a resposta de autenticação do GitHub. A interface exibiu a mensagem de token inválido esperada para a credencial deliberadamente fictícia, em vez da falha genérica de acesso. Nenhum token pessoal, criação de Gist ou alteração de dados remotos foi usado nessa verificação.
+- 60 testes aprovados, incluindo duas regressões com função que exige contexto global: transporte padrão e GET/POST/PATCH.
+- Sintaxe e diferenças verificadas; cache atualizado para v9. Criptografia, dados, identificadores e preferências de conexão não alterados.
+
 # Verificação 0.5.1 — padrão do Silhueta
 
 Implementação refeita a partir da base 0.5.0 conforme Padrao_Sincronizacao_Instalacao_Apps.md.
