@@ -35,7 +35,7 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     startEngine();
   }
   function header(){const visible=currentStatus();return `<button type="button" class="sync-trigger sync-indicator" data-action="sync" data-sync-indicator data-sync-state="${visible.kind}" aria-label="${esc(labels[visible.kind]+'. Abrir sincronização.')}" aria-haspopup="dialog" aria-controls="retomar-sync-modal" title="${esc(labels[visible.kind])}">${icon('cloud')}</button>`;}
-  function card(){const visible=currentStatus();return `<section class="settingscard sync-card"><div class="settings-heading"><span class="settings-icon">${icon('cloud')}</span><div><h2>Sincronização</h2><p>Seus dados no celular e no computador.</p></div><span class="sync-dot" data-sync-indicator data-sync-state="${visible.kind}" aria-label="${esc(labels[visible.kind])}"></span></div><div class="settings-summary"><span><strong data-sync-label>${labels[visible.kind]}</strong><small data-sync-date>${esc(dateText())}</small></span><button class="btn secondary" data-action="sync">${engine?'Gerenciar conexão':'Conectar ao GitHub'}</button></div></section>`;}
+  function card(backupContent=''){const visible=currentStatus();return `<section class="settingscard sync-card"><div class="settings-heading"><span class="settings-icon">${icon('cloud')}</span><div><h2>Sincronização e backup</h2><p>Seus dados no celular e no computador.</p></div><span class="sync-dot" data-sync-indicator data-sync-state="${visible.kind}" aria-label="${esc(labels[visible.kind])}"></span></div><div class="settings-summary"><span><strong data-sync-label>${labels[visible.kind]}</strong><small data-sync-date>${esc(dateText())}</small></span><button class="btn secondary" data-action="sync">${engine?'Gerenciar conexão':'Conectar ao GitHub'}</button></div>${backupContent}</section>`;}
   function open(){
     const connected=!!engine,visible=currentStatus();
     const root=openModal('Sincronização',`
@@ -89,3 +89,4 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     hasConnection:()=>!!config.gistId
   };
 }
+

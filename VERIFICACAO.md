@@ -1,3 +1,12 @@
+# Verificação 0.5.3 — interface clara e espaçamento
+
+- 60 testes existentes aprovados; sintaxe dos módulos verificada.
+- Revisão visual no Chrome com telas responsivas de 320, 360, 430 e 650 px, além da apresentação desktop. Nenhuma rolagem lateral nas larguras inspecionadas; nomes padrão das áreas legíveis, cartões de pelo menos 48 px e guias sem transbordamento.
+- Configurações sem seletor de tema; um único número de versão no final, após o cartão de instalação. Cor de destaque e movimento preservados.
+- Ações de backup e campo de restauração dentro do cartão de sincronização. Abertura do diálogo de conexão pelo cartão confirmada, sem inserir credenciais.
+- Fundo da página, meta de tema e manifesto alinhados em #edf3f6; o gradiente desaparece nas bordas. Barras nativas do Android não são reproduzidas na revisão de navegador e precisam de conferência no aparelho.
+- As revisões visuais usaram armazenamento de teste vazio, sem dados ou tokens pessoais. Cache v10, identidade do manifesto e chaves de armazenamento preservados.
+
 # Verificação 0.5.2 — transporte nativo
 
 - Reproduzido em Chrome: armazenar fetch nativo como método do adaptador causava TypeError/Illegal invocation antes de enviar a requisição. Uma chamada global ao mesmo recurso respondeu HTTP 200.
@@ -109,3 +118,4 @@ Limites de instalação e offline permanecem os da verificação anterior. A sin
 - Backup baixado pelo navegador, selecionado pelo controle de arquivo e restaurado com confirmação de sucesso; cópia anterior solicitada antes da substituição.
 
 Limites: instalação em aparelho físico, comportamento offline em origem HTTPS e sincronização remota não foram validados no navegador de preview HTTP. Sincronização remota não faz parte desta versão. Os dados utilizados nos testes eram fictícios e não fazem parte da distribuição.
+
