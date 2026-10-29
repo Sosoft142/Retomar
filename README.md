@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.5. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.6. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -20,7 +20,7 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
 - Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação, reflexos nos botões e bordas de luz nos controles ativos. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
 
-Os seletores de prioridade e status reservam espaço conforme a fonte e podem mudar de linha. Isso mantém Urgente e Em andamento completos em telas estreitas ou com texto ampliado.
+Os seletores de prioridade e status reservam espaço conforme a fonte e podem mudar de linha. A seta tem uma área própria para evitar cortes provocados pelos controles nativos do navegador. Isso mantém Urgente e Em andamento completos em telas estreitas ou com texto ampliado.
 
 ## Validação e listas extensas
 

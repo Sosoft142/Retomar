@@ -1,7 +1,14 @@
+# Verificação 0.5.6 — conferência visual da seta
+
+- O cálculo do espaço interno não considerava a área adicional usada pela seta nativa. Uma captura revelou a última letra de Urgente cortada em 320 px.
+- Corrigido com appearance none e seta vetorial no fundo, limitada à área reservada à direita. O campo continua sendo um select nativo para teclado, leitor de tela e abertura das opções.
+- Captura final em 320 e 390 px mostra Urgente e Em andamento completos. Sem rolagem lateral, nuvem com um único SVG sem texto ou visto e engrenagem à direita.
+- As demais verificações de fonte ampliada, navegação e movimento da 0.5.5 permanecem aplicáveis. Cache v13; nenhuma alteração no protocolo ou nos dados.
+
 # Verificação 0.5.5 — seletores, cabeçalho e movimento
 
 - 79 testes automatizados aprovados, incluindo regressão para a nuvem sem texto visível, visto ou tooltip, com distinção acessível de atividade e confirmação.
-- Revisão com dados fictícios em 320, 360, 390, 430, 650 e 1100 px: sem rolagem lateral; todos os seletores de prioridade e status conferidos por medição da fonte e do espaço interno. Urgente e Em andamento completos.
+- Revisão com dados fictícios em 320, 360, 390, 430, 650 e 1100 px: sem rolagem lateral; seletores de prioridade e status medidos pela fonte e pelo espaço interno. A captura posterior ainda identificou corte em Urgente em 320 px por causa da seta nativa, corrigido na 0.5.6.
 - Texto ampliado a 160% (19,2 px nos controles) em 320 e 390 px: seletores mudam de linha, mantendo os valores completos e sem ultrapassar os cartões. Lista compacta e Cartões conferidos.
 - Na largura de 320 px, o texto Urgente mediu 58 px em espaço útil de 71 px; Em andamento mediu 86 px em 106 px. As medidas são pontuais, dependem da fonte e do navegador.
 - Cabeçalho com nuvem e engrenagem separadas por 5 px, cada uma com alvo de 44 × 44 px. Configurações abre pelo ícone, marca a página atual e mantém acesso às preferências, backup e instalação. Navegação principal com Planejamento e Cronograma; sem inscrição de armazenamento no rodapé.

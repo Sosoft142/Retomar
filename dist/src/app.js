@@ -5,7 +5,7 @@ import {bindDrag} from './drag.js';
 import {createSyncUI} from './sync/ui.js';
 import {bindFormErrors,checkForm,clearFieldError,submitOnce} from './forms.js';
 import {createInstallation} from './pwa.js';
-const VERSION='0.5.5';
+const VERSION='0.5.6';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI;
