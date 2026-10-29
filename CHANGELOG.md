@@ -1,3 +1,13 @@
+# 0.5.4 · Formulários e testes extremos
+
+Impedidos títulos e nomes compostos apenas por caracteres invisíveis, duplicação de itens por envios simultâneos e áreas repetidas por diferentes representações Unicode do mesmo nome. Limites de texto conferidos explicitamente no envio, com mensagens junto aos campos. Tokens com caracteres de controle, invisíveis ou tamanho incompatível são recusados antes da conexão.
+
+Validação de backups recusa campos desconhecidos e identificadores inseguros antes da serialização ou combinação. Isso impede que objetos extras profundamente aninhados provoquem estouro de pilha. Falhas de validação e armazenamento preservam a cópia persistida.
+
+Listas extensas montam até 60 itens por grupo, com orçamento inicial de 240 por visualização e ação Mostrar mais. Busca, contagens, ordem e exportação continuam usando todos os dados. Corrigido transbordamento de cartões com nomes de área longos no celular. Revisados o singular da confirmação de restauração e a limpeza de filtros após restaurar.
+
+Adicionados 18 testes, incluindo 2.000 operações aleatórias reproduzíveis, limites de 20.000 itens e 500 áreas, caracteres especiais, arquivos malformados e falhas de gravação. Cache v11, esquema e chaves de armazenamento preservados.
+
 # 0.5.3 · Interface clara e ajustes no celular
 
 Removidos o modo escuro, seu seletor e os estilos associados. A preferência antiga é descartada sem alterar as demais configurações. A versão aparece uma única vez, ao final de Configurações.

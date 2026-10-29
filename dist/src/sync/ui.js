@@ -1,3 +1,4 @@
+import {checkForm,validToken} from '../forms.js';
 import {GistAdapter} from './gist.js';
 import {openWithKeys,prepareConnection} from './connect.js';
 import {unsealState} from './crypto.js';
@@ -59,7 +60,8 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     root.querySelector('#sync-form').onsubmit=async event=>{
       event.preventDefault();if(connected){closeModal(true);engine?.run({manual:true});return;}if(connecting)return;
       const error=root.querySelector('.formerror'),button=root.querySelector('#connect-sync'),input=root.querySelector('#sync-token');error.textContent='';input.setCustomValidity('');
-      const token=input.value.trim();if(token.length<12||/\s/.test(token)){input.setCustomValidity('Cole um token válido do GitHub, sem espaços.');input.checkValidity();input.focus();return;}
+      const token=input.value.trim();if(!validToken(token)){input.setCustomValidity('Cole um token válido do GitHub, sem espaços ou caracteres especiais.');input.checkValidity();input.focus();return;}
+      if(!checkForm(event.target))return;
       const remember=root.querySelector('#sync-remember').checked,legacySecret=root.querySelector('#sync-secret').value;
       connecting=true;button.disabled=true;button.textContent='Conferindo backup…';connectionController=new AbortController();const signal=connectionController.signal,attempt=++connectionEpoch;
       setStatus({kind:'syncing',message:'Procurando e conferindo o backup do Retomar.'});
