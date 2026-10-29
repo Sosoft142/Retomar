@@ -1,3 +1,17 @@
+# Verificação 0.5.5 — seletores, cabeçalho e movimento
+
+- 79 testes automatizados aprovados, incluindo regressão para a nuvem sem texto visível, visto ou tooltip, com distinção acessível de atividade e confirmação.
+- Revisão com dados fictícios em 320, 360, 390, 430, 650 e 1100 px: sem rolagem lateral; todos os seletores de prioridade e status conferidos por medição da fonte e do espaço interno. Urgente e Em andamento completos.
+- Texto ampliado a 160% (19,2 px nos controles) em 320 e 390 px: seletores mudam de linha, mantendo os valores completos e sem ultrapassar os cartões. Lista compacta e Cartões conferidos.
+- Na largura de 320 px, o texto Urgente mediu 58 px em espaço útil de 71 px; Em andamento mediu 86 px em 106 px. As medidas são pontuais, dependem da fonte e do navegador.
+- Cabeçalho com nuvem e engrenagem separadas por 5 px, cada uma com alvo de 44 × 44 px. Configurações abre pelo ícone, marca a página atual e mantém acesso às preferências, backup e instalação. Navegação principal com Planejamento e Cronograma; sem inscrição de armazenamento no rodapé.
+- Nuvem contém um único SVG, sem texto, tooltip ou visto. Durante rodada simulada: aria-busy true, giro de luz e pulsação, verde vivo. Depois das leituras de conferência: aria-busy false, giro interrompido e brilho fixo. Rótulos acessíveis preservados.
+- Ambiente de navegador HTTP usou adaptadores exclusivos de transporte e criptografia simulados, executando o motor de sincronização para conferir os estados visuais; nenhum token ou Gist pessoal foi usado. Esses adaptadores e os dados de QA não entram na publicação. A criptografia real continua coberta pela suíte automatizada.
+- Efeitos de gradiente e brilho conferidos: órbita ambiente, marca, reflexo dos botões e bordas de luz. Foco na busca pausou os efeitos decorativos. Movimento Desativado removeu as animações da marca, ambiente e botões; Suave reativou a órbita. CSS de movimento reduzido e pausa quando a página fica oculta conferidos no código.
+- Cache atualizado para v12. Protocolo de sincronização, releitura antes do verde, esquema de dados, chaves, manifesto e origem de instalação preservados.
+
+Limites: aparência das barras nativas do Android, instalação física, desempenho das animações em celular real e sincronização autenticada entre aparelhos não foram revalidados nesta rodada.
+
 # Verificação 0.5.4 — testes extremos
 
 ## Falhas reproduzidas e correções

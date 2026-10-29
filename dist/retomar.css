@@ -198,3 +198,63 @@ body{min-height:100dvh;background:#edf3f6}
 
 .collection-more{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0 20px}.collection-more p{color:var(--muted);font-size:11px}.collection-more .btn{min-height:44px;font-size:12px}
 .task-meta{min-width:0;flex-wrap:wrap}.task-area{min-width:0;max-width:100%;overflow-wrap:anywhere}.task-area .dot{flex-shrink:0}.task-meta>.due-date{flex-shrink:0}.confirmtext{overflow-wrap:anywhere}
+
+/* Controles legíveis: o espaço do texto acompanha a fonte, inclusive quando ampliada. */
+.quick-priority,.compact-controls .quick-priority{width:auto;min-inline-size:calc(9.5ch + 32px);max-inline-size:100%;min-height:40px;padding:9px 26px 9px 10px;font-size:12px;line-height:1.4}
+.quick-status,.compact-controls .quick-status{width:auto;min-inline-size:calc(13.5ch + 32px);max-inline-size:100%;min-height:40px;padding:9px 26px 9px 10px;font-size:12px;line-height:1.4}
+.compact-bottom,.task-bottom{flex-wrap:wrap}
+.compact-context{flex:1 1 88px;max-width:none}
+.compact-controls{display:flex;flex:1 1 248px;min-width:0;max-width:100%;flex-wrap:wrap;gap:8px}
+.compact-controls .quick-priority{flex:1 1 100px;margin:0}
+.compact-controls .quick-status{flex:1.25 1 132px}
+.task-meta .quick-priority,.task-bottom .quick-status{flex-shrink:0}
+@media(max-width:650px){
+  .compact-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:5px}
+  .compact-context{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:none;line-height:1.5}
+  .compact-area,.compact-context .due-date,.compact-context .no-date{font-size:10px}
+  .compact-controls{width:100%}
+}
+
+/* A nuvem e a engrenagem compartilham o canto direito do cabeçalho. */
+.header-tools{display:grid;grid-template-columns:44px 44px;grid-template-rows:44px;column-gap:5px;flex:none;align-items:center}
+.header-tools .sync-trigger{grid-area:1/1;position:relative;overflow:visible}
+.settings-trigger{grid-area:1/2;width:44px;height:44px;display:grid;place-items:center;padding:10px;border:0;border-radius:12px;background:none;color:var(--muted)}
+.settings-trigger .ui-icon{width:24px;height:24px;transition:transform .35s ease,color .2s ease}
+.settings-trigger:is(:hover,:focus-visible),.settings-trigger.selected{color:var(--accent);background:var(--soft)}
+.settings-trigger:is(:hover,:focus-visible) .ui-icon{transform:rotate(35deg)}
+.viewnav{width:min(100%,380px);min-width:0}
+.view-tab{flex-direction:row;min-height:48px;padding:11px 12px;gap:8px}
+@media(max-width:650px){.header-actions{gap:8px}.brand{min-width:0}.viewnav{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}.view-tab{flex-direction:row;min-height:48px;font-size:11px;padding:10px 8px}.view-tab svg{display:block;width:16px;height:16px}}
+@media(max-width:350px){.brandname{font-size:27px;letter-spacing:-1.4px}.brandmark{width:24px}.brandmark .ui-icon{width:24px;height:28px}.brand{gap:6px}.masthead{gap:6px}.view-tab{font-size:10.5px;padding-inline:5px}}
+
+/* Giro e pulsação indicam atividade; a luz estável indica confirmação, sem texto ou selo. */
+.sync-trigger[data-sync-state=confirmed],.sync-trigger[data-sync-state=syncing]{color:#009b59}
+.sync-trigger[data-sync-state=confirmed]>.ui-icon{filter:drop-shadow(0 0 3px #34d399aa) drop-shadow(0 0 8px #10b98170);stroke-width:2.5}
+.sync-trigger[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-active 1s ease-in-out infinite;stroke-width:2.5}
+.sync-trigger[data-sync-state=syncing]::before{content:'';position:absolute;inset:3px;border:2px solid #10b98126;border-top-color:#10b981;border-right-color:#10b98199;border-radius:50%;animation:retomar-sync-orbit 1.4s linear infinite;pointer-events:none}
+.sync-dot[data-sync-state=confirmed]{background:#00a45a;box-shadow:0 0 0 4px #10b98116,0 0 13px #10b98180}
+.sync-dot[data-sync-state=syncing]{background:#00a45a;box-shadow:0 0 10px #10b98180;animation:retomar-cloud-pulse 1s ease-in-out infinite}
+.sync-state-banner[data-sync-state=confirmed],.sync-state-banner[data-sync-state=syncing],.sync-modal .sync-state-banner[data-sync-state=confirmed],.sync-modal .sync-state-banner[data-sync-state=syncing]{color:#087744;background:#10b98112}
+.sync-state-banner[data-sync-state=confirmed]>.ui-icon{filter:drop-shadow(0 0 5px #10b98160)}
+.sync-state-banner[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-active 1s ease-in-out infinite}
+@keyframes retomar-sync-orbit{to{transform:rotate(360deg)}}
+@keyframes retomar-cloud-active{0%,100%{opacity:1;filter:drop-shadow(0 0 4px #34d399d0) drop-shadow(0 0 9px #10b98190)}50%{opacity:.6;filter:drop-shadow(0 0 1px #34d39980)}}
+
+/* Luz ambiente em rotação e reflexos reservados às superfícies principais. */
+@property --retomar-light-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+.ambient-background::after{content:'';position:absolute;inset:-28%;background:conic-gradient(from 20deg,transparent 5%,#68ddc63d 18%,transparent 34%,#a6a4ed3d 52%,transparent 70%,#f2bcce2b 87%,transparent);filter:blur(45px);opacity:.6;animation:retomar-ambient-orbit 80s linear infinite;pointer-events:none}
+.brandname{background-size:180% 100%;animation:retomar-brand-flow 22s ease-in-out infinite alternate}
+.area-tab.selected,.view-tab.active{position:relative;isolation:isolate}
+:is(.area-tab.selected,.view-tab.active,.mobile-actions)::before{content:'';position:absolute;inset:0;padding:1.2px;border-radius:inherit;background:conic-gradient(from var(--retomar-light-angle),transparent 0 16%,#ffffffd9 23%,color-mix(in srgb,var(--accent),transparent 20%) 28%,transparent 36% 65%,#ffffffb0 74%,color-mix(in srgb,var(--accent-end),transparent 45%) 80%,transparent 88%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:retomar-rim-turn 16s linear infinite;pointer-events:none;z-index:1}
+.btn.primary{position:relative;isolation:isolate;overflow:hidden}
+.btn.primary::after{content:'';position:absolute;inset:-60% auto -60% -85%;width:60%;background:linear-gradient(100deg,transparent,#ffffff30,transparent);transform:translateX(-180%) rotate(18deg);animation:retomar-button-sheen 12s ease-in-out infinite;pointer-events:none}
+@keyframes retomar-ambient-orbit{to{transform:rotate(360deg)}}
+@keyframes retomar-brand-flow{to{background-position:100% 50%}}
+@keyframes retomar-rim-turn{to{--retomar-light-angle:360deg}}
+@keyframes retomar-button-sheen{0%,55%{transform:translateX(-180%) rotate(18deg)}90%,100%{transform:translateX(520%) rotate(18deg)}}
+:root[data-ambient-paused=true] .brandname,:root[data-ambient-paused=true] .ambient-background::after,:root[data-ambient-paused=true] .btn.primary::after,:root[data-ambient-paused=true] .area-tab.selected::before,:root[data-ambient-paused=true] .view-tab.active::before,:root[data-ambient-paused=true] .mobile-actions::before{animation-play-state:paused}
+.drag-active .brandname,.drag-active .ambient-background::after,.drag-active .btn.primary::after,.drag-active .area-tab.selected::before,.drag-active .view-tab.active::before,.drag-active .mobile-actions::before{animation-play-state:paused}
+:root[data-page-hidden=true] *,:root[data-page-hidden=true] *::before,:root[data-page-hidden=true] *::after{animation-play-state:paused!important}
+:root[data-motion=off] *,:root[data-motion=off] *::before,:root[data-motion=off] *::after{animation:none!important}
+:root[data-motion=off] .settings-trigger .ui-icon{transform:none}
+@media(prefers-reduced-motion:reduce){.settings-trigger .ui-icon{transform:none!important}}
