@@ -1,3 +1,7 @@
+# 0.5.2 · Correção do transporte no navegador
+
+Corrigida a captura de fetch no adaptador de Gist: a função nativa agora é vinculada ao contexto global. Antes, o navegador recusava a chamada com Illegal invocation antes de acessar o GitHub, e o app mostrava uma falha genérica de conexão. Regressões cobrem o transporte padrão e as operações GET/POST/PATCH com verificação do contexto. Cache atualizado para v9; dados, credenciais e criptografia preservados.
+
 # 0.5.1 · Padrão de sincronização e instalação do Silhueta
 
 Implementação iniciada novamente a partir da 0.5.0. Conexão só com token e descoberta automática do Gist. Nuvem de contorno sem fundo, dimensões 44/26 px, estados cinza/verde/vermelho, pulsação de opacidade de 1 s e indicação de falha local. Modal central com cantos de 28 px e rolagem interna. Gatilhos de 1,4 s e 45 s, preservando a conferência remota e os dados existentes.

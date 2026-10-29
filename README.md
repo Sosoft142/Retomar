@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.1. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.2. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Organização
 
@@ -79,3 +79,7 @@ Configurações inclui Instalar Retomar antes da versão. O botão começa desab
 Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v8 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
 
 O fluxo de Actions valida pull requests e publica dist/ somente após alterações em main. A publicação usa o GITHUB_TOKEN temporário; o token pessoal de sincronização nunca é enviado ao repositório.
+
+## Transporte no navegador
+
+O adaptador captura fetch ligado a globalThis. A função nativa exige o contexto de Window/WorkerGlobalScope; chamá-la como método do adaptador causava Illegal invocation antes de qualquer requisição, mascarado como falha de rede. Testes incluem funções que exigem o contexto global, além de respostas simuladas. A correção 0.5.2 não altera token, criptografia, backup, identidade ou preferências existentes.
