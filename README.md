@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.3. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.4. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -18,7 +18,15 @@ As guias principais são Planejamento, Cronograma e Configurações. Os nomes ta
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
-- Vidro fosco, temas claro e escuro, fontes locais Space Grotesk, Manrope e Inter. Gradientes suaves pausam durante edição e respeitam movimento reduzido.
+- Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Gradientes suaves pausam durante edição e respeitam movimento reduzido.
+
+## Validação e listas extensas
+
+Títulos e áreas exigem texto visível. Limites: 200 caracteres no título, 60 no nome da área e 5.000 nas observações (unidades UTF-16, como nos campos HTML). Emojis compostos e outros alfabetos são preservados. A comparação de nomes de áreas usa Unicode NFC para impedir duplicatas visualmente equivalentes. Envios simultâneos do mesmo formulário executam uma única operação.
+
+Listas começam com até 60 itens por grupo e um orçamento inicial de 240 itens por visualização. Use Mostrar mais para ampliar uma lista. Busca, filtros, contagens e backups continuam incluindo todos os registros; não há remoção ou corte dos dados. Mudar os filtros, a área ou o modo de visualização reinicia a janela da lista.
+
+Backups com campos desconhecidos, referências inválidas ou identificadores inseguros são recusados, preservando a cópia local e o arquivo original. O esquema de dados continua na versão 2, com migração dos backups da versão 1.
 
 ## Sincronização com GitHub
 

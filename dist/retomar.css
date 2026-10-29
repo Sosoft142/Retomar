@@ -195,3 +195,6 @@ body{min-height:100dvh;background:#edf3f6}
   .area-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+
+.collection-more{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0 20px}.collection-more p{color:var(--muted);font-size:11px}.collection-more .btn{min-height:44px;font-size:12px}
+.task-meta{min-width:0;flex-wrap:wrap}.task-area{min-width:0;max-width:100%;overflow-wrap:anywhere}.task-area .dot{flex-shrink:0}.task-meta>.due-date{flex-shrink:0}.confirmtext{overflow-wrap:anywhere}

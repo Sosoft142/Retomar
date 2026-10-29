@@ -9,18 +9,26 @@ export const uid=()=>{if(crypto.randomUUID)return crypto.randomUUID();const b=cr
 export function initialState(){return {appId:APP_ID,schemaVersion:SCHEMA_VERSION,datasetId:'principal',clock:0,updatedAt:new Date().toISOString(),areas:Object.fromEntries(['Pessoal','Estudos','Saúde','Casa','Trabalho','Finanças'].map((name,i)=>{const id=uid();return [id,{id,name,color:COLORS[i],order:i,deleted:false,revision:{counter:0,deviceId:'initial'}}]})),items:{}}}
 export function validDate(v){if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const d=new Date(v+'T12:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===v&&v>='1900-01-01'&&v<='2200-12-31'}
 const str=(v,max=5000)=>typeof v==='string'&&v.length<=max;
-const rev=r=>r&&Number.isSafeInteger(r.counter)&&r.counter>=0&&str(r.deviceId,100)&&r.deviceId.length>0;
-const safeId=id=>str(id,100)&&id&&!['__proto__','constructor','prototype'].includes(id);
+export const hasVisibleText=value=>typeof value==='string'&&value.replace(/[\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}\p{Cs}]/gu,'').length>0;
+export const areaNameKey=name=>name.trim().normalize('NFC').toLocaleLowerCase('pt-BR');
+const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
+const shape=(value,keys)=>record(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
+const ROOT_KEYS=['appId','schemaVersion','datasetId','clock','updatedAt','areas','items'];
+const AREA_KEYS=['id','name','color','order','deleted','revision'];
+const ITEM_KEYS=['id','title','notes','areaId','date','time','status','priority','order','createdAt','updatedAt','deleted','revision'];
+const rev=r=>shape(r,['counter','deviceId'])&&Number.isSafeInteger(r.counter)&&r.counter>=0&&str(r.deviceId,100)&&hasVisibleText(r.deviceId);
+const safeId=id=>str(id,100)&&id&&!/[\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}\p{Cs}]/u.test(id)&&!['__proto__','constructor','prototype'].includes(id);
 export function validateState(s){
   if(!s||s.appId!==APP_ID)throw Error('Este arquivo não é um backup do Retomar.');
   if(s.schemaVersion!==SCHEMA_VERSION)throw Error('A versão deste backup é incompatível. Preserve o arquivo e use uma versão compatível do aplicativo.');
+  if(!shape(s,ROOT_KEYS))throw Error('A estrutura do backup contém campos ausentes ou não reconhecidos. Preserve o arquivo original.');
   if(s.datasetId!=='principal'||!Number.isSafeInteger(s.clock)||s.clock<0||!str(s.updatedAt,50)||!Number.isFinite(Date.parse(s.updatedAt)))throw Error('Os metadados do backup são inválidos.');
-  for(const key of ['areas','items'])if(!s[key]||Array.isArray(s[key])||typeof s[key]!=='object')throw Error('A estrutura do backup é inválida.');
+  for(const key of ['areas','items'])if(!record(s[key]))throw Error('A estrutura do backup é inválida.');
   const areas=Object.entries(s.areas),items=Object.entries(s.items);if(areas.length>500||items.length>20000)throw Error('O arquivo excede os limites desta versão.');
   const ids=new Set();let maxClock=0;
-  for(const [id,a] of areas){if(!safeId(id)||ids.has(id)||!a||a.id!==id||!str(a.name,60)||!a.name.trim()||![...COLORS,...LEGACY_COLORS].includes(a.color)||!Number.isSafeInteger(a.order)||typeof a.deleted!=='boolean'||!rev(a.revision))throw Error('Há uma área inválida no backup.');ids.add(id);maxClock=Math.max(maxClock,a.revision.counter)}
+  for(const [id,a] of areas){if(!safeId(id)||ids.has(id)||!shape(a,AREA_KEYS)||a.id!==id||!str(a.name,60)||!hasVisibleText(a.name)||![...COLORS,...LEGACY_COLORS].includes(a.color)||!Number.isSafeInteger(a.order)||a.order<0||typeof a.deleted!=='boolean'||!rev(a.revision))throw Error('Há uma área inválida no backup.');ids.add(id);maxClock=Math.max(maxClock,a.revision.counter)}
   if(!areas.some(([,a])=>!a.deleted))throw Error('O planejamento precisa de pelo menos uma área.');
-  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!t||t.id!==id||!str(t.title,200)||!t.title.trim()||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
+  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!shape(t,ITEM_KEYS)||t.id!==id||!str(t.title,200)||!hasVisibleText(t.title)||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
   if(s.clock<maxClock)throw Error('As revisões do backup são inconsistentes.');return s;
 }
 export function migrateState(input){

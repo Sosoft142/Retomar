@@ -1,3 +1,30 @@
+# Verificação 0.5.4 — testes extremos
+
+## Falhas reproduzidas e correções
+
+| Cenário na 0.5.3 | Resultado após a correção |
+| --- | --- |
+| Título feito apenas de caracteres invisíveis era salvo | Erro junto ao campo, também bloqueado no domínio/importação |
+| Dois requestSubmit consecutivos criavam dois itens | Uma gravação; testes com 100 envios simultâneos |
+| Área Saúde podia ser repetida usando acento Unicode decomposto | Comparação NFC detecta a duplicata |
+| Campos acima do maxlength inseridos programaticamente dependiam apenas da validação do domínio | Erro específico e foco no campo, incluindo detalhes recolhidos |
+| Backup aceitava ID com NUL e campos extras com 20.000 níveis; combinação lançava RangeError | Rejeição antes de operações recursivas; cópia original intacta |
+| Nome de área com 60 caracteres provocava largura de conteúdo de 533 px em janela de 320 px | Corpo com 305/305 px, metadados quebram linha |
+| 1.000 itens montavam 29.511 elementos; uma busca levou 324 ms | Montagem limitada com Mostrar mais e busca sobre o conjunto completo |
+
+## Verificações executadas
+
+- 78 testes automatizados: os 60 anteriores e 18 novos cenários. O teste aleatório usa semente fixa 0x5eed053 e 2.000 operações de criação, edição, exclusão, desfazer, movimentação, restauração e persistência; também confere combinação comutativa e idempotente de alterações independentes.
+- Domínio: 20.000 itens aceitos, 20.001 recusados; 500 áreas incluindo tombstones aceitas, 501 recusadas. Datas de 1900 a 2200, ano bissexto, horários 00:00/23:59, títulos de 200 unidades UTF-16, nomes de 60 e observações de 5.000. Limites excedidos, NaN, Infinity, IDs perigosos, enums inválidos, órfãos e revisões inconsistentes recusados.
+- Navegador Chrome, ambiente isolado sem Gist ou token pessoal: criação e edição, campos vazios/invisíveis, título de 201, área de 61 e observações de 5.001 caracteres, correção dos erros, data fora do intervalo, retirada de data/horário e envio simultâneo. Emojis compostos preservados. HTML com onerror exibido como texto; nenhum elemento img injetado.
+- Importação pelo seletor de arquivo real: JSON truncado, campo extra com 20.000 níveis, data impossível e arquivo maior que 5 MB recusados. Estado fictício preservado. Backup válido restaurado; cópia anterior baixada e validada, contendo o item de 5.000 caracteres nas observações.
+- 5.000 registros no navegador: 60 itens montados inicialmente, 1.986 elementos no DOM; busca medida entre 13 e 25 ms nesta rodada. Na versão original, o teste com 5.000 registros provocou lentidão e timeout de uma interação. Essas medições são pontuais, dependem do ambiente e não constituem garantia de desempenho em celular.
+- Mostrar mais aumentou a lista de 60 para 120; a busca encontrou o registro 4.999 fora da janela inicial. Agrupamento por prioridade exibiu contagens completas, 240 itens montados inicialmente e acesso ao grupo Encerrados; seu botão ampliou para 300. Cartões e cronograma também respeitaram as janelas.
+- Revisão em 320 e 390 px com nomes/extremos: lista, cartões, agrupamento por área, tela de áreas e configurações sem rolagem lateral após a correção. Token vazio ou contendo caractere invisível recusado junto ao campo, sem conexão.
+- Falha de quota, revisão máxima, restauração inválida e tamanho remoto acima de 650 KB deixam os dados anteriores preservados nos testes automatizados. Identidade do app, credenciais, criptografia e esquema mantidos; o módulo de listas foi incluído no cache v11.
+
+Limites: a capacidade de 20.000 itens foi validada no domínio, não como promessa de armazenamento no aparelho. O navegador foi exercitado com até 5.000 registros. A sincronização autenticada entre dois aparelhos, a instalação física no Android e a abertura offline não foram revalidadas; a suíte de sincronização usa rede simulada.
+
 # Verificação 0.5.3 — interface clara e espaçamento
 
 - 60 testes existentes aprovados; sintaxe dos módulos verificada.
