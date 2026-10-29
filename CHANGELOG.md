@@ -1,3 +1,15 @@
+# 0.5.5 · Controles legíveis e nuvem sem texto
+
+Seletores de prioridade e status passam a usar largura mínima relativa à fonte, espaço reservado para a seta e quebra de linha quando necessário. Corrigido o corte de Urgente e Em andamento no celular, inclusive com texto ampliado.
+
+Configurações sai da navegação principal e passa a ser aberta por uma engrenagem de 44 × 44 px à direita da nuvem. Removida a inscrição de armazenamento local e backup do rodapé. A versão continua apenas no final de Configurações.
+
+Nuvem com verde mais vivo e brilho: durante atividade há pulsação e giro de luz; depois da conferência o brilho fica estável. Sem texto visível, selo ou visto no cabeçalho. Rótulos acessíveis e detalhes do estado permanecem no diálogo e nas configurações. O protocolo de confirmação não mudou.
+
+Adicionados gradiente ambiente em rotação, reflexos nos botões, movimento no gradiente da marca e bordas de luz nas áreas/guias ativas e barra de ações. Efeitos decorativos pausam durante edição, arraste e quando a página fica oculta; a opção de desativar movimento e a preferência do sistema são respeitadas.
+
+79 testes aprovados; revisão em 320, 360, 390, 430, 650 e 1100 px, com fonte ampliada até 160%. Cache v12; dados, credenciais, instalação e criptografia preservados.
+
 # 0.5.4 · Formulários e testes extremos
 
 Impedidos títulos e nomes compostos apenas por caracteres invisíveis, duplicação de itens por envios simultâneos e áreas repetidas por diferentes representações Unicode do mesmo nome. Limites de texto conferidos explicitamente no envio, com mensagens junto aos campos. Tokens com caracteres de controle, invisíveis ou tamanho incompatível são recusados antes da conexão.

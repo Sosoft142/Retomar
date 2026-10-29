@@ -4,17 +4,21 @@ import {openWithKeys,prepareConnection} from './connect.js';
 import {unsealState} from './crypto.js';
 import {SyncEngine} from './engine.js';
 import {loadSync,saveConnection,disconnect as clearConnection,SYNC_CONFIG_KEY,SYNC_CREDENTIAL_KEY} from './preferences.js';
+const labels={local:'Não conectado',pending:'Envio pendente',syncing:'Sincronizando',confirmed:'Sincronizado',error:'Sincronização não confirmada'};
+export function syncHeader(status,{icon,esc}){
+  const {kind,message=''}=status;
+  return `<button type="button" class="sync-trigger sync-indicator" data-action="sync" data-sync-indicator data-sync-state="${kind}" aria-label="${esc(labels[kind]+'. '+message+' Abrir sincronização.')}" aria-busy="${kind==='syncing'}" aria-haspopup="dialog" aria-controls="retomar-sync-modal">${icon('cloud')}</button>`;
+}
 export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,onExport,isBlocked}){
   const saved=loadSync(localStorage);
   let config=saved.config,credentials=saved.credentials,engine=null,connecting=false,connectionController=null,connectionEpoch=0,localError='';
   let status={kind:config.gistId?'pending':'local',message:config.gistId?'Conecte com o mesmo token para conferir seus dados.':'Conecte para usar o mesmo planejamento nos seus aparelhos.'};
-  const labels={local:'Não conectado',pending:'Envio pendente',syncing:'Sincronizando',confirmed:'Sincronizado',error:'Sincronização não confirmada'};
   const currentStatus=()=>localError?{kind:'error',message:localError}:status;
   const dateText=()=>config.confirmedAt&&Number.isFinite(Date.parse(config.confirmedAt))?'Última confirmação neste aparelho: '+new Date(config.confirmedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'Ainda sem confirmação neste aparelho';
   function refresh(){
     const visible=currentStatus();
-    for(const b of document.querySelectorAll('[data-sync-indicator]')){b.dataset.syncState=visible.kind;b.setAttribute('aria-label',labels[visible.kind]+'. '+visible.message+' Abrir sincronização.');b.title=labels[visible.kind]+'. '+visible.message;}
-    for(const el of document.querySelectorAll('[data-sync-label]'))el.textContent=labels[visible.kind];
+    for(const b of document.querySelectorAll('[data-sync-indicator]')){b.dataset.syncState=visible.kind;b.setAttribute('aria-label',labels[visible.kind]+'. '+visible.message+(b.tagName==='BUTTON'?' Abrir sincronização.':''));b.setAttribute('aria-busy',String(visible.kind==='syncing'));if(b.tagName!=='BUTTON')b.title=labels[visible.kind]+'. '+visible.message;}
+    for(const el of document.querySelectorAll('[data-sync-label]'))if(el.textContent!==labels[visible.kind])el.textContent=labels[visible.kind];
     for(const el of document.querySelectorAll('[data-sync-message]'))el.textContent=visible.message;
     for(const el of document.querySelectorAll('[data-sync-date]'))el.textContent=dateText();
   }
@@ -35,7 +39,7 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     try{saveConnection(localStorage,{gistId,...credentials})}catch{toast('Conexão ativa nesta sessão. Não foi possível manter o token salvo neste aparelho.');}
     startEngine();
   }
-  function header(){const visible=currentStatus();return `<button type="button" class="sync-trigger sync-indicator" data-action="sync" data-sync-indicator data-sync-state="${visible.kind}" aria-label="${esc(labels[visible.kind]+'. Abrir sincronização.')}" aria-haspopup="dialog" aria-controls="retomar-sync-modal" title="${esc(labels[visible.kind])}">${icon('cloud')}</button>`;}
+  function header(){return syncHeader(currentStatus(),{icon,esc});}
   function card(backupContent=''){const visible=currentStatus();return `<section class="settingscard sync-card"><div class="settings-heading"><span class="settings-icon">${icon('cloud')}</span><div><h2>Sincronização e backup</h2><p>Seus dados no celular e no computador.</p></div><span class="sync-dot" data-sync-indicator data-sync-state="${visible.kind}" aria-label="${esc(labels[visible.kind])}"></span></div><div class="settings-summary"><span><strong data-sync-label>${labels[visible.kind]}</strong><small data-sync-date>${esc(dateText())}</small></span><button class="btn secondary" data-action="sync">${engine?'Gerenciar conexão':'Conectar ao GitHub'}</button></div>${backupContent}</section>`;}
   function open(){
     const connected=!!engine,visible=currentStatus();

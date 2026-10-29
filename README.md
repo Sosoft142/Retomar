@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.4. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.5. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -8,7 +8,7 @@ A interface usa somente o modo claro. Cor de destaque e movimento continuam conf
 
 ## Organização
 
-As guias principais são Planejamento, Cronograma e Configurações. Os nomes também aparecem nos títulos das páginas. Planejamento reúne os agrupamentos por área, por prioridade e sem grupos; qualquer agrupamento pode usar Lista compacta ou Cartões. Lista compacta sem grupos é o padrão inicial, pensado para consultar mais itens ao mesmo tempo. O modo escolhido fica salvo nas preferências deste aparelho. Ordenação, prazo, status e prioridade ficam no painel Filtros.
+As guias principais são Planejamento e Cronograma. Configurações é aberta pela engrenagem à direita da nuvem no cabeçalho. Os nomes também aparecem nos títulos das páginas. Planejamento reúne os agrupamentos por área, por prioridade e sem grupos; qualquer agrupamento pode usar Lista compacta ou Cartões. Lista compacta sem grupos é o padrão inicial, pensado para consultar mais itens ao mesmo tempo. O modo escolhido fica salvo nas preferências deste aparelho. Ordenação, prazo, status e prioridade ficam no painel Filtros.
 
 - Áreas em grade, sempre visíveis, com 16 cores vivas. Há 12 cores de destaque para a interface.
 - Segure a alça de pontos para arrastar áreas e itens. A alça reserva o gesto; o restante da tela continua disponível para rolagem. No toque, a ativação ocorre após 300 ms.
@@ -18,7 +18,9 @@ As guias principais são Planejamento, Cronograma e Configurações. Os nomes ta
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
-- Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Gradientes suaves pausam durante edição e respeitam movimento reduzido.
+- Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação, reflexos nos botões e bordas de luz nos controles ativos. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
+
+Os seletores de prioridade e status reservam espaço conforme a fonte e podem mudar de linha. Isso mantém Urgente e Em andamento completos em telas estreitas ou com texto ampliado.
 
 ## Validação e listas extensas
 
@@ -38,7 +40,7 @@ Compatibilidade com 0.4: credenciais antigas já guardadas permitem abrir o back
 
 Os dados são salvos e conferidos primeiro no aparelho. O motor baixa, descriptografa, valida, combina revisões, envia quando necessário, relê e só confirma após comparar o conteúdo remoto e a cópia local atual. Alterações durante criptografia/requisições são recombinadas. Formulários abertos e gestos de arraste adiam a rodada. Web Locks coordenam abas quando disponíveis. O app agenda uma rodada após alterações, ao reconectar e ao voltar à página, e confere periodicamente com a página visível. Não há sincronização prometida com o aplicativo fechado.
 
-Estados da nuvem: cinza (local ou pendente), verde pulsante (em andamento), verde fixo (conferido neste aparelho) e vermelho (erro). Há rótulos acessíveis e detalhes no diálogo. Movimento reduzido desativa a pulsação. Desconectar preserva o planejamento e o Gist.
+Estados da nuvem: cinza (local ou pendente), verde pulsante com giro de luz (em andamento), verde com brilho fixo (conferido neste aparelho) e vermelho (erro). O cabeçalho mostra somente o ícone de nuvem, sem texto ou visto. Há rótulos acessíveis e detalhes no diálogo. Movimento reduzido desativa as animações. Desconectar preserva o planejamento e o Gist.
 
 ## Dados, versões e limites
 
@@ -84,7 +86,7 @@ O token é uma credencial pessoal, não um código distribuído com o aplicativo
 
 A versão 0.5.1 foi implementada a partir da base 0.5.0, seguindo Padrao_Sincronizacao_Instalacao_Apps.md, baseado no Silhueta 2.9.18. O salvamento local agenda sincronização após aproximadamente 1,4 s; abertura, retomada, retorno da internet e conferência a cada 45 s com a página visível completam os gatilhos. O motor conserva a combinação determinística por registro, marcadores de exclusão e releitura antes de confirmar.
 
-A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo ou texto visível. Cinza #7a747d indica local/pendente, verde #34784c pulsante indica atividade, verde fixo confirma a releitura e vermelho #b04852 indica erro. Falha de armazenamento local também fica vermelha até uma gravação bem-sucedida. A pulsação de 1 s altera somente opacidade e respeita movimento reduzido.
+A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo ou texto visível. Cinza #7a747d indica local/pendente; verde #009b59 com pulsação de 1 s e giro de luz de 1,4 s indica atividade; o verde com brilho estável confirma a releitura; vermelho #b04852 indica erro. Não há texto visível nem visto no ícone. Falha de armazenamento local também fica vermelha até uma gravação bem-sucedida. As animações respeitam movimento reduzido.
 
 Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
 
