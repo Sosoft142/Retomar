@@ -1,1 +1,1 @@
-{"name":"retomar","version":"0.5.6","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs"}}
+{"name":"retomar","version":"0.5.7","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs"}}
