@@ -1,3 +1,9 @@
+# 0.5.1 · Padrão de sincronização e instalação do Silhueta
+
+Implementação iniciada novamente a partir da 0.5.0. Conexão só com token e descoberta automática do Gist. Nuvem de contorno sem fundo, dimensões 44/26 px, estados cinza/verde/vermelho, pulsação de opacidade de 1 s e indicação de falha local. Modal central com cantos de 28 px e rolagem interna. Gatilhos de 1,4 s e 45 s, preservando a conferência remota e os dados existentes.
+
+Cartão Instalar Retomar antes da versão, botão habilitado apenas pelo convite do navegador, contador de tentativas e estados solicitado/cancelado/erro. Aceitação não é tratada como comprovação de instalação no Android. Cartão oculto somente nesta janela em modo standalone. Máscara própria, cores de tema claras, start_url ./index.html, identidade preservada e cache atualizado. Actions testa pull requests antes da publicação em main.
+
 # 0.5.0 · Conexão simples e planejamento unificado
 
 Conexão ao GitHub com token único, descoberta e criação automáticas do Gist e opção de manter o aparelho conectado, seguindo o Silhueta. Backups anteriores com senha continuam compatíveis e são recifrados com o token somente mediante envio e releitura conferidos. O destino e a identidade dos dados permanecem próprios do Retomar.

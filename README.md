@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.0. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.1. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Organização
 
@@ -18,7 +18,7 @@ As guias principais são Planejamento, Cronograma e Configurações. Os nomes ta
 
 ## Sincronização com GitHub
 
-Configurações → Sincronização, ou o ícone de nuvem no cabeçalho. O fluxo reproduz o do Silhueta: um campo de token, Manter conectado neste aparelho e Conectar e sincronizar. Use o mesmo token clássico com permissão gist no celular e no computador. O aplicativo localiza o backup do Retomar automaticamente ou cria um Gist secreto se a busca completa não encontrar nenhum. Quando houver vários, utiliza o mais recente; um ID específico pode ser informado nas opções de conexão anterior. O arquivo remoto continua sendo `retomar.enc.json`, separado do Silhueta.
+Configurações → Sincronização, ou o ícone de nuvem no cabeçalho. O fluxo reproduz o do Silhueta: um campo de token, Manter conectado neste aparelho e Conectar e sincronizar. Use o mesmo token clássico com permissão gist no celular e no computador. O aplicativo localiza o backup do Retomar automaticamente ou cria um Gist secreto se a busca completa não encontrar nenhum. Quando houver vários, utiliza o mais recente. A janela de conexão pede apenas o token: o ID do Gist é encontrado e memorizado automaticamente, sem campo manual. O arquivo remoto continua sendo `retomar.enc.json`, separado do Silhueta.
 
 O próprio token autentica e fornece a chave de derivação da criptografia, como no Silhueta. Por isso, os aparelhos precisam usar o mesmo token para abrir a cópia remota. Guarde uma cópia da credencial e backups JSON independentes; trocar o token exige a chave anterior para abrir o arquivo já cifrado. A opção Manter conectado começa marcada, seguindo a referência; quando marcada, o token fica salvo neste navegador. Desmarcada, ele fica apenas na memória da sessão. As exportações do domínio nunca incluem credenciais.
 
@@ -67,3 +67,15 @@ Para executar localmente: `python -m http.server 8000 --directory dist`. Abra `h
 O navegador mantém um armazenamento diferente para cada origem. Antes de passar do ChatGPT Sites para o GitHub Pages, exporte uma cópia JSON em Configurações → Backups. No novo endereço, importe essa cópia; ou conecte-se com exatamente o mesmo token já usado no Retomar para localizar e abrir o backup remoto existente. Verifique seus itens no novo endereço antes de deixar de usar o anterior.
 
 O token é uma credencial pessoal, não um código distribuído com o aplicativo. Para sincronizar, use um token pessoal clássico com somente a permissão `gist`, inserido diretamente no Retomar. Não envie o token para issues, commits ou arquivos deste repositório. Se o Silhueta já usa um token com permissão `gist`, ele também pode ser utilizado aqui; os arquivos remotos dos dois aplicativos são separados.
+
+## Padrão de sincronização e instalação
+
+A versão 0.5.1 foi implementada a partir da base 0.5.0, seguindo Padrao_Sincronizacao_Instalacao_Apps.md, baseado no Silhueta 2.9.18. O salvamento local agenda sincronização após aproximadamente 1,4 s; abertura, retomada, retorno da internet e conferência a cada 45 s com a página visível completam os gatilhos. O motor conserva a combinação determinística por registro, marcadores de exclusão e releitura antes de confirmar.
+
+A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo ou texto visível. Cinza #7a747d indica local/pendente, verde #34784c pulsante indica atividade, verde fixo confirma a releitura e vermelho #b04852 indica erro. Falha de armazenamento local também fica vermelha até uma gravação bem-sucedida. A pulsação de 1 s altera somente opacidade e respeita movimento reduzido.
+
+Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
+
+Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v8 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
+
+O fluxo de Actions valida pull requests e publica dist/ somente após alterações em main. A publicação usa o GITHUB_TOKEN temporário; o token pessoal de sincronização nunca é enviado ao repositório.

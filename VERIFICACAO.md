@@ -1,3 +1,12 @@
+# Verificação 0.5.1 — padrão do Silhueta
+
+Implementação refeita a partir da base 0.5.0 conforme Padrao_Sincronizacao_Instalacao_Apps.md.
+
+- 58 testes aprovados: persistência, migração, combinação de registros, exclusões, criptografia, Gist com rede simulada e conferência antes do verde; sete cenários de instalação e duas regressões de falha local/nuvem.
+- Revisão desktop, 390 px e 320 px. Conteúdo sem transbordamento horizontal, nuvem 44 × 44 px, SVG 26 × 26 px, botão de instalação com 44 px. Modal com margens de 15 px, rolagem interna, fundo claro e texto/botão legíveis no tema escuro. Campo de token obrigatório com erro junto ao campo; nenhum campo manual de ID do Gist. Escape fecha o modal.
+- Manifest: id ./ preservado, start_url ./index.html, scope ./, PNG 192/512 e máscara 512 própria; meta/tema/fundo #edf3f6. Os 24 caminhos do cache estão presentes; a requisição autenticada do GitHub não participa do cache.
+- A instalação real no aparelho e a sincronização com token pessoal não foram executadas. Não se declara conclusão do WebAPK por appinstalled. Testes e telas de revisão usam somente dados fictícios.
+
 # Verificação da versão 0.5.0 · Simplificação
 
 - 49 testes automatizados passaram. Os novos testes cobrem token único, busca do destino mais recente, criação automática, destino já associado, 404 versus erro de autenticação, chave incorreta e recifragem do backup anterior.
