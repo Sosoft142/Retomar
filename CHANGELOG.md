@@ -1,3 +1,11 @@
+# 0.5.7 · Botões estáticos e nuvem apenas piscando
+
+Removidos o movimento dos gradientes dos botões, os reflexos que passavam sobre eles e as bordas de luz animadas dos controles ativos e da barra de ações. Os gradientes estáticos e o retorno visual ao toque permanecem.
+
+A nuvem passa a piscar apenas pela opacidade enquanto sincroniza. Depois da confirmação, fica verde fixa. Removidos giro, halo e filtros de brilho, inclusive dos indicadores de sincronização nas configurações. Sem texto ou visto no cabeçalho. O movimento reduzido continua respeitado.
+
+Cache v14, versão 0.5.7; dados, confirmação da sincronização e instalação preservados.
+
 # 0.5.6 · Seta dos seletores no celular
 
 Substituída a seta nativa dos seletores de prioridade e status por uma seta com espaço explicitamente reservado. A captura de revisão mostrou que a seta nativa ainda cortava a última letra de Urgente em 320 px, apesar de o cálculo da largura do texto indicar espaço suficiente. Urgente e Em andamento conferidos novamente na imagem final em 320 e 390 px. Cache atualizado para v13.

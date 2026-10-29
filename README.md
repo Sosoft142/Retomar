@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.6. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.7. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -18,7 +18,7 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
-- Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação, reflexos nos botões e bordas de luz nos controles ativos. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
+- Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação; botões com gradientes estáticos, sem pulsação, reflexos móveis ou bordas animadas. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
 
 Os seletores de prioridade e status reservam espaço conforme a fonte e podem mudar de linha. A seta tem uma área própria para evitar cortes provocados pelos controles nativos do navegador. Isso mantém Urgente e Em andamento completos em telas estreitas ou com texto ampliado.
 
@@ -40,7 +40,7 @@ Compatibilidade com 0.4: credenciais antigas já guardadas permitem abrir o back
 
 Os dados são salvos e conferidos primeiro no aparelho. O motor baixa, descriptografa, valida, combina revisões, envia quando necessário, relê e só confirma após comparar o conteúdo remoto e a cópia local atual. Alterações durante criptografia/requisições são recombinadas. Formulários abertos e gestos de arraste adiam a rodada. Web Locks coordenam abas quando disponíveis. O app agenda uma rodada após alterações, ao reconectar e ao voltar à página, e confere periodicamente com a página visível. Não há sincronização prometida com o aplicativo fechado.
 
-Estados da nuvem: cinza (local ou pendente), verde pulsante com giro de luz (em andamento), verde com brilho fixo (conferido neste aparelho) e vermelho (erro). O cabeçalho mostra somente o ícone de nuvem, sem texto ou visto. Há rótulos acessíveis e detalhes no diálogo. Movimento reduzido desativa as animações. Desconectar preserva o planejamento e o Gist.
+Estados da nuvem: cinza (local ou pendente), verde piscando somente pela opacidade (em andamento), verde fixo sem brilho extra (conferido neste aparelho) e vermelho (erro). O cabeçalho mostra somente o ícone de nuvem, sem texto ou visto. Há rótulos acessíveis e detalhes no diálogo. Movimento reduzido desativa as animações. Desconectar preserva o planejamento e o Gist.
 
 ## Dados, versões e limites
 
@@ -86,7 +86,7 @@ O token é uma credencial pessoal, não um código distribuído com o aplicativo
 
 A versão 0.5.1 foi implementada a partir da base 0.5.0, seguindo Padrao_Sincronizacao_Instalacao_Apps.md, baseado no Silhueta 2.9.18. O salvamento local agenda sincronização após aproximadamente 1,4 s; abertura, retomada, retorno da internet e conferência a cada 45 s com a página visível completam os gatilhos. O motor conserva a combinação determinística por registro, marcadores de exclusão e releitura antes de confirmar.
 
-A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo ou texto visível. Cinza #7a747d indica local/pendente; verde #009b59 com pulsação de 1 s e giro de luz de 1,4 s indica atividade; o verde com brilho estável confirma a releitura; vermelho #b04852 indica erro. Não há texto visível nem visto no ícone. Falha de armazenamento local também fica vermelha até uma gravação bem-sucedida. As animações respeitam movimento reduzido.
+A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo ou texto visível. Cinza #7a747d indica local/pendente; verde #009b59 piscando em um ciclo de 1 s indica atividade; o verde fixo confirma a releitura; vermelho #b04852 indica erro. Não há texto visível, visto, halo, giro ou brilho extra no ícone. Falha de armazenamento local também fica vermelha até uma gravação bem-sucedida. As animações respeitam movimento reduzido.
 
 Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
 

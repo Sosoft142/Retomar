@@ -55,10 +55,8 @@ body::before{display:none}
 .area-tab.selected{box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 5px 14px -10px color-mix(in srgb,var(--accent),transparent 25%)}
 .checkbox{transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
 .taskcheck:active .checkbox{box-shadow:0 0 0 4px var(--soft)}
-.mobile-actions .primary,.header-actions .primary{background-size:155% 155%;animation:primary-gradient-breathe 16s ease-in-out infinite alternate}
-@keyframes primary-gradient-breathe{from{background-position:12% 40%}to{background-position:76% 60%}}
-:root[data-ambient-paused=true] .ambient-orb,:root[data-ambient-paused=true] .mobile-actions .primary,:root[data-ambient-paused=true] .header-actions .primary{animation-play-state:paused}
-:root[data-motion=off] .ambient-orb,:root[data-motion=off] .mobile-actions .primary,:root[data-motion=off] .header-actions .primary{animation:none!important}
+:root[data-ambient-paused=true] .ambient-orb{animation-play-state:paused}
+:root[data-motion=off] .ambient-orb{animation:none!important}
 :root[data-motion=off] .btn,:root[data-motion=off] .area-tab,:root[data-motion=off] .view-tab,:root[data-motion=off] .iconbtn,:root[data-motion=off] .filter-toggle,:root[data-motion=off] .taskcheck,:root[data-motion=off] .ui-icon{transition-property:background,border-color,box-shadow,color,stroke-opacity}
 :root[data-motion=off] :is(.btn,.area-tab,.view-tab,.iconbtn,.filter-toggle,.taskcheck):is(:active,:hover){transform:none}
 .settingscard .motion-note{font-size:11px;line-height:1.8;margin:12px 0 0;max-width:460px}
@@ -228,33 +226,24 @@ body{min-height:100dvh;background:#edf3f6}
 @media(max-width:650px){.header-actions{gap:8px}.brand{min-width:0}.viewnav{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}.view-tab{flex-direction:row;min-height:48px;font-size:11px;padding:10px 8px}.view-tab svg{display:block;width:16px;height:16px}}
 @media(max-width:350px){.brandname{font-size:27px;letter-spacing:-1.4px}.brandmark{width:24px}.brandmark .ui-icon{width:24px;height:28px}.brand{gap:6px}.masthead{gap:6px}.view-tab{font-size:10.5px;padding-inline:5px}}
 
-/* Giro e pulsação indicam atividade; a luz estável indica confirmação, sem texto ou selo. */
+/* A nuvem apenas pisca durante atividade e fica verde fixa após a confirmação. */
 .sync-trigger[data-sync-state=confirmed],.sync-trigger[data-sync-state=syncing]{color:#009b59}
-.sync-trigger[data-sync-state=confirmed]>.ui-icon{filter:drop-shadow(0 0 3px #34d399aa) drop-shadow(0 0 8px #10b98170);stroke-width:2.5}
-.sync-trigger[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-active 1s ease-in-out infinite;stroke-width:2.5}
-.sync-trigger[data-sync-state=syncing]::before{content:'';position:absolute;inset:3px;border:2px solid #10b98126;border-top-color:#10b981;border-right-color:#10b98199;border-radius:50%;animation:retomar-sync-orbit 1.4s linear infinite;pointer-events:none}
-.sync-dot[data-sync-state=confirmed]{background:#00a45a;box-shadow:0 0 0 4px #10b98116,0 0 13px #10b98180}
-.sync-dot[data-sync-state=syncing]{background:#00a45a;box-shadow:0 0 10px #10b98180;animation:retomar-cloud-pulse 1s ease-in-out infinite}
+.sync-trigger[data-sync-state=confirmed]>.ui-icon{filter:none;stroke-width:2.5}
+.sync-trigger[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-pulse 1s ease-in-out infinite;filter:none;stroke-width:2.5}
+.sync-dot[data-sync-state=confirmed]{background:#00a45a;box-shadow:none}
+.sync-dot[data-sync-state=syncing]{background:#00a45a;box-shadow:none;animation:retomar-cloud-pulse 1s ease-in-out infinite}
 .sync-state-banner[data-sync-state=confirmed],.sync-state-banner[data-sync-state=syncing],.sync-modal .sync-state-banner[data-sync-state=confirmed],.sync-modal .sync-state-banner[data-sync-state=syncing]{color:#087744;background:#10b98112}
-.sync-state-banner[data-sync-state=confirmed]>.ui-icon{filter:drop-shadow(0 0 5px #10b98160)}
-.sync-state-banner[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-active 1s ease-in-out infinite}
-@keyframes retomar-sync-orbit{to{transform:rotate(360deg)}}
-@keyframes retomar-cloud-active{0%,100%{opacity:1;filter:drop-shadow(0 0 4px #34d399d0) drop-shadow(0 0 9px #10b98190)}50%{opacity:.6;filter:drop-shadow(0 0 1px #34d39980)}}
+.sync-state-banner[data-sync-state=syncing]>.ui-icon{animation:retomar-cloud-pulse 1s ease-in-out infinite;filter:none}
 
-/* Luz ambiente em rotação e reflexos reservados às superfícies principais. */
-@property --retomar-light-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+/* Luz ambiente em rotação; os botões mantêm gradientes estáticos. */
 .ambient-background::after{content:'';position:absolute;inset:-28%;background:conic-gradient(from 20deg,transparent 5%,#68ddc63d 18%,transparent 34%,#a6a4ed3d 52%,transparent 70%,#f2bcce2b 87%,transparent);filter:blur(45px);opacity:.6;animation:retomar-ambient-orbit 80s linear infinite;pointer-events:none}
 .brandname{background-size:180% 100%;animation:retomar-brand-flow 22s ease-in-out infinite alternate}
 .area-tab.selected,.view-tab.active{position:relative;isolation:isolate}
-:is(.area-tab.selected,.view-tab.active,.mobile-actions)::before{content:'';position:absolute;inset:0;padding:1.2px;border-radius:inherit;background:conic-gradient(from var(--retomar-light-angle),transparent 0 16%,#ffffffd9 23%,color-mix(in srgb,var(--accent),transparent 20%) 28%,transparent 36% 65%,#ffffffb0 74%,color-mix(in srgb,var(--accent-end),transparent 45%) 80%,transparent 88%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:retomar-rim-turn 16s linear infinite;pointer-events:none;z-index:1}
 .btn.primary{position:relative;isolation:isolate;overflow:hidden}
-.btn.primary::after{content:'';position:absolute;inset:-60% auto -60% -85%;width:60%;background:linear-gradient(100deg,transparent,#ffffff30,transparent);transform:translateX(-180%) rotate(18deg);animation:retomar-button-sheen 12s ease-in-out infinite;pointer-events:none}
 @keyframes retomar-ambient-orbit{to{transform:rotate(360deg)}}
 @keyframes retomar-brand-flow{to{background-position:100% 50%}}
-@keyframes retomar-rim-turn{to{--retomar-light-angle:360deg}}
-@keyframes retomar-button-sheen{0%,55%{transform:translateX(-180%) rotate(18deg)}90%,100%{transform:translateX(520%) rotate(18deg)}}
-:root[data-ambient-paused=true] .brandname,:root[data-ambient-paused=true] .ambient-background::after,:root[data-ambient-paused=true] .btn.primary::after,:root[data-ambient-paused=true] .area-tab.selected::before,:root[data-ambient-paused=true] .view-tab.active::before,:root[data-ambient-paused=true] .mobile-actions::before{animation-play-state:paused}
-.drag-active .brandname,.drag-active .ambient-background::after,.drag-active .btn.primary::after,.drag-active .area-tab.selected::before,.drag-active .view-tab.active::before,.drag-active .mobile-actions::before{animation-play-state:paused}
+:root[data-ambient-paused=true] .brandname,:root[data-ambient-paused=true] .ambient-background::after{animation-play-state:paused}
+.drag-active .brandname,.drag-active .ambient-background::after{animation-play-state:paused}
 :root[data-page-hidden=true] *,:root[data-page-hidden=true] *::before,:root[data-page-hidden=true] *::after{animation-play-state:paused!important}
 :root[data-motion=off] *,:root[data-motion=off] *::before,:root[data-motion=off] *::after{animation:none!important}
 :root[data-motion=off] .settings-trigger .ui-icon{transform:none}

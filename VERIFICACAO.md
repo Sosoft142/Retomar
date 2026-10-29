@@ -1,3 +1,11 @@
+# Verificação 0.5.7 — retirada dos efeitos dos botões e da nuvem
+
+- Dez testes direcionados de interface de sincronização e instalação aprovados, sem mudança de comportamento do motor ou dos dados.
+- CSS revisado: removidos os ciclos de gradiente, reflexo e borda de luz dos botões e da barra de ações; excluídos seus keyframes e regras de pausa sem uso.
+- A nuvem em atividade usa somente o keyframe de opacidade retomar-cloud-pulse, de 1 s. Não há pseudo-elemento circular de giro ou filtros de brilho; indicadores das configurações também ficam sem halo. Estado confirmado permanece verde fixo.
+- Rótulos acessíveis, estados cinza/verde/vermelho e restrições de movimento reduzido mantidos. Sem texto ou visto visível no cabeçalho. Cache v14.
+- A verificação desta alteração é de código e testes automatizados; não houve nova revisão em navegador ou aparelho físico.
+
 # Verificação 0.5.6 — conferência visual da seta
 
 - O cálculo do espaço interno não considerava a área adicional usada pela seta nativa. Uma captura revelou a última letra de Urgente cortada em 320 px.
