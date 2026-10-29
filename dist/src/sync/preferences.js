@@ -1,0 +1,6 @@
+import {parseGistId} from './gist.js';
+export const SYNC_CONFIG_KEY='entrelinhas-vida:sync-config:v1';
+export const SYNC_CREDENTIAL_KEY='entrelinhas-vida:sync-credentials:v1';
+export function loadSync(storage){let config={},credentials=null;try{const c=JSON.parse(storage.getItem(SYNC_CONFIG_KEY)||'{}');if(c.gistId)config={gistId:parseGistId(c.gistId),confirmedAt:typeof c.confirmedAt==='string'?c.confirmedAt:'',mode:c.mode||'password'};const p=JSON.parse(storage.getItem(SYNC_CREDENTIAL_KEY)||'null');if(p?.gistId===config.gistId&&typeof p.token==='string'){const legacySecret=typeof p.secret==='string'&&p.secret!==p.token?p.secret:'';credentials={token:p.token,secret:legacySecret||p.token,remember:true}}}catch{}return {config,credentials}}
+export function saveConnection(storage,{gistId,token,secret=token,remember,confirmedAt=''}){const legacy=secret&&secret!==token;storage.setItem(SYNC_CONFIG_KEY,JSON.stringify({gistId,confirmedAt,mode:legacy?'password':'token'}));if(remember)storage.setItem(SYNC_CREDENTIAL_KEY,JSON.stringify({gistId,token,...(legacy?{secret}:{})}));else storage.removeItem(SYNC_CREDENTIAL_KEY)}
+export function disconnect(storage){storage.removeItem(SYNC_CREDENTIAL_KEY);storage.removeItem(SYNC_CONFIG_KEY)}

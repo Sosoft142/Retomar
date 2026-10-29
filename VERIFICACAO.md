@@ -1,0 +1,95 @@
+# Verificação da versão 0.5.0 · Simplificação
+
+- 49 testes automatizados passaram. Os novos testes cobrem token único, busca do destino mais recente, criação automática, destino já associado, 404 versus erro de autenticação, chave incorreta e recifragem do backup anterior.
+- A migração criptográfica só confirma quando a releitura abre com o token novo, sem usar a senha anterior. Um servidor simulado que ignora a gravação não produz confirmação.
+- Preferências de token único e compatibilidade com credenciais antigas conferidas nos testes. O domínio continua fora do armazenamento de credenciais.
+- Navegador: três guias principais — Planejamento, Cronograma e Configurações. Agrupamentos e layouts alternados na mesma guia; Área + Cartões permaneceu após recarga.
+- Lista compacta conferida em computador e telas de 390 e 320 pixels. Linhas entre 84 e 93 pixels no conjunto de exemplos da tela de 320. Corpo de 305/305 pixels e grade de 257/257 pixels, sem rolagem horizontal.
+- Arraste entre os grupos de prioridade moveu um item de Alta para Urgente. Reorganização por teclado no modo Sem grupos alterou a ordem e preservou as áreas dos itens.
+- Formulário de 320 pixels: caixas de 252 pixels, sem ultrapassar o diálogo (303/303 pixels). Título vazio e composto só por espaços rejeitados; data fora do intervalo rejeitada; Deixar sem data removeu o erro e desativou o horário. Item sem data salvo após a correção.
+- Nome de área vazio rejeitado junto ao campo. Placeholders de título, área, observações e token revisados.
+- Diálogo de sincronização: apenas o token obrigatório; Manter conectado marcado; campos de recuperação recolhidos. Envio vazio mostra erro inline, sem chamar a API.
+- Configurações claras e escuras inspecionadas em tela estreita. Rótulos ligados aos respectivos IDs; nenhum ID duplicado nessa página.
+- Dados fictícios usados no preview, sem token pessoal. Página auxiliar e registros de teste não são incluídos na publicação.
+
+Limites: testes remotos usam rede simulada; a conta pessoal do GitHub não foi conectada durante a verificação. Toque prolongado em aparelho físico, instalação e offline HTTPS não foram revalidados. Permanecem os limites de consistência eventual da API de Gists documentados no README.
+
+# Verificação da versão 0.4.0 · Organização e sincronização
+
+- 41 testes automatizados passaram, incluindo os 15 cenários anteriores e novos cenários de migração, ordem, combinação, criptografia e protocolo de sincronização.
+- Casos verificados: criações offline independentes, desempate por revisão lógica, exclusão com cópia antiga, item concorrente em área removida, adoção remota por aparelho novo, restauração com revisões novas, senha incorreta, ciphertext adulterado, envelope incompatível, arquivo truncado, token recusado, criação de Gist secreto, edição durante requisição/criptografia, segunda alteração remota na releitura, falha de gravação local e cancelamento da conexão durante GET.
+- Uma conferência sem alterações não grava novamente o domínio nem gera uma sequência de eventos entre abas.
+- O transporte dos testes usa dados fictícios e adaptador/rede simulados. Nenhum Gist pessoal foi lido ou alterado e não foi usado token pessoal.
+- No navegador, a alça de Finanças foi arrastada para antes de Pessoal, com alteração da ordem confirmada.
+- Um item urgente foi arrastado para a faixa Alta e teve a prioridade atualizada.
+- A opção de organizar por toque breve abriu o formulário; área, prioridade e posição foram alteradas e salvas.
+- A seta do teclado moveu um item para antes do anterior na mesma área.
+- Mudanças reapareceram nos dois quadros do preview, verificando o evento de armazenamento entre contextos.
+- Paleta de áreas: 16 opções. Cor de destaque: 12 opções. Tema claro, tema escuro e destaque Fúcsia verificados visualmente.
+- Visões de computador, 390 e 320 pixels conferidas. Em 320, largura e conteúdo do corpo: 305/305 pixels; grade de áreas: 259/259 pixels. Navegação com três guias na mesma linha, sem rolagem horizontal.
+- Formulário de conexão com GitHub renderizado no celular: destino existente ou criação explícita, token, senha e opção de lembrar desmarcada. Nenhuma credencial foi preenchida no navegador de QA.
+- Ícones SVG e PNG com fundo transparente; recursos do cache conferidos. Identidade e origem de instalação mantidas.
+- Exemplos fictícios usados no preview; nenhum estado ou página auxiliar distribuído.
+
+Limites: o gesto foi validado no navegador com ponteiro e com alternativa por teclado; o toque prolongado não foi validado em celular físico. A sincronização real com um Gist da usuária depende de configuração no aparelho e não foi executada nesta entrega. Testes simulados não substituem a conferência entre dois aparelhos reais. Instalação e abertura offline em origem HTTPS não foram revalidadas nesta versão. A API de Gists não oferece neste fluxo uma transação distribuída; os limites de concorrência estão documentados no README e na ajuda da conexão.
+
+# Verificação da versão 0.3.1 · Movimento suave
+
+- Sintaxe do aplicativo e do service worker conferida.
+- Space Grotesk confirmada no estilo computado da marca; fonte local e licença incluídas.
+- Gradiente ativo com ciclo de 22 segundos em tela de celular; pausa confirmada ao focar a busca e ao abrir o formulário de edição.
+- Movimento Desativado remove a animação; preferência mantida após recarga. Suave reativado na interface.
+- Temas claro e escuro inspecionados no navegador; ícones, marca e áreas legíveis.
+- Grade na largura de 320 pixels: conteúdo e largura de 257/257 pixels, sem rolagem horizontal.
+- Registros fictícios existentes mantidos na interface. Nenhum registro de teste ou página auxiliar incluído na distribuição.
+- Modelo de dados e repositório não foram alterados. A suíte de domínio da versão anterior não foi repetida para esta mudança de apresentação.
+
+A regra de movimento reduzido foi implementada em CSS e na interface. Instalação em celular físico e funcionamento offline em origem HTTPS não foram revalidados nesta versão.
+
+# Verificação da versão 0.3.0 · Retomar
+
+- 15 testes automatizados passaram, incluindo persistência, restauração, validação e preservação de IDs.
+- Sintaxe do JavaScript conferida.
+- Novo nome verificado na interface, título e manifesto de instalação.
+- Fontes locais e arquivos referenciados pelo cache conferidos; Manrope confirmada no estilo computado da marca.
+- Interface verificada em tela ampla e nas larguras de 390 e 320 pixels.
+- Grade de 320 pixels: largura e conteúdo de 257/257 pixels, sem rolagem horizontal e com todas as áreas visíveis.
+- Temas claro e escuro, configurações e formulário de edição verificados.
+- Os registros fictícios da versão anterior continuaram acessíveis. Nenhum dado de teste foi incluído na distribuição.
+
+Limites anteriores sobre instalação em celular físico e funcionamento offline em origem HTTPS permanecem aplicáveis.
+
+# Verificação da versão 0.2.1
+
+- Sintaxe do JavaScript conferida.
+- Todas as áreas e a ação de criar área visíveis nas telas de 390 e 320 pixels.
+- Grade sem rolagem horizontal: largura e conteúdo de 343/343 pixels e 279/279 pixels.
+- Seleção da última área e retorno à visão de todas as áreas verificados.
+- Painel de filtros abre e fecha, mantém seleções, aplica o filtro sem data e permite limpar os filtros.
+- Registros fictícios já existentes permaneceram acessíveis; não foram incluídos na distribuição.
+- Modelo de dados e persistência não foram alterados; não foi adicionada uma suíte de testes para a mudança visual.
+
+# Verificação da versão 0.2.0
+
+- 15 testes automatizados passaram: persistência e recuperação anteriores, filtros combinados, ordenação e prazos sem data.
+- Interface verificada em tela ampla e em larguras de 390 e 320 pixels.
+- Status alterado diretamente na tabela; busca confirmou o estado atualizado.
+- Status alterado diretamente no cartão; o progresso da área foi atualizado.
+- Item sem data cadastrado na área previamente selecionada; itens anteriores preservados.
+- Cronograma, filtros adicionais e filtro de itens sem data verificados na interface.
+- Dados fictícios usados na verificação; não incluídos na distribuição.
+
+Limites de instalação e offline permanecem os da verificação anterior. A sincronização remota não faz parte desta entrega.
+
+# Verificação da versão 0.1.0
+
+- 12 testes automatizados passaram com `node --test`.
+- JavaScript verificado com `node --check`.
+- Interface inspecionada no navegador com largura ampla e em iframes de 390 e 320 pixels.
+- Criação de item sem data, criação com data e horário, conclusão, reabertura e edição verificadas na interface.
+- Área personalizada criada e sua cor selecionada na interface.
+- Alteração em outra janela preservou o formulário em edição; o rascunho pôde ser salvo.
+- Recarga preservou os itens, suas áreas e estados.
+- Backup baixado pelo navegador, selecionado pelo controle de arquivo e restaurado com confirmação de sucesso; cópia anterior solicitada antes da substituição.
+
+Limites: instalação em aparelho físico, comportamento offline em origem HTTPS e sincronização remota não foram validados no navegador de preview HTTP. Sincronização remota não faz parte desta versão. Os dados utilizados nos testes eram fictícios e não fazem parte da distribuição.
