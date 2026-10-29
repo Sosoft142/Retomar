@@ -4,8 +4,8 @@ export class SyncEngine{
   constructor({repo,adapter,secret,gistId,isEditing=()=>false,isOnline=()=>true,onState=()=>{},onApply=()=>{},onConfirmed=()=>{},seal=sealState,unseal=unsealState,lock=null,rewriteRemote=false,verifyUnseal=null}){Object.assign(this,{repo,adapter,secret,gistId,isEditing,isOnline,onState,onApply,onConfirmed,seal,unseal,lock,rewriteRemote,verifyUnseal});this.active=true;this.busy=false;this.queued=false;this.timer=null;this.failures=0;this.halted=false;this.controller=new AbortController();this.status={kind:'pending',message:'Aguardando a primeira conferência.'}}
   emit(kind,message){if(!this.active)return;this.status={kind,message};this.onState(this.status)}
   stop(){this.active=false;clearTimeout(this.timer);this.controller.abort();this.secret='';this.adapter.token=''}
-  changed(){this.queued=true;if(this.halted)return;if(!this.busy)this.emit('pending','Alterações salvas neste aparelho; envio pendente.');this.schedule(1200)}
-  schedule(delay=1200){if(!this.active||this.halted)return;clearTimeout(this.timer);this.timer=setTimeout(()=>this.run(),delay)}
+  changed(){this.queued=true;if(this.halted)return;if(!this.busy)this.emit('pending','Alterações salvas neste aparelho; envio pendente.');this.schedule(1400)}
+  schedule(delay=1400){if(!this.active||this.halted)return;clearTimeout(this.timer);this.timer=setTimeout(()=>this.run(),delay)}
   async run({manual=false}={}){
     if(!this.active)return;if(manual){this.halted=false;this.failures=0}if(this.halted)return;
     if(this.busy){this.queued=true;return this.running}
