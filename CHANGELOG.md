@@ -1,3 +1,11 @@
+# 0.5.3 · Interface clara e ajustes no celular
+
+Removidos o modo escuro, seu seletor e os estilos associados. A preferência antiga é descartada sem alterar as demais configurações. A versão aparece uma única vez, ao final de Configurações.
+
+Revisados espaçamentos dos ícones, navegação e cartões. Áreas com altura mínima de 48 px, duas colunas em celulares menores e três em telas intermediárias. O fundo decorativo se dissipa nas bordas da janela, combinando com a cor clara declarada para as barras e a abertura do aplicativo. Sincronização e backup reunidos no mesmo cartão, preservando as ações de conectar, exportar e restaurar.
+
+Cache atualizado para v10; identidade de instalação, dados locais e conexão preservados.
+
 # 0.5.2 · Correção do transporte no navegador
 
 Corrigida a captura de fetch no adaptador de Gist: a função nativa agora é vinculada ao contexto global. Antes, o navegador recusava a chamada com Illegal invocation antes de acessar o GitHub, e o app mostrava uma falha genérica de conexão. Regressões cobrem o transporte padrão e as operações GET/POST/PATCH com verificação do contexto. Cache atualizado para v9; dados, credenciais e criptografia preservados.
@@ -41,3 +49,4 @@ Interface aproximada do modelo descrito no guia do Tracker de Leituras: abas no 
 # 0.1.0
 
 Primeira versão funcional: áreas da vida, itens datados e sem prazo, estados, prioridade, busca, agenda, temas, persistência local, exportação e restauração. Interface prioriza celular. Sincronização remota fica para uma etapa posterior.
+

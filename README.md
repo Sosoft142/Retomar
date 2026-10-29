@@ -1,6 +1,10 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.2. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.5.3. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+
+## Interface
+
+A interface usa somente o modo claro. Cor de destaque e movimento continuam configuráveis. Configurações reúne sincronização e cópia de segurança em um único cartão; a versão fica apenas no final dessa página. O fundo se dissipa nas bordas para combinar com a cor clara das barras do aplicativo. Os cartões de área têm pelo menos 48 px de altura e a grade se adapta à largura da tela.
 
 ## Organização
 
@@ -64,7 +68,7 @@ Para executar localmente: `python -m http.server 8000 --directory dist`. Abra `h
 
 ### Transferir o planejamento de outro endereço
 
-O navegador mantém um armazenamento diferente para cada origem. Antes de passar do ChatGPT Sites para o GitHub Pages, exporte uma cópia JSON em Configurações → Backups. No novo endereço, importe essa cópia; ou conecte-se com exatamente o mesmo token já usado no Retomar para localizar e abrir o backup remoto existente. Verifique seus itens no novo endereço antes de deixar de usar o anterior.
+O navegador mantém um armazenamento diferente para cada origem. Antes de passar do ChatGPT Sites para o GitHub Pages, exporte uma cópia JSON em Configurações → Sincronização e backup. No novo endereço, importe essa cópia; ou conecte-se com exatamente o mesmo token já usado no Retomar para localizar e abrir o backup remoto existente. Verifique seus itens no novo endereço antes de deixar de usar o anterior.
 
 O token é uma credencial pessoal, não um código distribuído com o aplicativo. Para sincronizar, use um token pessoal clássico com somente a permissão `gist`, inserido diretamente no Retomar. Não envie o token para issues, commits ou arquivos deste repositório. Se o Silhueta já usa um token com permissão `gist`, ele também pode ser utilizado aqui; os arquivos remotos dos dois aplicativos são separados.
 
@@ -83,3 +87,4 @@ O fluxo de Actions valida pull requests e publica dist/ somente após alteraçõ
 ## Transporte no navegador
 
 O adaptador captura fetch ligado a globalThis. A função nativa exige o contexto de Window/WorkerGlobalScope; chamá-la como método do adaptador causava Illegal invocation antes de qualquer requisição, mascarado como falha de rede. Testes incluem funções que exigem o contexto global, além de respostas simuladas. A correção 0.5.2 não altera token, criptografia, backup, identidade ou preferências existentes.
+
