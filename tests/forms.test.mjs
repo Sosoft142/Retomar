@@ -67,7 +67,7 @@ test('horário inválido no subitem não altera os bytes de um planejamento vál
 });
 
 test('validação genérica de texto preserva a explicação específica de uma conexão obrigatória',()=>{
- const field=new Field('text');field.required=true;field.focus=()=>{};field.setCustomValidity('Cole o ID público completo do cliente OAuth.');
+ const field=new Field('text');field.required=true;field.focus=()=>{};field.setCustomValidity('Informe o valor completo solicitado.');
  const form={querySelectorAll:()=>[field],checkValidity:()=>false,querySelector:()=>field};
- assert.equal(checkForm(form),false);assert.equal(field.validationMessage,'Cole o ID público completo do cliente OAuth.');
+ assert.equal(checkForm(form),false);assert.equal(field.validationMessage,'Informe o valor completo solicitado.');
 });

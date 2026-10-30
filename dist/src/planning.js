@@ -1,29 +1,33 @@
-import {APP_ID,PRIORITIES,activeItems,openItem,validDate} from './domain.js';
+import {PRIORITIES,activeItems,openItem,validDate} from './domain.js';
 export const PLANNING_KEY='entrelinhas-vida:planning:v1';
-export const EVENT_COLORS=[['11','Vermelho','#dc2127'],['6','Laranja','#ffb878'],['9','Azul','#5484ed'],['3','Violeta','#dbadff'],['1','Lavanda','#a4bdfc'],['2','Menta','#7ae7bf'],['4','Coral','#ff887c'],['5','Amarelo','#fbd75b'],['7','Ciano','#46d6db'],['8','Cinza','#e1e1e1'],['10','Verde','#51b749']];
 export const defaultTimeZone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Sao_Paulo';
-export function defaults(){return {version:1,reminders:{enabled:true,aheadDays:3,overdue:true,snoozeMinutes:60},calendar:{mode:'web',clientId:'',calendarId:'primary',duration:30,undatedTime:'allDay',defaultTime:'09:00',timeZone:defaultTimeZone(),notification:'default',includeNotes:false,priorityTitle:true,colors:{urgent:'11',high:'6',normal:'9',low:'3'}},dismissals:{}}}
+const CALENDAR_FIELDS=['duration','undatedTime','defaultTime','timeZone','includeNotes','priorityTitle'];
+export function defaults(){return {version:2,reminders:{enabled:true,aheadDays:3,overdue:true,snoozeMinutes:60},calendar:{duration:30,undatedTime:'allDay',defaultTime:'09:00',timeZone:defaultTimeZone(),includeNotes:false,priorityTitle:true},dismissals:{}}}
 export const validTime=v=>typeof v==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(v);
-export const validClientId=v=>typeof v==='string'&&/^\d{6,30}-[a-z0-9_-]{10,150}\.apps\.googleusercontent\.com$/i.test(v);
 export function validZone(zone){try{return typeof zone==='string'&&zone.length<=100&&!!new Intl.DateTimeFormat('en',{timeZone:zone}).format(0)}catch{return false}}
 const own=o=>o!==null&&typeof o==='object'&&!Array.isArray(o)&&[Object.prototype,null].includes(Object.getPrototypeOf(o));
 export function validatePreferences(p){
-  if(!own(p)||p.version!==1||!own(p.reminders)||!own(p.calendar)||!own(p.dismissals))throw Error('As preferências de lembretes precisam ser configuradas novamente.');
+  if(!own(p)||p.version!==2||!own(p.reminders)||!own(p.calendar)||!own(p.dismissals))throw Error('As preferências de lembretes precisam ser configuradas novamente.');
   const r=p.reminders,c=p.calendar;
   if(typeof r.enabled!=='boolean'||typeof r.overdue!=='boolean'||![0,1,3,7,14,30].includes(r.aheadDays)||![15,30,60,180,1440].includes(r.snoozeMinutes))throw Error('Escolha uma antecedência e um adiamento válidos.');
-  if(!['web','direct'].includes(c.mode)||typeof c.clientId!=='string'||(c.clientId&&!validClientId(c.clientId))||(c.mode==='direct'&&!validClientId(c.clientId)))throw Error('Para o envio direto, informe o ID público de cliente OAuth do Google.');
-  if(typeof c.calendarId!=='string'||!c.calendarId.trim()||c.calendarId.length>300||/[\p{Cc}\p{Cs}]/u.test(c.calendarId))throw Error('Escolha uma agenda válida.');
+  if(Object.keys(c).length!==CALENDAR_FIELDS.length||Object.keys(c).some(key=>!CALENDAR_FIELDS.includes(key)))throw Error('Confira as opções do Google Agenda.');
   if(![15,30,45,60,90,120,180].includes(c.duration)||!['allDay','defaultTime'].includes(c.undatedTime)||!validTime(c.defaultTime)||!validZone(c.timeZone))throw Error('Confira a duração, o horário padrão e o fuso horário.');
-  if(!['default','none','0','5','10','15','30','60','1440'].includes(String(c.notification))||typeof c.includeNotes!=='boolean'||typeof c.priorityTitle!=='boolean')throw Error('Confira as opções do evento.');
-  if(!own(c.colors)||!PRIORITIES.every(p=>EVENT_COLORS.some(([id])=>id===c.colors[p.id])))throw Error('Escolha uma cor do Google Agenda para cada prioridade.');
-  if(new Set(PRIORITIES.map(p=>c.colors[p.id])).size!==PRIORITIES.length)throw Error('Escolha uma cor diferente para cada prioridade.');
+  if(typeof c.includeNotes!=='boolean'||typeof c.priorityTitle!=='boolean')throw Error('Confira as opções do evento.');
   if(Object.keys(p.dismissals).length>20000)throw Error('Há muitos adiamentos neste aparelho. Limpe os avisos dispensados nas configurações.');
   for(const [id,d] of Object.entries(p.dismissals))if(!id||['__proto__','constructor','prototype'].includes(id)||!own(d)||typeof d.signature!=='string'||d.signature.length>500||!Number.isFinite(d.until)||d.until<0)throw Error('Há um adiamento inválido nas preferências.');
   return p;
 }
+export function migratePlanningPreferences(p){
+  if(own(p)&&p.version===1&&own(p.calendar))return validatePreferences({version:2,reminders:p.reminders,calendar:Object.fromEntries(CALENDAR_FIELDS.map(key=>[key,p.calendar[key]])),dismissals:p.dismissals});
+  return validatePreferences(p);
+}
 export class PlanningPreferences{
   constructor(storage){this.storage=storage;this.value=defaults();this.error='';this.reload()}
-  reload(){try{const raw=this.storage.getItem(PLANNING_KEY);this.value=raw===null?defaults():validatePreferences(JSON.parse(raw));this.error=''}catch{this.error='Não foi possível ler as preferências de lembretes. Os itens estão preservados; salve suas opções novamente.'}return this.value}
+  reload(){try{
+    const raw=this.storage.getItem(PLANNING_KEY),parsed=raw===null?null:JSON.parse(raw);
+    this.value=raw===null?defaults():structuredClone(migratePlanningPreferences(parsed));this.error='';
+    if(parsed?.version===1)try{this.save(this.value)}catch{this.error='A adição simples está ativa, mas não foi possível atualizar as preferências neste aparelho. Salve suas opções novamente.'}
+  }catch{this.error='Não foi possível ler as preferências de lembretes. Os itens estão preservados; salve suas opções novamente.'}return this.value}
   save(value){const next=structuredClone(validatePreferences(value)),raw=JSON.stringify(next);try{this.storage.setItem(PLANNING_KEY,raw);if(this.storage.getItem(PLANNING_KEY)!==raw)throw Error()}catch{throw Error('Não foi possível salvar estas preferências. Confira o armazenamento do navegador.')}this.value=next;this.error='';return next}
 }
 const formatters=new Map();
@@ -68,14 +72,9 @@ export function calendarEvent(state,id,config,appUrl){
   const time=t.time||(config.undatedTime==='defaultTime'?config.defaultTime:'');
   if(time){const ms=zonedInstant(t.date,time,config.timeZone);start={dateTime:new Date(ms).toISOString(),timeZone:config.timeZone};end={dateTime:new Date(ms+config.duration*60000).toISOString(),timeZone:config.timeZone}}
   else{start={date:t.date};end={date:addDays(t.date,1)}}
-  const reminders=config.notification==='default'?{useDefault:true}:{useDefault:false,overrides:config.notification==='none'?[]:[{method:'popup',minutes:Number(config.notification)}]};
-  return {summary,description,start,end,colorId:config.colors[t.priority],reminders,transparency:time?'opaque':'transparent',extendedProperties:{private:{retomarApp:APP_ID,retomarItem:t.id,retomarDataset:state.datasetId}}};
+  return {summary,description,start,end};
 }
 export function calendarTemplate(state,id,config,appUrl){
   const event=calendarEvent(state,id,config,appUrl),stamp=v=>v.replace(/[-:]|\.\d{3}/g,''),dates=event.start.date?stamp(event.start.date)+'/'+stamp(event.end.date):stamp(event.start.dateTime)+'/'+stamp(event.end.dateTime),url=new URL('https://calendar.google.com/calendar/render');
-  url.searchParams.set('action','TEMPLATE');url.searchParams.set('text',event.summary);url.searchParams.set('dates',dates);url.searchParams.set('details',event.description);url.searchParams.set('ctz',config.timeZone);if(config.mode==='direct'&&config.calendarId!=='primary')url.searchParams.set('src',config.calendarId);return url.href;
+  url.searchParams.set('action','TEMPLATE');url.searchParams.set('text',event.summary);url.searchParams.set('dates',dates);url.searchParams.set('details',event.description);url.searchParams.set('ctz',config.timeZone);return url.href;
 }
-export async function calendarEventId(itemId,dataset='principal'){
-  const bytes=new TextEncoder().encode(JSON.stringify([APP_ID,dataset,itemId])),id='retomar'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');if(id.length>1024)throw Error('O identificador deste item é grande demais para o Google Agenda.');return id;
-}
-export function safeCalendarLink(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&((u.hostname==='calendar.google.com')||(u.hostname==='www.google.com'&&u.pathname.startsWith('/calendar/')))?u.href:''}catch{return ''}}
