@@ -1,3 +1,15 @@
+# 0.6.0 · Itens expansíveis e subitens
+
+Cada item pode ser expandido para organizar subitens com título, prioridade, status, ordem, data/horário opcionais e observações próprios. A expansão é preservada neste aparelho. Contador de etapas concluídas e criação pelo botão + Subitem na lista compacta e nos cartões.
+
+Etapas podem usar ordem manual, prioridade ou data; arraste, setas do teclado e o formulário Organizar oferecem reordenação, transferência para outro item e promoção a item principal. A área acompanha o pai. Busca e filtros encontram etapas; o cronograma usa seus próprios prazos e oferece retorno ao pai. Há um nível de subitens e carregamento progressivo das listas extensas.
+
+Esquema 3, com migração automática dos esquemas 1 e 2 sem alterar IDs ou revisões anteriores. Cada etapa sincroniza como um registro independente. Combinação preserva criações e edições em etapas diferentes; normaliza a área herdada sem sobrescrever conteúdo; recupera vínculos quebrados e ciclos sem ressuscitar itens excluídos. Exclusão do pai e desfazer tratam o grupo com proteção contra alterações concorrentes.
+
+105 testes aprovados, incluindo 26 novos cenários, 400 operações aleatórias com hierarquia e os testes extremos anteriores. Revisão em 320, 390, 650 e 1100 px, fonte ampliada, criação, busca, cronograma, organização e arraste. Cache v15; identidade de instalação e credenciais preservadas.
+
+Atualize/reabra o app na versão 0.6.0 ou posterior em todos os aparelhos antes de sincronizar subitens. Backups antigos continuam aceitos; versões anteriores do app não interpretam o esquema novo.
+
 # 0.5.7 · Botões estáticos e nuvem apenas piscando
 
 Removidos o movimento dos gradientes dos botões, os reflexos que passavam sobre eles e as bordas de luz animadas dos controles ativos e da barra de ações. Os gradientes estáticos e o retorno visual ao toque permanecem.

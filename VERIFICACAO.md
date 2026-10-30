@@ -1,3 +1,32 @@
+# Verificação 0.6.0 — expansão e hierarquia
+
+## Testes automatizados
+
+- 105 testes aprovados: os 79 existentes e 26 novos casos de subitens. A suíte inclui 2.000 operações aleatórias anteriores e mais 400 operações reproduzíveis com criação, reordenação, transferência, exclusão, desfazer, mudança de área e combinação de etapas.
+- Persistência e exportação/importação preservam IDs, vínculos, prioridades, status, prazos, notas, ordem e marcadores de exclusão. Migração do esquema 2 conserva todos os campos anteriores; migração do esquema 1 continua convertendo cores e ordem. A origem não é alterada pela migração.
+- Validação rejeita pais ausentes, ciclos, níveis adicionais, referências inseguras e áreas incoerentes. Operações inválidas não gravam alterações parciais.
+- Ordem manual das etapas não altera a ordem nem as revisões dos pais. Troca de área do pai atualiza a área herdada sem criar uma edição de conteúdo no filho. Conclusão do pai é independente da conclusão das etapas.
+- Exclusão do pai e Desfazer tratam o grupo; não ressuscitam etapas já excluídas e rejeitam alterações concorrentes antes de restaurar parcialmente. Backup antigo cria tombstones para etapas ausentes na restauração.
+- Combinação testada com criações offline independentes, edições em etapas diferentes, mudança de área do pai com nota offline no filho, subitem criado enquanto o pai é excluído e ciclos provocados por reorganizações concorrentes. Resultados válidos, comutativos e idempotentes nos cenários exercitados.
+- AES-GCM real preserva os vínculos no envelope e não expõe títulos. Motor com transporte simulado migra cópia remota do esquema 2, envia novos subitens e relê antes de confirmar.
+
+## Navegador e interface
+
+- Revisão somente com dados fictícios e chaves retomar-060-qa, sem token ou Gist pessoal. Adaptadores de QA, fixtures e páginas auxiliares não fazem parte da distribuição.
+- Criação de subitem pelo formulário com título, prioridade urgente e data; campo vazio recusado. Área herdada desabilitada no formulário, com explicação visível. Item novo apareceu dentro do pai, que foi expandido automaticamente.
+- Recolhimento permaneceu após recarga. Ordenação por prioridade e manual conferidas; seta do teclado e arraste real entre duas etapas alteraram a ordem e mantiveram a hierarquia.
+- Formulário Organizar transferiu uma etapa para outro pai em outra área. Busca por seu título mostrou somente o pai correspondente e a etapa. O cronograma apresentou a data do subitem e permitiu voltar ao pai expandido.
+- Contador de etapas concluídas atualizado na interface. Concluir o pai não concluiu as etapas; título de uma etapa pendente permaneceu sem tachado dentro do pai encerrado.
+- Telas de 320, 390, 650 e 1100 px sem rolagem lateral; lista compacta e cartões conferidos. Texto dos controles ampliado a 160% sem transbordamento do corpo nas telas de celular.
+- Lista de 120 subitens montou 60 inicialmente; Mostrar mais revelou os 120 e a busca encontrou o subitem 119. Contagens e backup continuam incluindo a lista completa.
+- Exclusão/desfazer do grupo foi validada automaticamente. A tentativa adicional de conferência via diálogo nativo do navegador encontrou uma falha de controle da janela de teste e não é contada como verificação visual concluída.
+
+## Compatibilidade e limites
+
+Esquema 3 e cache v15. A origem do app, manifest, appId, chaves de dados e credenciais são preservados. É necessário atualizar/reabrir o app em todos os aparelhos na versão 0.6.0 ou posterior para interpretar os subitens; o backup antigo é migrado automaticamente. A expansão é preferência local.
+
+Sincronização autenticada entre aparelhos, instalação física e gesto de toque prolongado em celular real não foram revalidados. O arraste foi exercitado com ponteiro no Chrome; concorrência e criptografia foram exercitadas com dados fictícios nos testes automatizados.
+
 # Verificação 0.5.7 — retirada dos efeitos dos botões e da nuvem
 
 - Dez testes direcionados de interface de sincronização e instalação aprovados, sem mudança de comportamento do motor ou dos dados.
