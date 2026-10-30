@@ -1,3 +1,11 @@
+# 0.7.1 · Google Agenda sem configuração
+
+O modo simples usa links nativos por item e subitem, sem configurar OAuth nem depender de popups criados por JavaScript. O evento é preparado com o prazo próprio da tarefa e precisa ser confirmado em Salvar no Google. Configurações mostra os três passos de adição e o botão Usar sem configuração para sair do modo direto. Duração, horário padrão e inclusão de notas/prioridade ficam separados da conexão avançada e das cores automáticas.
+
+Ajuda Não abriu? permite abrir na mesma aba, copiar o link e fazer cópia manual se o navegador impedir a área de transferência. Falhas de autorização oferecem a mudança para o modo simples. O destino antigo do envio direto não é imposto nesse modo; erros em campos avançados não bloqueiam o salvamento de opções simples. Seletores extensos mostram o valor completo abaixo quando necessário, inclusive com texto ampliado.
+
+183 testes aprovados. Revisão de formulários e ajuda em 320, 390, 650 e 1100 px, incluindo fonte ampliada. Abertura externa verificada em sessão anônima, que exibe a apresentação do Google; preenchimento após login e salvamento em conta real continuam sem validação ao vivo. Cores automáticas permanecem dependentes de OAuth; no modo simples a cor e o aviso são escolhidos no Google. Esquema 3 e dados preservados; cache v18.
+
 # 0.7.0 · Lembretes de tarefas e Google Agenda
 
 Sino de lembretes no cabeçalho, à esquerda da nuvem. Resumo de prazos em Planejamento e Cronograma; central ordenada por data e horário, com prioridade como desempate. Cada item e subitem usa seu próprio prazo. Configuração de antecedência, inclusão de atrasados e duração do adiamento. Adiar, dispensar hoje e desfazer preservam a tarefa; concluir remove o aviso. Preferências e dispensas persistem neste aparelho e são atualizadas entre janelas.
