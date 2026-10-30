@@ -275,3 +275,12 @@ body{min-height:100dvh;background:#edf3f6}
 .parent-link .ui-icon{width:13px;height:15px;margin-top:2px}
 .parent-link span{min-width:0;overflow-wrap:anywhere}
 @media(max-width:350px){.subitems-panel{margin-left:1px;padding-left:6px}.subitems-toggle,.add-subitem{font-size:10px;gap:4px}.subitems-heading{gap:6px}.subitem-order{width:145px}}
+
+/* Campos de edição com espaço para o conteúdo e para os seletores nativos. */
+.dialogbody .short-text{min-height:72px;line-height:1.5;resize:none;overflow-y:hidden;white-space:pre-wrap;overflow-wrap:anywhere}
+.dialogbody .field-value,.selected-value{white-space:pre-wrap;overflow-wrap:anywhere}
+.selected-value[hidden]{display:none}
+.dialogbody input[type=date],.dialogbody input[type=time]{min-inline-size:0;min-height:50px;line-height:1.5}
+.dialogbody input::-webkit-date-and-time-value{min-height:1.5em;text-align:left}
+.dialogactions>.btn{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:650px){.dialogbody .fieldsrow{grid-template-columns:minmax(0,1fr);gap:0}.dialogbody .short-text{font-size:16px}.dialogbody .field label{font-size:12px}.dialogbody .field-help{font-size:11px;line-height:1.7}}

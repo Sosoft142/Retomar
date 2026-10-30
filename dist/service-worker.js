@@ -1,4 +1,4 @@
-const CACHE='entrelinhas-vida-shell-v15';
+const CACHE='entrelinhas-vida-shell-v16';
 const SHELL=['./','./index.html','./retomar.css','./fonts/inter-latin.woff','./fonts/manrope-latin.woff','./fonts/space-grotesk-latin.woff','./icon.svg','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./manifest.webmanifest','./src/app.js','./src/domain.js','./src/repository.js','./src/drag.js','./src/forms.js','./src/collections.js','./src/pwa.js','./src/sync/connect.js','./src/sync/merge.js','./src/sync/crypto.js','./src/sync/gist.js','./src/sync/engine.js','./src/sync/preferences.js','./src/sync/ui.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('entrelinhas-vida-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

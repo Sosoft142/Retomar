@@ -1,3 +1,23 @@
+# Verificação 0.6.1 — horários e caixas de formulário
+
+## Testes automatizados
+
+119 testes aprovados, com 14 novos cenários em tests/forms.test.mjs. Todos os 1440 minutos do dia são aceitos com data; meia-noite, ano bissexto e extremos de 1900–2200 exercitados. Data impossível, horário fora do intervalo, segundos e campos parcialmente preenchidos recusados com mensagens específicas. Eventos input e change atualizam a dependência dos campos sem esperar a perda de foco. Hora digitada antes da data ou durante uma edição parcial não é descartada; limpar a programação requer o comando explícito. Persistência/reabertura e backup conservam o horário independente do subitem; falhas de validação deixam os bytes anteriores intactos. As suítes existentes de domínio, concorrência, criptografia, transporte, instalação e hierarquia permanecem aprovadas.
+
+## Navegador e interface
+
+- Dados exclusivamente fictícios, chaves retomar-061-qa e registro de service worker desativado apenas na cópia de QA. Nenhum token ou Gist pessoal utilizado. Páginas auxiliares e ajustes de QA não entram na distribuição.
+- Reprodução: subitem sem data tinha horário desativado. Data preenchida primeiro liberava o campo e permitia salvar. Na correção, criação e edição aceitam o horário primeiro; salvar sem data mostra a mensagem junto à data e mantém o horário digitado. Correção posterior, gravação, reabertura e cronograma conferidos, inclusive 00:00, 00:05, 14:30 e 23:59.
+- Título só com espaços recusado junto ao campo. Título de 200 caracteres com acentos e emoji gravado e reaberto; observações com 5000 caracteres e trecho HTML literal preservadas. Um preenchimento acima de 5000 foi bloqueado sem descartar o restante do formulário. Datas anteriores a 1900 e hora com segundos provocaram erros próprios; correções permitiram salvar.
+- Nome de área com 60 caracteres conferido e salvo. Nome duplicado com espaços e caixa diferente recusado. Títulos e nomes extensos quebram linha; o ajuste de altura inclui a borda e responde à mudança de largura, evitando um corte de dois pixels observado no título extenso.
+- Organizar subitem mostra o nome completo de área de 60 caracteres e pai de 200 caracteres. Alterar a área atualiza vínculo, posições e seus textos auxiliares. Destino extenso de exclusão de área conferido sem executar a exclusão.
+- Formulário de sincronização com token fictício de formato inválido apresenta erro antes de consultar o GitHub. Rótulos e caixas cabem em 320 px. Descarte de edição confirmado no diálogo nativo do navegador.
+- Lista compacta, cartões e formulário de edição revisados em 320, 390, 650 e 1100 px sem rolagem lateral. Caixa de título de 200 caracteres, campos e cartões também conferidos com texto de 22 px em tela de 320 px. Configurações e versão no final da página conferidas.
+
+## Compatibilidade e limites
+
+Esquema 3, identidade da instalação, chaves locais, Gist e credenciais preservados. Cache v16 e versão 0.6.1. O horário continua vinculado a uma data; um compromisso sem data permanece permitido sem horário. Não houve migração nova nem alteração no protocolo de sincronização. Sincronização autenticada entre aparelhos, instalação física e seletor nativo em Android real não foram revalidados; a revisão interativa ocorreu no Chrome em larguras móveis.
+
 # Verificação 0.6.0 — expansão e hierarquia
 
 ## Testes automatizados

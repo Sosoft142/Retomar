@@ -80,7 +80,7 @@ Base arquitetural: guia do Silhueta 2.9.18. Fluxo de conexão e organização de
 
 ## Formulários
 
-Campos com rótulos visíveis, textos de exemplo curtos e indicação de campos opcionais. Título ou nome de área vazio, inclusive composto somente por espaços, é rejeitado com mensagem junto ao campo. Datas respeitam o intervalo 1900–2200; horário depende de data. Deixar sem data limpa o horário e os erros relacionados. Mensagens têm associação por aria-describedby e aria-invalid; o primeiro campo inválido recebe foco. Conteúdo válido continua em edição quando ocorre falha do domínio ou do armazenamento. Formulários têm rolagem interna, cabeçalho fixo e ações que se ajustam em telas estreitas.
+Campos com rótulos visíveis, textos de exemplo curtos e indicação de campos opcionais. Título ou nome de área vazio, inclusive composto somente por espaços, é rejeitado com mensagem junto ao campo. Datas respeitam o intervalo 1900–2200; um horário precisa de uma data para ser salvo, mas os dois campos podem ser preenchidos em qualquer ordem. Editar ou apagar a data preserva o horário digitado e indica o que falta. Deixar sem data e horário é o comando explícito para limpar ambos. O seletor usa o formato do aparelho, com confirmação do horário em 24 horas na ajuda. Mensagens têm associação por aria-describedby e aria-invalid; o primeiro campo inválido recebe foco. Conteúdo válido continua em edição quando ocorre falha do domínio ou do armazenamento. Formulários têm rolagem interna, cabeçalho fixo e ações que se ajustam em telas estreitas. No celular os campos ocupam toda a largura; títulos e nomes de áreas se ajustam ao conteúdo. Valores extensos são mostrados completos abaixo dos seletores quando não cabem na caixa.
 
 ## Publicação no GitHub Pages
 
