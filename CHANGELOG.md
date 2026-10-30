@@ -1,3 +1,13 @@
+# 0.7.2 · Somente adição simples ao Google Agenda
+
+Removidos o modo avançado, cliente OAuth, botões de conexão/reconexão, configuração de cores e aviso automático, carregamento do Google Identity Services e adaptador de escrita na Calendar API. Os links nativos de cada item e subitem continuam preparando o evento para conferência e Salvar no Google.
+
+Preferências antigas são convertidas automaticamente para a versão 2, preservando duração, horário padrão, fuso, observações/prioridade no título, lembretes internos e adiamentos. Campos da integração removida deixam de ser utilizados. Se a gravação estiver indisponível, a sessão ainda usa apenas a adição simples e informa a limitação.
+
+Orientação para escolher notificações no próprio Google Agenda disponível nas configurações, nos ajustes do evento e na ajuda de adição. O aviso segue o padrão da agenda e pode ser ajustado antes de salvar. Não é prometida antecedência automática por um link que não envia essa opção.
+
+160 testes aprovados, incluindo migração e falhas de armazenamento. Testes exclusivos do recurso autenticado foram retirados junto com o adaptador. Esquema 3, identidade da instalação e sincronização GitHub preservados; cache v19.
+
 # 0.7.1 · Google Agenda sem configuração
 
 O modo simples usa links nativos por item e subitem, sem configurar OAuth nem depender de popups criados por JavaScript. O evento é preparado com o prazo próprio da tarefa e precisa ser confirmado em Salvar no Google. Configurações mostra os três passos de adição e o botão Usar sem configuração para sair do modo direto. Duração, horário padrão e inclusão de notas/prioridade ficam separados da conexão avançada e das cores automáticas.

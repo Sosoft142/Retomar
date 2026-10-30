@@ -1,3 +1,15 @@
+# Verificação 0.7.2 — somente adição simples e orientação de notificações
+
+160 testes aprovados. Foram retirados os testes exclusivos do adaptador OAuth/Calendar API removido. Permanecem aprovadas as suítes de domínio, hierarquia, persistência, concorrência, sincronização GitHub, criptografia, instalação, formulários, datas/fusos, lembretes internos e links de agenda.
+
+A migração de preferências 1 para 2 foi exercitada com envio direto antigo, ID inválido, cores repetidas e agenda de destino anterior: campos aposentados são retirados e as opções comuns, lembretes e adiamentos são preservados. Gravação bloqueada mantém a adição simples em memória sem sobrescrever os bytes antigos. Ajuste comum inválido recusa a migração e sinaliza o erro; dados de tarefas não são alterados.
+
+QA isolado retomar-072-qa com tarefas fictícias e preferência antiga de modo direto carregada na abertura. Itens e subitens renderizaram links nativos, e as configurações passaram a mostrar somente o fluxo simples. Não há botões de conexão Google, campos OAuth, modo, agenda de API ou aviso automático. Ajuda de notificações aberta no cartão e no formulário; explica a escolha no Google antes de Salvar e o uso do padrão da agenda.
+
+Duração de 45 minutos e horário padrão 08:15 salvos em tela de 320 px, refletidos no cartão. Ajuda e formulário revisados em 320, 390, 650 e 1100 px sem rolagem lateral, inclusive com fonte de 22 px em 320 px. A lista e o formulário mantêm seus controles, e a instrução de notificação não afirma aplicar um alarme automaticamente.
+
+Imports locais e todos os recursos do cache foram conferidos. O módulo de autorização e escrita no Google foi excluído; nenhum módulo distribuído referencia Google Identity Services, createGoogleSession ou GoogleCalendarAdapter. Cache v19, app 0.7.2, tarefas no esquema 3. Não houve criação de evento real nem teste de entrega de notificações em telefone físico; a cor, o aviso e o salvamento final são ações no Google Agenda. Instalação física e Gist autenticado não foram revalidados nesta alteração.
+
 # Verificação 0.7.1 — adição simples no Google Agenda
 
 183 testes aprovados (172 anteriores e 11 novos). Os cenários novos cobrem links nativos de itens/subitens, prazo próprio, títulos escapados e codificados, ajuda sem confirmação falsa, cópia automática/manual, item sem data abrindo edição, ativação do modo simples preservando tarefas e preferências, quota e cancelamento de autorização sem envio. O modo simples ignora o destino antigo do envio direto.
