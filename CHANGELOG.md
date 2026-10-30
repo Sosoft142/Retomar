@@ -1,3 +1,11 @@
+# 0.6.1 · Horários e legibilidade dos formulários
+
+Horário pode ser preenchido antes da data, tanto em itens quanto em subitens. Se faltar a data ao salvar, o formulário explica o que falta sem apagar o horário. Alterar ou apagar parcialmente uma data não descarta o horário; o comando Deixar sem data e horário limpa os dois valores de forma explícita. Campos incompletos e segundos recebem mensagens próprias em português. O seletor acompanha o formato do aparelho e a ajuda confirma o valor em 24 horas.
+
+No celular, os campos do formulário ocupam a largura inteira. Títulos e nomes de áreas usam caixas que quebram linha e acompanham o conteúdo e o redimensionamento da tela. Valores extensos de área, item principal, posição e destino de exclusão aparecem integralmente abaixo do seletor quando não cabem nele. Mensagens específicas de validação prevalecem sobre avisos genéricos de campo obrigatório.
+
+119 testes aprovados, incluindo 14 novos cenários de formulários, todos os minutos do dia, datas-limite, horários parciais, persistência do horário de subitem e recusa de alterações inválidas sem mudar os dados gravados. Revisão visual em 320, 390, 650 e 1100 px, com texto ampliado, criação/edição, limites de texto, área duplicada, organização, sincronização com token fictício inválido e cronograma. Esquema 3 mantido; cache v16.
+
 # 0.6.0 · Itens expansíveis e subitens
 
 Cada item pode ser expandido para organizar subitens com título, prioridade, status, ordem, data/horário opcionais e observações próprios. A expansão é preservada neste aparelho. Contador de etapas concluídas e criação pelo botão + Subitem na lista compacta e nos cartões.
