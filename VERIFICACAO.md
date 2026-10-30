@@ -1,3 +1,32 @@
+# Verificação 0.7.0 — lembretes e Google Agenda
+
+## Testes automatizados
+
+172 testes aprovados: 119 anteriores e 53 novos cenários. A suíte de prazos cobre itens/subitens, exclusão e conclusão, data sem horário, virada do dia em outro fuso, antecedência, atrasados, ordem por prazo, adiamento, dispensar hoje, mudança de fuso, persistência e falhas de armazenamento. Transições de horário de verão incluem horário inexistente, primeira ocorrência de horário ambíguo e dia que começa depois da meia-noite.
+
+Eventos testados com campos próprios do subitem, contexto do pai, quatro cores distintas, duração, horário padrão, dia inteiro com término exclusivo, fim de ano, ano bissexto, avisos padrão/nenhum/minuto zero/antecedência, observações opcionais escapadas, links de retorno e IDs estáveis em caracteres aceitos pelo Google. O vínculo estável independe de Web Crypto; a primeira tentativa no preview HTTP identificou essa dependência e a implementação foi ajustada. Criptografia da sincronização GitHub permanece inalterada.
+
+Adaptador Google testado com transporte simulado: criação e releitura, reenvio por PATCH, revisão por If-Match, envios concorrentes, resposta perdida após criação, recuperação de 409, vínculo inesperado, evento excluído, 412, cor/título/prazo divergentes na confirmação, expiração, permissão negada, quota, codificação do destino e paginação de agendas próprias. Sessão OAuth simulada cobre escopos mínimos solicitados, memória sem persistir token, validade, cancelamento, negação, resposta malformada, pop-up compartilhado, descarte de retorno tardio, troca de cliente e repetição de carregamento após falha.
+
+A validação genérica de texto mantém a mensagem específica do ID OAuth quando o campo obrigatório está vazio. Nenhuma credencial real foi usada nos testes.
+
+## Navegador e interface
+
+- Cópia de QA com dados fictícios, namespace retomar-070-qa, service worker desativado somente nessa cópia e Google explicitamente simulado. Fixtures e adaptadores de teste ficam fora da distribuição.
+- Resumo e sino mostram os prazos esperados; pai distante não oculta um subitem próximo. Data, horário, prioridade, tipo e contexto do item principal aparecem na central.
+- Adiar e desfazer conferidos; dispensar hoje persistiu após recarga e limpar avisos reativou a etapa. Concluir retirou o lembrete; reabrir a tarefa voltou a exibi-lo. Desativar avisos mostrou o estado vazio apropriado e contador zero.
+- Antecedência, atrasados e intervalo de adiamento conferidos; alterações apareceram também na outra janela. Cabeçalho em 320 px mantém sino, nuvem e engrenagem sem sobreposição.
+- Google Agenda: ausência de data abriu a edição da tarefa. Modo direto sem ID público, ID malformado, fuso inválido e cores repetidas foram recusados. Os campos de cores/avisos ficam desativados no modo de preparação, com explicação visível. Foram conferidas duração, aviso e escolha de agenda na simulação.
+- Envio simulado de subitem criou um evento; reenviar manteve um único evento e confirmou atualização. Quatro tarefas exercitaram cores 11/6/9/3. Escolher outra agenda gerou um vínculo separado para a etapa no novo destino. Não houve escrita em agenda real.
+- Abertura do modo de preparação exerceu o botão real com tarefa fictícia. No navegador anônimo, o Google redirecionou à página pública do Calendar; não houve login nem salvamento. Os parâmetros do link foram conferidos automaticamente, e o preenchimento após login permanece sem validação ao vivo.
+- Planejamento, Cronograma, Lembretes e Configurações sem rolagem lateral em 320, 390, 650 e 1100 px. Formulário de Google Agenda conferido nas quatro larguras e com texto de 22 px em 320 px. Lembretes também conferidos com texto ampliado. Mensagens e controles permanecem visíveis na rolagem do diálogo.
+
+## Limites e ativação externa
+
+A autorização real do Google não foi executada. É necessário um ID público de cliente OAuth próprio, origem autorizada e permissão da conta para testar o envio autenticado e os avisos reais. O modo padrão de preparação abre o Google para o usuário conferir e salvar; não confirma criação nem aplica cores pela URL. Conexões do ChatGPT não são credenciais de execução do app estático.
+
+Os lembretes internos são calculados com o Retomar aberto ou retomado. O app não agenda notificações de sistema em segundo plano; alertas com ele fechado dependem do Google Agenda. Preferências e adiamentos são locais; os dados das tarefas continuam na sincronização GitHub. Esquema 3 mantido, versão 0.7.0 e cache v17. Instalação física, seletor Android e sincronização autenticada real não foram revalidados nesta alteração.
+
 # Verificação 0.6.1 — horários e caixas de formulário
 
 ## Testes automatizados
