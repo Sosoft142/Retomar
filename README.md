@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.5.7. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.6.0. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -22,13 +22,25 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 
 Os seletores de prioridade e status reservam espaço conforme a fonte e podem mudar de linha. A seta tem uma área própria para evitar cortes provocados pelos controles nativos do navegador. Isso mantém Urgente e Em andamento completos em telas estreitas ou com texto ampliado.
 
+## Subitens
+
+Em cada item de Planejamento, toque em Subitens para expandir ou recolher a lista e em + Subitem para criar uma etapa. Cada subitem tem título, prioridade, status, data/horário opcionais e observações próprios. O contador mostra quantos foram concluídos; concluir o item principal não conclui as etapas automaticamente.
+
+A lista de etapas pode usar Minha ordem, Prioridade ou Data. Segure a alça para arrastar; pelo teclado, use as setas. Tocar na alça abre Organizar subitem, com escolha de posição, outro item principal ou Sem vínculo para promover a etapa a item principal. Há um nível de subitens. Um item que já tem etapas não pode ser aninhado em outro.
+
+Os subitens acompanham a área do item principal. Mover o pai de área preserva suas etapas. A busca e os filtros encontram subitens e mantêm o pai como contexto; resultados correspondentes podem ser expandidos automaticamente. No cronograma, cada etapa aparece pelo seu próprio prazo, com um vínculo para voltar ao item principal.
+
+Listas extensas usam Mostrar mais. O estado de expansão e a forma de ordenar etapas são preferências deste aparelho. Os dados das etapas entram no backup e na sincronização.
+
+Ao excluir um item principal, seus subitens ativos também são excluídos, com marcadores preservados. Desfazer restaura o grupo quando não houve alteração concorrente; etapas anteriormente excluídas não são ressuscitadas.
+
 ## Validação e listas extensas
 
 Títulos e áreas exigem texto visível. Limites: 200 caracteres no título, 60 no nome da área e 5.000 nas observações (unidades UTF-16, como nos campos HTML). Emojis compostos e outros alfabetos são preservados. A comparação de nomes de áreas usa Unicode NFC para impedir duplicatas visualmente equivalentes. Envios simultâneos do mesmo formulário executam uma única operação.
 
 Listas começam com até 60 itens por grupo e um orçamento inicial de 240 itens por visualização. Use Mostrar mais para ampliar uma lista. Busca, filtros, contagens e backups continuam incluindo todos os registros; não há remoção ou corte dos dados. Mudar os filtros, a área ou o modo de visualização reinicia a janela da lista.
 
-Backups com campos desconhecidos, referências inválidas ou identificadores inseguros são recusados, preservando a cópia local e o arquivo original. O esquema de dados continua na versão 2, com migração dos backups da versão 1.
+Backups com campos desconhecidos, referências inválidas ou identificadores inseguros são recusados, preservando a cópia local e o arquivo original. O esquema de dados é a versão 3, com migração automática dos backups das versões 1 e 2.
 
 ## Sincronização com GitHub
 
@@ -44,9 +56,9 @@ Estados da nuvem: cinza (local ou pendente), verde piscando somente pela opacida
 
 ## Dados, versões e limites
 
-Esquema 2, envelope `retomar-gist-encrypted-v1`. A migração do esquema 1 conserva IDs, revisões e dados, acrescenta a ordem e converte as seis cores antigas para a paleta viva. Chaves locais e `appId: entrelinhas-vida` permanecem estáveis. O armazenamento e a instalação pertencem à origem em que o aplicativo é aberto. Backups antigos são migrados ao ler; o novo backup requer uma versão compatível do aplicativo.
+Esquema 3, envelope `retomar-gist-encrypted-v1`. A migração do esquema 1 conserva IDs, revisões e dados, acrescenta a ordem e converte as seis cores antigas para a paleta viva. Chaves locais e `appId: entrelinhas-vida` permanecem estáveis. O armazenamento e a instalação pertencem à origem em que o aplicativo é aberto. Backups antigos são migrados ao ler; o novo backup requer uma versão compatível do aplicativo. Antes de sincronizar subitens, atualize/reabra o Retomar na versão 0.6.0 ou posterior em todos os aparelhos. Versões antigas não entendem o esquema 3 e recusam seu conteúdo, preservando a cópia local.
 
-Cada área e cada item são uma unidade de combinação, com revisão lógica `(counter, deviceId)` e desempate determinístico. A mesma entidade editada simultaneamente em dois aparelhos tem uma versão vencedora; não há editor de conflitos. Ordenação faz parte da entidade. Exclusões permanecem como tombstones. Se uma edição concorrente apontar para uma área excluída, o item é conservado na área Recuperados. Restaurar um backup sobre dados válidos atribui revisões novas e mantém exclusões dos registros conhecidos ausentes na cópia restaurada.
+Cada área, item principal e subitem são uma unidade de combinação, com revisão lógica `(counter, deviceId)` e desempate determinístico. Subitens usam IDs e revisões próprios, ligados por parentId. A área herdada é normalizada a partir do pai sem competir com uma edição de conteúdo do subitem. Um vínculo tornado inválido por exclusão ou reorganização concorrente é reparado promovendo a etapa a item principal, sem ressuscitar o pai. Ciclos e níveis adicionais são recusados na entrada e reparados de forma determinística quando resultam da combinação de duas cópias individualmente válidas. A mesma entidade editada simultaneamente em dois aparelhos tem uma versão vencedora; não há editor de conflitos. Ordenação faz parte da entidade. Exclusões permanecem como tombstones. Se uma edição concorrente apontar para uma área excluída, o item é conservado na área Recuperados. Restaurar um backup sobre dados válidos atribui revisões novas e mantém exclusões dos registros conhecidos ausentes na cópia restaurada.
 
 O transporte usa snapshots completos em Gist secreto, com AES-GCM-256, PBKDF2-SHA256 de 310.000 iterações, salt de 16 bytes e IV de 12 bytes aleatórios por envelope. Limite desta implementação: 650 KB de conteúdo de domínio antes de cifrar. Arquivos remotos truncados, incompatíveis ou que falhem na abertura não são aplicados. Gist secreto não equivale a armazenamento privado por controle de acesso; a proteção do conteúdo é a criptografia. Os dados locais continuam legíveis pelo aplicativo.
 
@@ -90,7 +102,7 @@ A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo 
 
 Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
 
-Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v8 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
+Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v15 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
 
 O fluxo de Actions valida pull requests e publica dist/ somente após alterações em main. A publicação usa o GITHUB_TOKEN temporário; o token pessoal de sincronização nunca é enviado ao repositório.
 
