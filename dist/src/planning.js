@@ -38,12 +38,12 @@ export function zonedInstant(date,time,zone){
   if(!matches.length)throw Error('Este horário não existe no fuso escolhido devido à mudança de horário. Escolha outro horário.');
   return Math.min(...matches);
 }
-export const reminderSignature=t=>JSON.stringify([t.date,t.time,t.revision?.counter,t.revision?.deviceId]);
+export const reminderSignature=(t,zone)=>JSON.stringify([t.date,t.time,t.revision?.counter,t.revision?.deviceId,zone]);
 export function dueReminders(state,prefs,now=new Date()){
   if(!prefs.reminders.enabled)return [];
   const zone=prefs.calendar.timeZone,today=dateInZone(now,zone),last=addDays(today,prefs.reminders.aheadDays),cache=new Map(),rank=new Map(PRIORITIES.map((p,i)=>[p.id,i]));
   return activeItems(state).filter(t=>openItem(t)&&t.date&&t.date<=last&&(prefs.reminders.overdue||t.date>=today)).flatMap(t=>{
-    const dismissed=prefs.dismissals[t.id];if(dismissed?.signature===reminderSignature(t)&&dismissed.until>+now)return [];
+    const dismissed=prefs.dismissals[t.id];if(dismissed?.signature===reminderSignature(t,zone)&&dismissed.until>+now)return [];
     const key=t.date+'|'+t.time;let cached=cache.get(key);
     if(!cached){let deadline,invalidTime=false;try{deadline=zonedInstant(t.date,t.time||'23:59',zone)+(t.time?0:59999)}catch{invalidTime=true;deadline=Date.parse(t.date+'T23:59:59Z')}cached={deadline,invalidTime};cache.set(key,cached)}const {deadline,invalidTime}=cached;
     const overdue=t.time?deadline<+now:t.date<today;
@@ -51,7 +51,8 @@ export function dueReminders(state,prefs,now=new Date()){
     return [{item:t,deadline,overdue,invalidTime,group:overdue?'overdue':t.date===today?'today':'upcoming'}];
   }).sort((a,b)=>a.deadline-b.deadline||rank.get(a.item.priority)-rank.get(b.item.priority)||a.item.id.localeCompare(b.item.id));
 }
-export function postpone(prefs,item,now=new Date(),todayOnly=false){const next=structuredClone(prefs),zone=next.calendar.timeZone;for(const [id,d] of Object.entries(next.dismissals))if(d.until<=+now)delete next.dismissals[id];let until=+now+prefs.reminders.snoozeMinutes*60000;if(todayOnly){const tomorrow=addDays(dateInZone(now,zone),1);try{until=zonedInstant(tomorrow,'00:00',zone)}catch{until=+now+86400000}}next.dismissals[item.id]={signature:reminderSignature(item),until};return next}
+function firstInstantOfDay(date,zone){for(let day=0;day<3;day++){const candidate=addDays(date,day);for(let hour=0;hour<24;hour++){let instant;try{instant=zonedInstant(candidate,String(hour).padStart(2,'0')+':00',zone)}catch{continue}if(hour>0)for(let minute=1;minute<60;minute++){try{return zonedInstant(candidate,String(hour-1).padStart(2,'0')+':'+String(minute).padStart(2,'0'),zone)}catch{}}return instant}}throw Error('Não foi possível calcular a virada do dia neste fuso.');}
+export function postpone(prefs,item,now=new Date(),todayOnly=false){const next=structuredClone(prefs),zone=next.calendar.timeZone;for(const [id,d] of Object.entries(next.dismissals))if(d.until<=+now)delete next.dismissals[id];let until=+now+prefs.reminders.snoozeMinutes*60000;if(todayOnly){const tomorrow=addDays(dateInZone(now,zone),1);until=firstInstantOfDay(tomorrow,zone)}next.dismissals[item.id]={signature:reminderSignature(item,zone),until};return next}
 export function reminderDate(entry,now=new Date(),zone=defaultTimeZone()){
   const t=entry.item,today=dateInZone(now,zone),day=t.date===today?'Hoje':t.date===addDays(today,1)?'Amanhã':new Date(t.date+'T12:00:00Z').toLocaleDateString('pt-BR',{timeZone:'UTC',day:'2-digit',month:'2-digit',...(t.date.slice(0,4)!==today.slice(0,4)?{year:'numeric'}:{})});
   return `${entry.overdue?'Atrasado · ':''}${day}${t.time?' às '+t.time:' · sem horário'}${entry.invalidTime?' · confira o fuso':''}`;
@@ -75,6 +76,6 @@ export function calendarTemplate(state,id,config,appUrl){
   url.searchParams.set('action','TEMPLATE');url.searchParams.set('text',event.summary);url.searchParams.set('dates',dates);url.searchParams.set('details',event.description);url.searchParams.set('ctz',config.timeZone);if(config.calendarId!=='primary')url.searchParams.set('src',config.calendarId);return url.href;
 }
 export async function calendarEventId(itemId,dataset='principal'){
-  const bytes=new TextEncoder().encode(APP_ID+'|'+dataset+'|'+itemId),digest=await crypto.subtle.digest('SHA-256',bytes);return 'retomar'+Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+  const bytes=new TextEncoder().encode(JSON.stringify([APP_ID,dataset,itemId])),id='retomar'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');if(id.length>1024)throw Error('O identificador deste item é grande demais para o Google Agenda.');return id;
 }
 export function safeCalendarLink(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&((u.hostname==='calendar.google.com')||(u.hostname==='www.google.com'&&u.pathname.startsWith('/calendar/')))?u.href:''}catch{return ''}}

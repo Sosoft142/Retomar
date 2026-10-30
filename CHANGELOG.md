@@ -1,3 +1,13 @@
+# 0.7.0 · Lembretes de tarefas e Google Agenda
+
+Sino de lembretes no cabeçalho, à esquerda da nuvem. Resumo de prazos em Planejamento e Cronograma; central ordenada por data e horário, com prioridade como desempate. Cada item e subitem usa seu próprio prazo. Configuração de antecedência, inclusão de atrasados e duração do adiamento. Adiar, dispensar hoje e desfazer preservam a tarefa; concluir remove o aviso. Preferências e dispensas persistem neste aparelho e são atualizadas entre janelas.
+
+Cada tarefa ganha um botão de Google Agenda. O modo Abrir prepara um evento para o usuário conferir e salvar no Google. O envio direto com cores está implementado via Google Identity Services e Calendar API, e requer configurar o ID público OAuth do Retomar e autorizar a conta. Duração, fuso, agenda própria de destino, aviso, horário padrão, observações e cores por prioridade são configuráveis. As cores iniciais são vermelho, laranja, azul e violeta. Reenvio direto atualiza o evento vinculado com revisão e releitura; a autorização Google fica só na memória. Guia de configuração em GOOGLE_AGENDA.md.
+
+Cálculos respeitam o fuso, meia-noite, dia inteiro, ano bissexto e transições de horário de verão. Mensagens específicas de campos de conexão são preservadas na validação genérica. Preferências novas são separadas do esquema 3, que permanece compatível; cache v17. Sincronização GitHub e identidade de instalação preservadas.
+
+172 testes aprovados e revisão em 320, 390, 650 e 1100 px, com texto ampliado. Fluxo de envio direto exercitado com OAuth e transporte simulados; nenhum evento foi criado na agenda real. A ativação e a verificação do envio autenticado dependem do ID público e da autorização da conta Google.
+
 # 0.6.1 · Horários e legibilidade dos formulários
 
 Horário pode ser preenchido antes da data, tanto em itens quanto em subitens. Se faltar a data ao salvar, o formulário explica o que falta sem apagar o horário. Alterar ou apagar parcialmente uma data não descarta o horário; o comando Deixar sem data e horário limpa os dois valores de forma explícita. Campos incompletos e segundos recebem mensagens próprias em português. O seletor acompanha o formato do aparelho e a ajuda confirma o valor em 24 horas.

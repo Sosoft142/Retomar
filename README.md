@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.6.0. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.7.0. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -17,6 +17,8 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 - Quatro prioridades: urgente, alta, normal e baixa. Cada uma possui rótulo, símbolo, faixa e cor; a prioridade pode ser alterada diretamente na lista.
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
+- Sino de lembretes por data e horário, com adiamento e dispensar por hoje.
+- Botão de Google Agenda por item e subitem, com preparação de evento ou envio direto configurável com cores por prioridade.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
 - Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação; botões com gradientes estáticos, sem pulsação, reflexos móveis ou bordas animadas. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
 
@@ -33,6 +35,16 @@ Os subitens acompanham a área do item principal. Mover o pai de área preserva 
 Listas extensas usam Mostrar mais. O estado de expansão e a forma de ordenar etapas são preferências deste aparelho. Os dados das etapas entram no backup e na sincronização.
 
 Ao excluir um item principal, seus subitens ativos também são excluídos, com marcadores preservados. Desfazer restaura o grupo quando não houve alteração concorrente; etapas anteriormente excluídas não são ressuscitadas.
+
+## Lembretes e Google Agenda
+
+O sino à esquerda da nuvem abre os prazos próximos e atrasados de todas as áreas. Cada item ou subitem usa a própria data e o próprio horário; tarefas sem data ou encerradas ficam fora dos avisos. A ordenação considera o prazo antes da prioridade. Sem horário, o atraso começa depois do fim da data. Antecedência por dias, inclusão de atrasados e duração do adiamento são configuráveis. Dispensar hoje e adiar ocultam somente o aviso, com opção de desfazer. Mudanças no prazo ou no fuso fazem o aviso ser reconsiderado.
+
+O ícone de calendário em cada tarefa prepara um evento no Google Agenda para conferência e salvamento, sem exigir um projeto OAuth. Cor, aviso e agenda de destino devem ser conferidos no Google nesse modo. Para adicionar diretamente com cores e avisos, configure um ID público OAuth próprio e autorize o Google. Não é usado o token do GitHub. O modo direto permite escolher uma agenda pertencente à conta, duração, tratamento de itens sem horário, fuso, aviso e quatro cores distintas. Observações só são enviadas se a opção estiver marcada.
+
+O envio direto usa um vínculo estável por item e agenda. Reenvios atualizam o mesmo evento, com verificação da revisão e releitura de confirmação. Não há alteração automática de eventos ao editar, concluir ou excluir tarefas no Retomar. O token do Google fica somente na memória da sessão; preferências e adiamentos ficam neste aparelho, separados dos dados sincronizados e dos backups. As credenciais da conexão do ChatGPT não são copiadas para o app.
+
+Os lembretes internos funcionam ao abrir e usar o Retomar. Alertas com o app fechado são responsabilidade dos avisos dos eventos adicionados ao Google Agenda. As instruções para configurar o envio direto estão em [GOOGLE_AGENDA.md](GOOGLE_AGENDA.md) e no próprio formulário de configurações.
 
 ## Validação e listas extensas
 
@@ -73,8 +85,11 @@ O repositório confere gravações locais e preserva dados corrompidos para recu
 - `dist/src/drag.js`: gesto por ponteiro, alças e alternativa por teclado.
 - `dist/src/sync/`: combinação pura, criptografia, adaptador Gist, motor e conexão visual.
 - `dist/src/forms.js`: mensagens de validação ligadas aos campos e foco no primeiro erro.
+- `dist/src/planning.js`: preferências, cálculos de prazo/fuso e eventos de agenda.
+- `dist/src/google-calendar.js`: autorização em memória e adaptador Google com vínculo estável.
+- `dist/src/planning-ui.js`: lembretes, ações por tarefa e configurações.
 - `dist/src/app.js`: interface. `dist/retomar.css`: apresentação.
-- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada.
+- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 172 testes nesta versão, incluindo 53 novos cenários de lembretes, Google Agenda e preservação das mensagens específicas de formulário.
 
 Base arquitetural: guia do Silhueta 2.9.18. Fluxo de conexão e organização de Configurações conferidos novamente no código do Silhueta 2.9.18 para esta versão. Endpoints e permissões conferidos na documentação primária do GitHub: https://docs.github.com/en/rest/gists/gists. A API está fixada em 2026-03-10. Nenhum teste utiliza token pessoal ou altera Gists de produção.
 
@@ -102,7 +117,7 @@ A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo 
 
 Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
 
-Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v15 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
+Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v17 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
 
 O fluxo de Actions valida pull requests e publica dist/ somente após alterações em main. A publicação usa o GITHUB_TOKEN temporário; o token pessoal de sincronização nunca é enviado ao repositório.
 

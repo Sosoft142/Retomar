@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {bindItemSchedule,scheduleFieldErrors,fieldValidationMessage} from '../dist/src/forms.js';
+import {bindItemSchedule,scheduleFieldErrors,fieldValidationMessage,checkForm} from '../dist/src/forms.js';
 import {initialState,activeAreas,updateItem,validateState} from '../dist/src/domain.js';
 import {Repository,DATA_KEY} from '../dist/src/repository.js';
 class Field extends EventTarget{
@@ -64,4 +64,10 @@ test('horário próprio do subitem persiste após reabrir e exportar sem modific
 test('horário inválido no subitem não altera os bytes de um planejamento válido',async()=>{
  const storage=disk(),repo=new Repository(storage);await repo.commit(s=>{add(s,'parent');add(s,'child',{parentId:'parent',date:'2026-11-16',time:'14:35'})});const before=storage.getItem(DATA_KEY);
  for(const fields of [{date:'',time:'14:35'},{time:'24:00'},{date:'2026-02-30'}]){await assert.rejects(repo.commit(s=>updateItem(s,'child',fields,'qa')));assert.equal(storage.getItem(DATA_KEY),before)}
+});
+
+test('validação genérica de texto preserva a explicação específica de uma conexão obrigatória',()=>{
+ const field=new Field('text');field.required=true;field.focus=()=>{};field.setCustomValidity('Cole o ID público completo do cliente OAuth.');
+ const form={querySelectorAll:()=>[field],checkValidity:()=>false,querySelector:()=>field};
+ assert.equal(checkForm(form),false);assert.equal(field.validationMessage,'Cole o ID público completo do cliente OAuth.');
 });

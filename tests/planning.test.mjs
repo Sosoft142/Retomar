@@ -34,3 +34,10 @@ test('link de preparação codifica títulos, datas e destino sem alegar aplicar
 test('ID estável por item e conjunto de dados usa apenas caracteres aceitos no Google',async()=>{const a=await calendarEventId('a'),b=await calendarEventId('b');assert.equal(a,await calendarEventId('a'));assert.notEqual(a,b);assert.notEqual(a,await calendarEventId('a','outro'));assert.match(a,/^[0-9a-v]{5,1024}$/)});
 test('links confirmados permitem somente destinos seguros do Google sem credenciais na URL',()=>{for(const url of ['javascript:alert(1)','https://evil.example','http://calendar.google.com','https://calendar.google.com.evil.test','https://calendar.google.com@evil.test','https://user:senha@calendar.google.com/calendar/event'])assert.equal(safeCalendarLink(url),'');assert.ok(safeCalendarLink('https://www.google.com/calendar/event?eid=qa'));assert.ok(safeCalendarLink('https://calendar.google.com/calendar/event?eid=qa'))});
 test('rótulos distinguem hoje, amanhã e datas com ano, mantendo o horário completo',()=>{const s=fixture(),p=prefs(),list=dueReminders(s,p,now);assert.match(reminderDate(list.find(x=>x.item.id==='child'),now,p.calendar.timeZone),/^Hoje às 13:00/);assert.match(reminderDate(list.find(x=>x.item.id==='tomorrow'),now,p.calendar.timeZone),/^Amanhã · sem horário/);assert.match(reminderDate(list[0],now,p.calendar.timeZone),/^Atrasado/)});
+
+test('dispensar hoje respeita a virada do dia quando a meia-noite não existe no fuso',()=>{
+ const p=prefs();p.calendar.timeZone='America/Santiago';const s=fixture(),instant=new Date('2026-09-05T15:00:00Z');const next=postpone(p,s.items.child,instant,true);assert.equal(next.dismissals.child.until,Date.parse('2026-09-06T04:00:00Z'));
+});
+test('mudar o fuso reconsidera avisos adiados para outro prazo absoluto',()=>{
+ const s=fixture(),p=postpone(prefs(),s.items.child,now);assert.ok(!dueReminders(s,p,now).some(x=>x.item.id==='child'));p.calendar.timeZone='UTC';assert.ok(dueReminders(s,p,now).some(x=>x.item.id==='child'));
+});
