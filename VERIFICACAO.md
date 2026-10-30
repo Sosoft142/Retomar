@@ -1,3 +1,13 @@
+# Verificação 0.7.1 — adição simples no Google Agenda
+
+183 testes aprovados (172 anteriores e 11 novos). Os cenários novos cobrem links nativos de itens/subitens, prazo próprio, títulos escapados e codificados, ajuda sem confirmação falsa, cópia automática/manual, item sem data abrindo edição, ativação do modo simples preservando tarefas e preferências, quota e cancelamento de autorização sem envio. O modo simples ignora o destino antigo do envio direto.
+
+QA isolado com chaves retomar-071-qa, dados fictícios e integração direta simulada; nenhuma conta real ou credencial usada. No navegador, duração de 45 minutos e horário padrão 08:15 foram salvos sem OAuth e refletidos na outra janela. ID incompleto foi recusado no modo direto; voltar ao simples permitiu salvar mesmo após editar ID inválido e cores repetidas. Ativação do direto com ID fictício e retorno pelo botão Usar sem configuração conferidos. Não houve gravação real no Google.
+
+Clique no link nativo do subitem abriu uma aba externa. Em sessão anônima, o Google apresentou sua página de divulgação, como na revisão anterior. A montagem de título, data, horário e duração foi conferida no link e nos testes; preenchimento após login e salvamento real não foram validados ao vivo. A ajuda Não abriu? abriu o diálogo com links nativos para nova aba/mesma aba e cópia; copiar o link retornou a confirmação de cópia. A alternativa manual foi exercitada automaticamente sem Clipboard API.
+
+Diálogo de ajuda e formulário de ajustes conferidos sem rolagem horizontal em 320, 390, 650 e 1100 px. Fonte de 22 px conferida em 320 px, inclusive valor completo de modo extenso abaixo do seletor. Configuração técnica recolhida por padrão no modo simples. Esquema 3 mantido, versão 0.7.1 e cache v18; Gist, criptografia, identidade de instalação e dados de tarefas não alterados. OAuth autenticado, instalação física e comportamento do seletor Android não foram revalidados.
+
 # Verificação 0.7.0 — lembretes e Google Agenda
 
 ## Testes automatizados

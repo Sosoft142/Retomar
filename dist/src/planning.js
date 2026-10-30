@@ -73,7 +73,7 @@ export function calendarEvent(state,id,config,appUrl){
 }
 export function calendarTemplate(state,id,config,appUrl){
   const event=calendarEvent(state,id,config,appUrl),stamp=v=>v.replace(/[-:]|\.\d{3}/g,''),dates=event.start.date?stamp(event.start.date)+'/'+stamp(event.end.date):stamp(event.start.dateTime)+'/'+stamp(event.end.dateTime),url=new URL('https://calendar.google.com/calendar/render');
-  url.searchParams.set('action','TEMPLATE');url.searchParams.set('text',event.summary);url.searchParams.set('dates',dates);url.searchParams.set('details',event.description);url.searchParams.set('ctz',config.timeZone);if(config.calendarId!=='primary')url.searchParams.set('src',config.calendarId);return url.href;
+  url.searchParams.set('action','TEMPLATE');url.searchParams.set('text',event.summary);url.searchParams.set('dates',dates);url.searchParams.set('details',event.description);url.searchParams.set('ctz',config.timeZone);if(config.mode==='direct'&&config.calendarId!=='primary')url.searchParams.set('src',config.calendarId);return url.href;
 }
 export async function calendarEventId(itemId,dataset='principal'){
   const bytes=new TextEncoder().encode(JSON.stringify([APP_ID,dataset,itemId])),id='retomar'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');if(id.length>1024)throw Error('O identificador deste item é grande demais para o Google Agenda.');return id;

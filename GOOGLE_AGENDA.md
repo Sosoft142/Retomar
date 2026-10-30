@@ -2,12 +2,32 @@
 
 O ícone de calendário ao lado de cada item e subitem usa a data e o horário próprios dessa tarefa. A ação envia somente aquela tarefa; os subitens não são incluídos automaticamente ao enviar o item principal.
 
-## Escolher como adicionar
+## Adicionar sem configurar OAuth
 
-Em **Configurações → Google Agenda → Configurar adições**, há dois modos:
+Este é o modo simples, padrão do aplicativo. Não é preciso criar projeto no Google Cloud, colar código ou conectar o Retomar ao Google.
 
-- **Abrir no Google Agenda:** funciona sem configuração de desenvolvedor. Abre um evento preenchido para você conferir e salvar no Google. Confira a agenda de destino, a cor e os avisos nessa tela. O Retomar não recebe confirmação de que você salvou; abrir novamente pode preparar outro evento.
-- **Envio direto com cores:** depois da configuração e da autorização do Google, o botão adiciona o evento com a cor da prioridade, o aviso e a duração escolhidos. Um reenvio à mesma agenda atualiza o evento vinculado. A confirmação só aparece após a resposta e a releitura no Google.
+1. Coloque uma data no item ou subitem e salve.
+2. Toque no ícone de calendário ao lado do título da tarefa.
+3. O Google Agenda abre com título, data, horário e duração preparados. Se solicitado, entre na sua conta Google.
+4. Confira a conta e a agenda de destino, escolha a cor e o aviso e toque em **Salvar** no Google.
+
+Se você já escolheu o envio direto e ficou preso na configuração, abra **Configurações → Google Agenda → Usar sem configuração**. Isso muda somente o modo de adição deste aparelho; tarefas e opções de eventos permanecem preservadas. O mesmo botão está no formulário de ajustes quando o envio direto está selecionado.
+
+Em **Configurações → Google Agenda → Ajustar eventos**, duração, tratamento dos itens sem horário e inclusão de observações/prioridade ficam disponíveis sem configurar conexão. O fuso fica em uma seção recolhível.
+
+### Se a agenda não abrir
+
+Ao tocar no calendário, aparece um aviso com **Não abriu?**. Essa opção oferece um link para tentar de novo, **Abrir nesta aba** e **Copiar link do evento**. Você pode colar o link no Chrome ou Safari. Se o navegador não permitir a cópia automática, o link aparece selecionável para copiar manualmente. Se aparecer uma página de apresentação do Google, entre na conta Google e abra o link novamente.
+
+O app usa um link nativo para abrir o evento, sem depender de uma janela criada por JavaScript. O destino antigo do envio direto não é imposto no modo simples; você escolhe a conta/agenda na tela do Google.
+
+Abrir o evento **não comprova que ele foi salvo**. O Retomar não recebe a confirmação do modo simples. Abrir novamente pode preparar outro evento; confira sua agenda antes de salvar para evitar duplicatas.
+
+## Cores e envio direto
+
+No modo simples, a prioridade pode ir no título e a cor é escolhida no Google ao salvar. As cores automáticas e os avisos configurados pelo Retomar pertencem ao **envio direto**, disponível em **Ajustar eventos → Conexão avançada e cores automáticas**.
+
+O envio direto continua exigindo um cliente OAuth e autorização do Google. Depois dessa preparação, o botão adiciona o evento com a cor da prioridade, o aviso e a duração escolhidos. Reenviar a mesma tarefa à mesma agenda atualiza o evento vinculado, com confirmação somente após a resposta e a releitura no Google. Se a autorização falhar ou for cancelada, o aviso oferece **Usar sem configuração**.
 
 As cores iniciais do envio direto são Urgente em vermelho, Alta em laranja, Normal em azul e Baixa em violeta. É possível escolher outras cores do Google, mantendo quatro cores diferentes.
 
@@ -24,9 +44,9 @@ O Google exige um cliente OAuth próprio do aplicativo para autorizar o acesso. 
 5. Crie um **ID de cliente OAuth**, do tipo **Aplicativo da Web**.
 6. Em **Origens JavaScript autorizadas**, adicione exatamente `https://sosoft142.github.io`. A origem não inclui `/Retomar/`. O fluxo de token no navegador não exige um redirecionamento próprio do Retomar.
 7. Copie o ID público terminado em `.apps.googleusercontent.com`.
-8. No Retomar, abra **Configurações → Google Agenda → Configurar adições**, escolha **Envio direto com cores**, cole o ID público e salve.
+8. No Retomar, abra **Configurações → Google Agenda → Ajustar eventos → Conexão avançada e cores automáticas**, escolha **Envio direto com cores**, cole o ID público e salve.
 9. Toque em **Conectar ao Google**, escolha a conta e autorize as permissões. Se o app avisar que está preparando a conexão, aguarde e toque novamente.
-10. Em **Configurar adições**, escolha a agenda de destino entre as agendas que pertencem à conta conectada. A opção Agenda principal fica disponível por padrão.
+10. Em **Ajustar eventos → Conexão avançada e cores automáticas**, escolha a agenda de destino entre as agendas que pertencem à conta conectada. A opção Agenda principal fica disponível por padrão.
 
 A autorização de acesso fica somente na memória desta sessão. Fechar/recarregar o app ou expirar a autorização pode exigir conectar novamente; o botão do item também pode iniciar essa autorização. As preferências e o ID público ficam neste aparelho. Para usar outro aparelho, configure suas opções nele.
 

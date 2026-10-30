@@ -1,6 +1,6 @@
 # Retomar · Planejamento de vida
 
-Versão 0.7.0. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.7.1. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
 
@@ -18,7 +18,7 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
 - Sino de lembretes por data e horário, com adiamento e dispensar por hoje.
-- Botão de Google Agenda por item e subitem, com preparação de evento ou envio direto configurável com cores por prioridade.
+- Link nativo de Google Agenda por item e subitem no modo simples, sem configurar OAuth: abre o evento e pede Salvar no Google. Há ajuda para abrir na mesma aba ou copiar o link. Configuração técnica e cores automáticas ficam na conexão avançada; um botão permite voltar ao modo simples.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
 - Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação; botões com gradientes estáticos, sem pulsação, reflexos móveis ou bordas animadas. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
 
@@ -89,7 +89,7 @@ O repositório confere gravações locais e preserva dados corrompidos para recu
 - `dist/src/google-calendar.js`: autorização em memória e adaptador Google com vínculo estável.
 - `dist/src/planning-ui.js`: lembretes, ações por tarefa e configurações.
 - `dist/src/app.js`: interface. `dist/retomar.css`: apresentação.
-- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 172 testes nesta versão, incluindo 53 novos cenários de lembretes, Google Agenda e preservação das mensagens específicas de formulário.
+- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 183 testes nesta versão, incluindo os cenários de lembretes, Google Agenda, abertura sem OAuth e preservação das mensagens específicas de formulário.
 
 Base arquitetural: guia do Silhueta 2.9.18. Fluxo de conexão e organização de Configurações conferidos novamente no código do Silhueta 2.9.18 para esta versão. Endpoints e permissões conferidos na documentação primária do GitHub: https://docs.github.com/en/rest/gists/gists. A API está fixada em 2026-03-10. Nenhum teste utiliza token pessoal ou altera Gists de produção.
 
@@ -117,7 +117,7 @@ A nuvem do cabeçalho tem botão de 44 × 44 px e SVG de 26 × 26 px, sem fundo 
 
 Configurações inclui Instalar Retomar antes da versão. O botão começa desabilitado e só habilita após beforeinstallprompt. O evento é consumido uma vez; userChoice resolve a tentativa, e um contador impede respostas antigas de alterar uma oferta nova. Aceitação e appinstalled mostram Instalação solicitada: não afirmam que o WebAPK terminou. O cartão só é ocultado em display-mode: standalone ou navigator.standalone. Nenhuma flag permanente de instalação é guardada. Sem convite, o cartão explica a instalação pelo menu.
 
-Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v17 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
+Manifest e service worker mantêm os mesmos caminhos e identidade id ./; o start_url é ./index.html, com scope ./ e cores claras #edf3f6. Ícones normais continuam transparentes e há uma máscara própria 512 × 512. O cache v18 inclui o controlador e a máscara, mantém rede primeiro e alternativa offline, exclui requisições autenticadas e limpa somente o prefixo deste projeto. Dados locais e credenciais conservam as chaves existentes. O nome histórico entrelinhas-vida é preservado nos identificadores para compatibilidade.
 
 O fluxo de Actions valida pull requests e publica dist/ somente após alterações em main. A publicação usa o GITHUB_TOKEN temporário; o token pessoal de sincronização nunca é enviado ao repositório.
 
