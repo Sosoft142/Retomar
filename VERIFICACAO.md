@@ -1,3 +1,15 @@
+# Verificação 0.7.3 — cabeçalho, ícones e brilho da nuvem
+
+160 testes existentes aprovados. Esta atualização altera o cabeçalho, os desenhos e o CSS dos ícones; domínio, formulários e protocolo de sincronização não foram alterados.
+
+QA isolado retomar-073-qa com dados fictícios e estados da nuvem simulados visualmente, sem credenciais ou chamadas de sincronização reais. Cabeçalho revisado em 320, 360, 390, 650, 768, 900 e 1100 px, sem rolagem horizontal. Subtítulo permanece à direita do nome e os centros verticais do símbolo, nome, subtítulo e controles do cabeçalho coincidem (tolerância inferior a 0,02 px). Na menor largura o nome e a assinatura diminuem para caber completos.
+
+Traço computado dos ícones no planejamento, nas configurações e no formulário de adicionar item: 1,7 px. Formulário aberto e fechado normalmente, sem transbordamento horizontal. O contorno dos filtros deixou de usar círculos preenchidos; nuvem recebeu curva limpa e leve. Formas SVG preservam a espessura ao mudar de tamanho.
+
+Cinco estados visuais conferidos: local, pendente e erro sem brilho ou animação; sincronizando com retomar-cloud-glow; confirmado com o mesmo brilho verde fixo e sem animação. Nenhum texto ou check foi adicionado à nuvem. Com movimento desativado, a animação é removida e o brilho permanece estático. Regra global existente de movimento reduzido também desativa animações. O brilho é um drop-shadow de 2–4 px no contorno, sem fundo ou halo circular.
+
+Cache shell-v20. Captura visual local retomar-073-cabecalho.jpg registra planejamento e configurações em duas larguras de celular. O ensaio visual não mede uma sincronização real; o motor permanece coberto pelas suítes existentes.
+
 # Verificação 0.7.2 — somente adição simples e orientação de notificações
 
 160 testes aprovados. Foram retirados os testes exclusivos do adaptador OAuth/Calendar API removido. Permanecem aprovadas as suítes de domínio, hierarquia, persistência, concorrência, sincronização GitHub, criptografia, instalação, formulários, datas/fusos, lembretes internos e links de agenda.
