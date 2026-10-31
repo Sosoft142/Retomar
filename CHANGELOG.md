@@ -1,5 +1,14 @@
 # 0.7.2 · Somente adição simples ao Google Agenda
 
+## 0.7.4 — subtítulo legível, estilos consolidados e voltar nativo
+
+- Subtítulo com 11–12 px, maior peso e contraste, mantido à direita do nome. Em telas de 320 px os controles podem ocupar uma segunda linha para manter o texto completo.
+- Retiradas 253 declarações substituídas na cascata do CSS, com regras reformatadas sem alterar a precedência. Comparação de estilos computados antes da alteração do subtítulo confirmou equivalência visual.
+- Histórico interno para Planejamento, Cronograma, Configurações, Áreas e Lembretes, incluindo troca de área, busca, filtros, janela de itens renderizados e posição da lista.
+- Voltar fecha primeiro a janela aberta; o gesto nativo de fechar, Esc, cancelar e salvar consomem a etapa da janela. Texto alterado pede confirmação antes do descarte. Trocar de janela não adiciona etapas extras.
+- Digitar na busca e atualizar a mesma tela não adiciona entradas nem grava o histórico a cada tecla. Nenhum bloqueio artificial de saída foi criado na tela inicial.
+- Cache offline shell-v21 inclui navigation.js. Dados e preferências existentes mantidos.
+
 ## 0.7.3 — cabeçalho e ícones alinhados
 
 - Subtítulo à direita do nome, com símbolo de retorno no mesmo eixo vertical.

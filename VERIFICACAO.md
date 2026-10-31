@@ -1,3 +1,15 @@
+# Verificação 0.7.4 — legibilidade, CSS e navegação por voltar
+
+174 testes aprovados (160 existentes e 14 de navegação). A primeira execução local com saída redirecionada ficou incompleta no ambiente; a execução direta posterior terminou com 174 aprovados, zero falhas e zero cancelamentos. Imports e shell offline conferidos, incluindo navigation.js em shell-v21.
+
+A consolidação removeu 253 declarações já substituídas do mesmo seletor na mesma condição, sem mover regras nem alterar a precedência. Antes de ampliar o subtítulo, foram comparados 499 nós por largura em 320, 360, 390, 650, 768 e 1100 px, usando 39 propriedades de layout, fontes, bordas, cores e ícones: nenhuma diferença. Configurações (177 nós) e formulário Google Agenda (58 nós) também preservaram os estilos computados. Depois da melhoria, o subtítulo usa 11 px em visores estreitos, 11,5 px no restante do celular e 12 px no desktop, com peso e contraste maiores. A condição de tablet foi ajustada para não transbordar a palavra Planejamento. Em 320 px os controles ocupam a linha seguinte, preservando texto e alvos; 360 e 390 px mantêm o cabeçalho em uma linha. Sem rolagem horizontal.
+
+QA isolado retomar-074-qa com dados fictícios, sem service worker ou chamadas GitHub reais. Navegação real do navegador exercitada entre Planejamento, Cronograma, Configurações e Áreas, em voltar e avançar. Busca Projeto preservada. Voltar com formulário aberto fechou a janela mantendo a tela; Esc consumiu a etapa da janela; o voltar seguinte retornou à tela anterior. Ao editar um título fictício e recusar o descarte no voltar, o rascunho permaneceu integral; aceitar fechou a janela sem alterar a tarefa salva. Salvar uma preferência de agenda fechou o formulário e o voltar seguinte retornou diretamente ao Planejamento. Uma lista mobile com rolagem 588 px voltou a 589 px (diferença de 1 px de layout).
+
+Os testes automatizados cobrem filtros e janela de itens, recarga, rolagem, entrada inicial sem trava, falta de acesso ao histórico, histórico externo, fechamento e substituição de janela, descarte recusado e abertura/troca de tela durante o fechamento assíncrono. O histórico não inclui corpo de formulário, título/observações editados, token ou credenciais; o URL não muda ao navegar nas telas. Digitar não chama replaceState a cada tecla.
+
+Limite da verificação: o navegador de QA não é um Galaxy S24 físico. Foram exercitados o histórico e o pedido nativo de fechar por Esc, que o dialog também recebe como gesto de fechar em navegadores Android compatíveis. A entrega não inclui animação preditiva nativa do Android nem altera os gestos do sistema. Na tela inicial, voltar segue o comportamento normal do navegador ou do app instalado.
+
 # Verificação 0.7.3 — cabeçalho, ícones e brilho da nuvem
 
 160 testes existentes aprovados. Esta atualização altera o cabeçalho, os desenhos e o CSS dos ícones; domínio, formulários e protocolo de sincronização não foram alterados.
