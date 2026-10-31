@@ -1,5 +1,13 @@
 # 0.7.2 · Somente adição simples ao Google Agenda
 
+## 0.7.3 — cabeçalho e ícones alinhados
+
+- Subtítulo à direita do nome, com símbolo de retorno no mesmo eixo vertical.
+- Família de ícones de contorno com traço uniforme de 1,7 px, pontas e cantos arredondados; filtros sem preenchimento e nuvem de desenho mais leve.
+- Lembretes, nuvem e engrenagem com caixas e centros alinhados no cabeçalho. Ajustes responsivos para 320 px e telas maiores.
+- Brilho verde discreto junto ao contorno da nuvem: pulsante ao sincronizar, fixo após confirmação. Estados local, pendente e erro sem brilho. Movimento desativado mantém o brilho estático.
+- Cache offline atualizado para shell-v20.
+
 Removidos o modo avançado, cliente OAuth, botões de conexão/reconexão, configuração de cores e aviso automático, carregamento do Google Identity Services e adaptador de escrita na Calendar API. Os links nativos de cada item e subitem continuam preparando o evento para conferência e Salvar no Google.
 
 Preferências antigas são convertidas automaticamente para a versão 2, preservando duração, horário padrão, fuso, observações/prioridade no título, lembretes internos e adiamentos. Campos da integração removida deixam de ser utilizados. Se a gravação estiver indisponível, a sessão ainda usa apenas a adição simples e informa a limitação.
