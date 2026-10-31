@@ -1,8 +1,10 @@
 # Retomar · Planejamento de vida
 
-Versão 0.7.3. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
+Versão 0.7.4. Aplicativo pessoal em português, orientado ao celular. Funciona como PWA estática, com dados locais e sincronização opcional por GitHub Gist.
 
 ## Interface
+
+O gesto ou botão de voltar do Android e o voltar do navegador usam o histórico das telas. Janelas abertas fecham primeiro, com confirmação se houver alterações. Busca, filtros, área e posição da lista são restaurados ao retornar. A tela inicial permite a saída normal do navegador ou PWA. O subtítulo permanece à direita do nome, com texto ampliado; nos menores visores, os controles podem passar para uma segunda linha.
 
 A interface usa somente o modo claro. Cor de destaque e movimento continuam configuráveis. Configurações reúne sincronização e cópia de segurança em um único cartão; a versão fica apenas no final dessa página. O fundo se dissipa nas bordas para combinar com a cor clara das barras do aplicativo. Os cartões de área têm pelo menos 48 px de altura e a grade se adapta à largura da tela.
 
@@ -90,7 +92,7 @@ O repositório confere gravações locais e preserva dados corrompidos para recu
 - `dist/src/planning.js`: preferências, cálculos de prazo/fuso e eventos de agenda.
 - `dist/src/planning-ui.js`: lembretes, ações por tarefa e configurações.
 - `dist/src/app.js`: interface. `dist/retomar.css`: apresentação.
-- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 160 testes nesta versão, incluindo os cenários de lembretes, Google Agenda, abertura sem OAuth e preservação das mensagens específicas de formulário.
+- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 174 testes nesta versão, incluindo os cenários de lembretes, Google Agenda, abertura sem OAuth e preservação das mensagens específicas de formulário.
 
 Base arquitetural: guia do Silhueta 2.9.18. Fluxo de conexão e organização de Configurações conferidos novamente no código do Silhueta 2.9.18 para esta versão. Endpoints e permissões conferidos na documentação primária do GitHub: https://docs.github.com/en/rest/gists/gists. A API está fixada em 2026-03-10. Nenhum teste utiliza token pessoal ou altera Gists de produção.
 
