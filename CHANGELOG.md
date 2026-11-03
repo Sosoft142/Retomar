@@ -1,3 +1,12 @@
+## 0.8.2 — configurações simples e ajustes por tarefa
+
+- Opções essenciais visíveis e seções de filtros, silêncio e apresentação recolhidas.
+- Antecedência padrão aplica-se às quatro prioridades, com indicação de ajustes diferentes.
+- Sino por item e subitem permite seguir o padrão, silenciar push ou definir outra antecedência neste aparelho.
+- Antecedência específica substitui os avisos gerais da tarefa e respeita filtros, silêncio e privacidade.
+- Ajustes individuais persistem separadamente dos dados do planejamento; falhas de leitura bloqueiam agendamento em vez de reativar avisos silenciados.
+- Ativação real permanece pendente: não há conta Cloudflare ou credencial de implantação disponível.
+
 ## 0.8.1 — personalização e revisão local
 
 - Antecedências independentes por prioridade; filtros de área e tipo de tarefa.

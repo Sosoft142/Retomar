@@ -1,3 +1,10 @@
+## 0.8.2
+
+- Cinco novos casos verificam silenciamento sem herança para subitens, antecedência individual, filtros, corrupção e validação.
+- Navegador: configuração principal abre com três seções recolhidas; antecedência individual de uma hora foi salva e confirmada ao reabrir.
+- Preferências por tarefa são locais a cada aparelho e não alteram o esquema do backup nem o Gist.
+- Servidor ainda não implantado: checagem encontrou ausência de credencial Cloudflare e de conexão de implantação disponível. Sem entrega real no S24.
+
 ## 0.8.1 — revisão e personalização, ainda local
 
 - Revisados fluxos de persistência, confirmação remota, validação, sincronização, navegação, formulários e apresentação das notificações.

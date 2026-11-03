@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pushDefaults,validatePushOptions,pushSchedule,PushClient,PUSH_KEY} from '../dist/src/push.js';
+import {pushDefaults,validatePushOptions,loadItemPush,validateItemPush,PUSH_ITEMS_KEY,pushSchedule,PushClient,PUSH_KEY} from '../dist/src/push.js';
 import {defaults} from '../dist/src/planning.js';
 import {initialState,activeAreas,updateItem} from '../dist/src/domain.js';
 import {validateEntries,readLimitedBody} from '../server/worker.js';
@@ -25,3 +25,9 @@ test('limite de requisição conta bytes UTF-8 e interrompe corpo excessivo',asy
  const request=new Request('https://push.test',{method:'POST',body:'ééé'});await assert.rejects(readLimitedBody(request,5),error=>error.status===413);
  assert.equal(await readLimitedBody(new Request('https://push.test',{method:'POST',body:'éé'}),4),'éé');
 });
+
+test('silenciar item mantém subitem e configuração padrão dos demais',()=>{const f=fixture(),e=pushSchedule(f.state,f.prefs,f.o,f.now,{p:{mode:'off'}});assert.ok(!e.some(x=>x.item==='p'));assert.ok(e.some(x=>x.item==='c'))});
+test('antecedência por subitem substitui ambos os avisos gerais sem alterar o pai',()=>{const f=fixture();f.o.atDeadline=true;const e=pushSchedule(f.state,f.prefs,f.o,f.now,{c:{mode:'custom',minutes:60}});assert.equal(e.filter(x=>x.item==='c').length,1);assert.equal(e.find(x=>x.item==='c').at,Date.parse('2026-11-04T12:00Z'));assert.equal(e.filter(x=>x.item==='p').length,2)});
+test('ajuste específico continua respeitando filtro e silêncio',()=>{const f=fixture();f.o.priorities=['urgent'];assert.ok(!pushSchedule(f.state,f.prefs,f.o,f.now,{c:{mode:'custom',minutes:60}}).some(x=>x.item==='c'))});
+test('leitura de ajustes preserva valores e bloqueia dados corrompidos',()=>{const raw=JSON.stringify({p:{mode:'off'},c:{mode:'custom',minutes:30}});assert.equal(loadItemPush({getItem:()=>raw}).c.minutes,30);assert.deepEqual(loadItemPush({getItem:()=>null}),{});for(const invalid of ['{bad','[]','null','{"p":{"mode":"custom","minutes":-1}}'])assert.throws(()=>loadItemPush({getItem:()=>invalid}),/preservados/)});
+test('opções por tarefa rejeitam modos e antecedentes desconhecidos',()=>{for(const value of [{mode:'always'},{mode:'custom',minutes:'30'},null])assert.throws(()=>validateItemPush(value));assert.deepEqual(validateItemPush({mode:'default',minutes:30}),{mode:'default'})});
