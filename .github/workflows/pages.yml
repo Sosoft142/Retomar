@@ -17,18 +17,53 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    outputs:
+      app_changed: ${{ steps.scope.outputs.app_changed }}
     steps:
       - name: Obter código
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Identificar alterações no aplicativo
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "app_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            comparison_ref="$BEFORE_SHA"
+            if [ "$EVENT_NAME" = "pull_request" ]; then comparison_ref="$BASE_SHA"; fi
+            if ! git cat-file -e "$comparison_ref^{commit}" 2>/dev/null; then
+              echo "app_changed=true" >> "$GITHUB_OUTPUT"
+            elif git diff --quiet "$comparison_ref" HEAD -- dist/; then
+              echo "app_changed=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "app_changed=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
       - name: Preparar Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '22'
       - name: Verificar o aplicativo
-        run: npm test
+        run: npm run verify
+
+      - name: Preservar registro de verificação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ github.sha }}
+          path: |
+            .work/verification.log
+            .work/verification.json
+          include-hidden-files: true
+          retention-days: 14
 
   deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.validate.outputs.app_changed == 'true'
     needs: validate
     runs-on: ubuntu-latest
     permissions:
