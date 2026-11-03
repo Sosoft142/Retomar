@@ -1,6 +1,13 @@
 import {activeItems,openItem} from './domain.js';
 import {zonedInstant,validTime,reminderSignature,dateInZone,addDays} from './planning.js';
 export const PUSH_KEY='entrelinhas-vida:push:v1';
+export const PUSH_ITEMS_KEY='entrelinhas-vida:push-items:v1';
+export function validateItemPush(value){
+  if(!value||!['default','off','custom'].includes(value.mode))throw Error('Escolha uma opção de notificação.');
+  if(value.mode==='custom'&&![0,5,15,30,60,180,1440].includes(value.minutes))throw Error('Escolha uma antecedência válida.');
+  return value.mode==='custom'?{mode:'custom',minutes:value.minutes}:{mode:value.mode};
+}
+export function loadItemPush(storage){try{const raw=JSON.parse(storage.getItem(PUSH_ITEMS_KEY)||'{}');if(!raw||Array.isArray(raw)||typeof raw!=='object'||Object.keys(raw).length>20000)throw Error();const result={};for(const [id,value] of Object.entries(raw)){if(['__proto__','constructor','prototype'].includes(id)||id.length>100)throw Error();result[id]=validateItemPush(value)}return result}catch{throw Error('Não foi possível ler os ajustes de notificações por tarefa. Os dados foram preservados; recupere essas preferências antes de atualizar o push.')}}
 export const pushDefaults=()=>({minutes:15,defaultTime:'09:00',priorities:['urgent','high','normal','low'],priorityMinutes:{urgent:15,high:15,normal:15,low:15},includeItems:true,includeSubitems:true,areas:[],atDeadline:false,quietEnabled:false,quietStart:'22:00',quietEnd:'08:00',private:false,silent:false,sticky:false});
 export function validatePushOptions(value){
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Confira as opções das notificações.');
@@ -26,12 +33,14 @@ function outsideQuiet(at,o,zone){
   const date=addDays(dateInZone(new Date(at),zone),overnight&&time>=o.quietStart?1:0);
   return zonedInstant(date,o.quietEnd,zone);
 }
-export function pushSchedule(state,prefs,options,now=Date.now()){
+export function pushSchedule(state,prefs,options,now=Date.now(),overrides={}){
   const o=validatePushOptions(options),entries=[];
   for(const t of activeItems(state)){
+    const override=overrides[t.id]?validateItemPush(overrides[t.id]):{mode:'default'};
+    if(override.mode==='off')continue;
     if(!openItem(t)||!t.date||!o.priorities.includes(t.priority)||(t.parentId?!o.includeSubitems:!o.includeItems)||(o.areas.length&&!o.areas.includes(t.areaId)))continue;
     let due;try{due=zonedInstant(t.date,t.time||o.defaultTime,prefs.timeZone)}catch{continue}
-    const leads=[...new Set([o.priorityMinutes[t.priority],...(o.atDeadline?[0]:[])])];
+    const leads=override.mode==='custom'?[override.minutes]:[...new Set([o.priorityMinutes[t.priority],...(o.atDeadline?[0]:[])])];
     const emitted=new Set();
     for(const lead of leads){
       const at=due-lead*60000,dismissal=prefs.dismissals[t.id];
@@ -75,7 +84,7 @@ export class PushClient{
     try{try{await this.upload(true)}catch(error){if(error.status!==410)throw error;this.persist({...this.data,token:this.target.crypto.randomUUID()+this.target.crypto.randomUUID(),confirmed:false});await this.upload(true)}this.error='';this.onChange()}catch(error){this.error=error.message;this.onChange();throw error}
   })}
   async upload(force=false){if(!this.data?.token||!this.server)return;
-    const entries=pushSchedule(this.getState(),this.getPreferences(),this.options());
+    const entries=pushSchedule(this.getState(),this.getPreferences(),this.options(),Date.now(),loadItemPush(this.storage));
     const body={subscription:this.data.subscription,entries};const fingerprint=JSON.stringify(body);
     if(!force&&fingerprint===this.fingerprint)return;
     const result=await this.request('/schedule',body);if(result?.ok!==true)throw Error('O servidor não confirmou o agendamento. Tente novamente.');this.persist({...this.data,confirmed:true});this.fingerprint=fingerprint;const hadError=!!this.error;this.error='';if(hadError)this.onChange();

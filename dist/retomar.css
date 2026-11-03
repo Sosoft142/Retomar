@@ -1027,3 +1027,8 @@ body{min-height:100dvh;background:#edf3f6}
 html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .toast{flex-wrap:wrap}
 .toast>span{min-width:0;overflow-wrap:anywhere}
+.item-push-button{position:relative;display:grid;place-items:center;flex:0 0 36px;min-height:44px;padding:8px;border-radius:10px;background:transparent;color:var(--muted)}
+.item-push-button:hover,.item-push-button:focus-visible{background:var(--soft);color:var(--accent)}
+.item-push-button .ui-icon{width:19px;height:19px}
+.item-push-marker{position:absolute;right:2px;top:1px;font-size:15px;color:var(--accent);line-height:1}
+@media(max-width:350px){.item-push-button{flex-basis:30px;padding:5px}}
