@@ -1,3 +1,25 @@
+## 0.8.1 — revisão e personalização, ainda local
+
+- Revisados fluxos de persistência, confirmação remota, validação, sincronização, navegação, formulários e apresentação das notificações.
+- Sintaxe e imports locais conferidos em 23 arquivos JavaScript.
+- Suíte local concluída: 198 testes aprovados, incluindo personalização, revisão e reativação explícita de registro revogado.
+- Navegador: personalização salva sem servidor e sem solicitar permissão; envio continua desativado. Reabertura confirma opções persistidas.
+- Formulários em iframes locais de 320 e 390 px; controles ampliados a 160% na largura de 320 px. Medidas confirmaram largura de rolagem igual à largura útil e nenhum controle além da borda.
+- Fundo dos diálogos permanece com rolagem bloqueada; a mensagem de seleção inválida aparece na área visível e recebe foco.
+- Registro desativado permanece revogado no servidor, impedindo que outra aba ou falha no armazenamento recrie sua fila. A reativação explícita usa uma credencial nova.
+- Corrigidos estado ativo prematuro, confirmação de respostas sem ok, perda de personalização ao desativar, duplicação após silêncio e contagem de limite de corpo por bytes UTF-8.
+- Privacy: payload genérico não contém título nem notas quando a opção de ocultar está ativa. Som e permanência são pedidos ao navegador, sem garantia do Android.
+- Limites: revisão e testes locais; nenhum servidor publicado ou provedor push real utilizado; sem teste físico no S24. Publicação ainda bloqueada conforme revisão automática anterior.
+
+## 0.8.0 — remoção da agenda e preparação do push
+
+- Suíte local: 181 testes, incluindo 22 casos de push.
+- Criptografia RFC 8291 verificada por descriptografia com a chave do receptor; assinatura VAPID verificada com chave pública.
+- SQLite em memória verifica substituição da fila, deduplicação e exclusão ao desativar.
+- Testes verificam origem, endpoints permitidos, falhas de armazenamento/rede e ausência de conteúdo privado no payload.
+- Navegador: Configurações mostra ausência da integração e estado pendente do serviço push; lembretes internos preservados.
+- Não foi implantado servidor externo, nem testada entrega real em provedor push ou no S24 físico.
+
 # Verificação 0.7.4 — legibilidade, CSS e navegação por voltar
 
 174 testes aprovados (160 existentes e 14 de navegação). A primeira execução local com saída redirecionada ficou incompleta no ambiente; a execução direta posterior terminou com 174 aprovados, zero falhas e zero cancelamentos. Imports e shell offline conferidos, incluindo navigation.js em shell-v21.

@@ -20,7 +20,7 @@ As guias principais são Planejamento e Cronograma. Configurações é aberta pe
 - Uma pressão breve na alça abre opções de área, prioridade e posição. As setas com foco na alça movem itens; Alt + setas nas guias move áreas. A tela de áreas mantém os botões de mover.
 - Busca, filtros, status direto, cronograma e datas/horários opcionais.
 - Sino de lembretes por data e horário, com adiamento e dispensar por hoje.
-- Adição simples ao Google Agenda por link nativo de item ou subitem. O evento é conferido e salvo no Google, onde se escolhem cor e notificação. Ajuda para abrir na mesma aba, copiar o link e definir avisos; não há modo avançado ou conexão OAuth no app.
+- Lembretes internos e suporte Web Push para itens e subitens. O push depende da publicação do servidor; não está ativo nesta versão. A integração com Google Agenda foi removida.
 - Ícone de retorno sem quadrado de fundo, inclusive nos arquivos de instalação. O sistema do aparelho pode aplicar sua própria moldura ao ícone instalado.
 - Vidro fosco, modo claro, fontes locais Space Grotesk, Manrope e Inter. Luz ambiente em rotação; botões com gradientes estáticos, sem pulsação, reflexos móveis ou bordas animadas. Os efeitos decorativos pausam durante edição e arraste, respeitam movimento reduzido e podem ser desativados em Configurações. O rodapé não exibe mais a inscrição de armazenamento local e backup.
 
@@ -38,17 +38,14 @@ Listas extensas usam Mostrar mais. O estado de expansão e a forma de ordenar et
 
 Ao excluir um item principal, seus subitens ativos também são excluídos, com marcadores preservados. Desfazer restaura o grupo quando não houve alteração concorrente; etapas anteriormente excluídas não são ressuscitadas.
 
-## Lembretes e Google Agenda
+## Lembretes e notificações
 
-O sino à esquerda da nuvem abre os prazos próximos e atrasados de todas as áreas. Cada item ou subitem usa a própria data e o próprio horário; tarefas sem data ou encerradas ficam fora dos avisos. A ordenação considera o prazo antes da prioridade. Sem horário, o atraso começa depois do fim da data. Antecedência por dias, inclusão de atrasados e duração do adiamento são configuráveis. Dispensar hoje e adiar ocultam somente o aviso, com opção de desfazer. Mudanças no prazo ou no fuso fazem o aviso ser reconsiderado.
+Os avisos no sino consideram o prazo próprio de cada item e subitem. Configurações permitem definir antecedência, inclusão de atrasados, adiamento e fuso. Preferências antigas são migradas para a versão 3, removendo os dados de integração com a agenda sem alterar tarefas ou adiamentos.
 
-O ícone de calendário em cada tarefa prepara um evento no Google Agenda para conferência e salvamento. Esse é o único modo disponível. Duração, tratamento de itens sem horário, fuso e inclusão de notas/prioridade são configuráveis no Retomar. Conta, agenda de destino, cor e notificação são escolhidas no Google.
+A infraestrutura Web Push está em `server/`, separada dos arquivos públicos. Usa criptografia Web Push, credencial exclusiva por aparelho, alarmes persistentes, cancelamento da fila e envio de teste. O servidor recebe somente título, identificador, prazo e assinatura push; não recebe notas ou token do Gist.
 
-Os eventos seguem as notificações padrão da agenda. Para um aviso específico, use Notificação ou Adicionar notificação na tela do Google antes de Salvar. O link simples não aplica uma antecedência automaticamente; a interface orienta essa escolha sem apresentar um seletor que prometa uma configuração não enviada. Guia em [GOOGLE_AGENDA.md](GOOGLE_AGENDA.md).
+**Estado atual: servidor ainda não publicado.** Personalização pode ser salva antes de ativar, com antecedentes por prioridade, filtros de área e tipo, aviso adicional no prazo, período silencioso, privacidade e apresentação. A prévia mostra até três avisos calculados. O botão de ativação fica indisponível até configurar uma URL verificada em `dist/src/push-config.js`. Nenhum pedido de permissão é feito antes disso. Os lembretes internos continuam funcionando. A entrega real com app fechado e o S24 físico ainda precisam ser validados. Instruções de implantação em [server/README.md](server/README.md).
 
-Reabrir o link pode preparar outro evento, e o Retomar não recebe confirmação do salvamento. Editar, concluir ou excluir uma tarefa não altera eventos já salvos. Os lembretes internos funcionam ao abrir e usar o Retomar; alertas com ele fechado dependem dos eventos e avisos do Google Agenda.
-
-Preferências locais antigas são migradas para a versão 2, retirando os campos da integração autenticada e mantendo ajustes de eventos, lembretes e adiamentos. Mesmo com falha de gravação, a sessão usa só o modo simples. Dados das tarefas, Gist e backups permanecem no esquema 3.
 
 ## Validação e listas extensas
 
@@ -92,7 +89,7 @@ O repositório confere gravações locais e preserva dados corrompidos para recu
 - `dist/src/planning.js`: preferências, cálculos de prazo/fuso e eventos de agenda.
 - `dist/src/planning-ui.js`: lembretes, ações por tarefa e configurações.
 - `dist/src/app.js`: interface. `dist/retomar.css`: apresentação.
-- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. São 174 testes nesta versão, incluindo os cenários de lembretes, Google Agenda, abertura sem OAuth e preservação das mensagens específicas de formulário.
+- `npm test`: cenários de domínio, migração, organização, criptografia, transporte e concorrência com dados fictícios e rede simulada. Inclui cenários de lembretes, remoção da agenda, Web Push, migração e preservação das mensagens específicas de formulário.
 
 Base arquitetural: guia do Silhueta 2.9.18. Fluxo de conexão e organização de Configurações conferidos novamente no código do Silhueta 2.9.18 para esta versão. Endpoints e permissões conferidos na documentação primária do GitHub: https://docs.github.com/en/rest/gists/gists. A API está fixada em 2026-03-10. Nenhum teste utiliza token pessoal ou altera Gists de produção.
 

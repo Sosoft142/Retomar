@@ -1,3 +1,22 @@
+## 0.8.1 — personalização e revisão local
+
+- Antecedências independentes por prioridade; filtros de área e tipo de tarefa.
+- Aviso adicional no prazo, período silencioso com adiamento e deduplicação.
+- Privacidade do título, pedido de silêncio e permanência da notificação.
+- Preferências locais separadas da ativação; prévia dos próximos três avisos.
+- Confirmação explícita exigida antes de anunciar ativação ou cancelamento.
+- Preservação das opções ao desativar e correção do estado de ativação pendente.
+- Formulários organizados em seções, controles adaptados a 320/390 px e bloqueio de rolagem do fundo nos diálogos.
+- Sem publicação: permanece pendente a autorização solicitada após o bloqueio automático anterior; servidor push não implantado.
+
+## 0.8.0 — 2026-11-03
+
+- Removidos botões, formulários, links e estilos da integração Google Agenda.
+- Migradas preferências locais sem perder fuso, lembretes ou adiamentos.
+- Preparados cliente Push API, recepção pelo service worker, abertura da tarefa e configurações por aparelho.
+- Adicionado serviço Cloudflare Worker com Durable Objects, alarmes persistentes e Web Push criptografado.
+- Push permanece explicitamente indisponível até implantação do servidor e verificação de entrega real.
+
 # 0.7.2 · Somente adição simples ao Google Agenda
 
 ## 0.7.4 — subtítulo legível, estilos consolidados e voltar nativo
