@@ -2,7 +2,7 @@
 
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
-| Renderização, ações e formulários do app | `dist/src/app.js`, `dist/retomar.css` | `forms`, `extreme`; revisão visual |
+| Renderização, ações e formulários do app | `dist/src/app.js`, `dist/src/rendering.js`, `dist/retomar.css` | `forms`, `fluency`, `extreme`; revisão visual |
 | Validação, prioridades e hierarquia | `dist/src/domain.js` | `core`, `subitems`, `extreme` |
 | Persistência e recuperação | `dist/src/repository.js` | `core`, `extreme` |
 | Voltar, janelas e rolagem | `dist/src/navigation.js` | `navigation` |

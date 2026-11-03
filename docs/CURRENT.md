@@ -1,15 +1,16 @@
 # Estado atual — Retomar
 
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **0.8.2**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **0.8.3**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
 - Funcionalidades: áreas, prioridades, status, prazos, subitens, arraste, busca, cronograma, lembretes internos, backup, sincronização e histórico do navegador.
 - Google Agenda removido. Push: preferências gerais e por tarefa, prévia e servidor preparado; **envio real inativo**, sem conta/implantação Cloudflare disponível.
 - Preferências de notificações e ajustes por tarefa são por aparelho; não são sincronizados pelo Gist.
-- Última suíte do produto antes desta manutenção: 203 testes aprovados. Resultado da fonte atual: `npm run verify`; logs não são documentação de estado permanente.
-- Esta manutenção muda orientação, documentação e ferramentas de desenvolvimento; não altera os arquivos públicos, dados ou versão do app.
+- Suíte ampliada nesta revisão: testes de foco, busca e invalidação dos cálculos. Resultado da fonte atual: `npm run verify`; logs não são documentação de estado permanente.
+- 0.8.3: foco e posição preservados ao salvar; menos cálculos e remontagens repetidos; grade de áreas mais legível em telas maiores. Dados, esquema, Gist e identidade PWA preservados.
+- [Relatório de fluidez e economia de contexto](reports/2026-11-03-fluidez.md).
 
 ## Verificação e publicação
 

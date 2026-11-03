@@ -3,7 +3,7 @@ export const PLANNING_KEY='entrelinhas-vida:planning:v1';
 export const defaultTimeZone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Sao_Paulo';
 export function defaults(){return {version:3,timeZone:defaultTimeZone(),reminders:{enabled:true,aheadDays:3,overdue:true,snoozeMinutes:60},dismissals:{}}}
 export const validTime=v=>typeof v==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(v);
-export function validZone(zone){try{return typeof zone==='string'&&zone.length<=100&&!!new Intl.DateTimeFormat('en',{timeZone:zone}).format(0)}catch{return false}}
+export function validZone(zone){try{return typeof zone==='string'&&zone.length<=100&&!!formatter(zone)}catch{return false}}
 const own=o=>o!==null&&typeof o==='object'&&!Array.isArray(o)&&[Object.prototype,null].includes(Object.getPrototypeOf(o));
 export function validatePreferences(p){
   if(!own(p)||Object.keys(p).some(k=>!['version','timeZone','reminders','dismissals'].includes(k))||p.version!==3||!own(p.reminders)||!validZone(p.timeZone)||!own(p.dismissals))throw Error('As preferências de lembretes precisam ser configuradas novamente.');
