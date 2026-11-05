@@ -1,5 +1,11 @@
 # Histórico
 
+## 0.10.0 — áreas, lembretes e leitura visual
+
+Áreas passam a usar seletor compacto e acesso a Organizar áreas. Cartões de lembretes oferecem Gerenciar e Concluir; adiar e ocultar até amanhã ficam em Opções do aviso, com explicação. Gerenciar abre as ações completas da tarefa e preserva a central ao salvar/fechar. Configurações da central organizadas em três grupos, separadas de push e opções avançadas. Prioridade usa cores e rótulos; andamento usa aparência neutra e texto explícito. Espaçamento revisto em 320/390 px, incluindo correção de altura e corte nos seletores. Sem mudança no esquema de dados.
+
+[Relatório](docs/reports/2026-11-05-areas-lembretes.md).
+
 ## 0.9.1 — simplificação visual e espaçamento
 
 Gerenciar e Mover passam para uma linha própria, com rótulos visíveis no celular. Mais espaço interno e entre cartões, controles de toque de 44 px e cabeçalho com ícones separados. Fundos e sombras mais discretos. Dados e funções preservados. Revisão visual em 320 e 390 px; edição e movimentação pelo teclado verificadas.

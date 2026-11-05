@@ -4,6 +4,7 @@ export const LEGACY_COLORS=['#687c61','#9a7456','#787194','#a16162','#587e91','#
 export const PALETTE=[['#14b8a6','Turquesa'],['#3b82f6','Azul vivo'],['#8b5cf6','Violeta'],['#ec4899','Rosa'],['#f97316','Laranja'],['#eab308','Amarelo'],['#22c55e','Verde'],['#06b6d4','Ciano'],['#6366f1','Índigo'],['#d946ef','Fúcsia'],['#ef4444','Vermelho'],['#84cc16','Lima'],['#0d9488','Petróleo'],['#2563eb','Cobalto'],['#a855f7','Ametista'],['#f43f5e','Coral']];
 export const COLORS=PALETTE.map(([c])=>c);
 export const PRIORITIES=[{id:'urgent',label:'Urgente',symbol:'!!'},{id:'high',label:'Alta',symbol:'↑'},{id:'normal',label:'Normal',symbol:'•'},{id:'low',label:'Baixa',symbol:'↓'}];
+export const STATUS_LABELS={pending:'Pendente',doing:'Em andamento',done:'Concluído',canceled:'Cancelado'};
 export const STATUSES=['pending','doing','done','canceled'];
 export const uid=()=>{if(crypto.randomUUID)return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`};
 export function initialState(){return {appId:APP_ID,schemaVersion:SCHEMA_VERSION,datasetId:'principal',clock:0,updatedAt:new Date().toISOString(),areas:Object.fromEntries(['Pessoal','Estudos','Saúde','Casa','Trabalho','Finanças'].map((name,i)=>{const id=uid();return [id,{id,name,color:COLORS[i],order:i,deleted:false,revision:{counter:0,deviceId:'initial'}}]})),items:{}}}

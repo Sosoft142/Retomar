@@ -409,7 +409,7 @@ body::before{display:none}
 .priority-urgent{--priority-color:#dc2548;--priority-ink:#b5173a;--priority-soft:rgba(244,63,94,.13)}
 .priority-high{--priority-color:#ed8a13;--priority-ink:#9b5204;--priority-soft:rgba(249,158,11,.15)}
 .priority-normal{--priority-color:#3b82f6;--priority-ink:#2258b4;--priority-soft:rgba(59,130,246,.10)}
-.priority-low{--priority-color:#8b5cf6;--priority-ink:#7542c3;--priority-soft:rgba(139,92,246,.1)}
+.priority-low{--priority-color:#77838f;--priority-ink:#4f5d69;--priority-soft:rgba(119,131,143,.10)}
 .priority-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 18px}
 .priority-chip{min-height:50px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--priority-color),transparent 60%);border-radius:13px;color:var(--priority-ink);background:var(--priority-soft);font-size:11px}
 .priority-chip b{font-size:13px}
@@ -1064,3 +1064,40 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
   .results .compact-controls select{flex:1 1 105px;min-width:0}
   .task-actions{gap:12px}
 }
+
+/* Áreas compactas e semântica consistente de prioridade/andamento. */
+.area-selector{display:flex;align-items:flex-end;gap:12px;margin:16px 0;min-width:0}
+.area-selector .field{flex:1;min-width:0;margin:0}
+.area-selector select{width:100%;min-width:0;min-height:44px}
+.area-selector .btn{min-height:44px;flex-shrink:0}
+.task-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.task-field>span{color:var(--muted);font-size:11px;font-weight:500}
+.compact-controls .task-field{flex:1 1 110px}
+.compact-controls .task-field select{width:100%}
+.results .task-field .quick-status{color:var(--ink);border-color:var(--line);background-color:rgba(255,255,255,.55)}
+.results .task-field .quick-priority{color:var(--priority-ink);border-color:color-mix(in srgb,var(--priority-color),transparent 55%);background-color:var(--priority-soft)}
+.task-meta .task-field,.task-bottom .task-field{flex:0 1 160px}
+.taskcheck .checkbox{border-color:#71808c}
+.taskcheck.done .checkbox{background:#52626d;border-color:#52626d;color:white}
+.taskcheck.doing .checkbox{border-color:#52626d;background:transparent}
+.taskcheck.doing .checkbox i{background:#52626d}
+.priority-explanation{grid-column:1/-1;color:var(--muted);font-size:12px;line-height:1.7}
+.reminder-card .reminder-title{font-size:16px;line-height:1.6;text-align:left;padding:0;margin:14px 0 8px;overflow-wrap:anywhere}
+.reminder-card .reminder-priority{color:var(--priority-ink);font-size:12px}
+.reminder-status{font-size:12px;color:var(--muted);margin:8px 0}
+.reminder-card .reminder-actions{gap:12px;margin-top:16px;padding-top:16px}
+.reminder-actions .btn{flex:1 1 120px;min-height:44px}
+.reminder-extra{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.reminder-extra summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:13px;color:var(--muted)}
+.reminder-extra summary::before{content:'＋';margin-right:8px}
+.reminder-extra[open] summary::before{content:'−'}
+.reminder-secondary{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.reminder-secondary .btn{flex:1 1 150px;min-height:44px}
+.settings-intro{font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:20px}
+.reminder-settings-group{border:1px solid var(--line);border-radius:14px;padding:16px;margin:20px 0;min-width:0}
+.reminder-settings-group legend{font-size:13px;font-weight:650;padding:0 6px}
+@media(max-width:400px){.area-selector{align-items:stretch;gap:10px}.area-selector .btn{align-self:flex-end;padding:9px 10px;font-size:11px}.area-selector .btn svg{display:none}.area-selector .field{flex-basis:55%}}
+.results .task-field select{flex:0 0 auto;width:100%;min-inline-size:0;height:44px;min-height:44px}
+@media(max-width:350px){.results .compact-controls{flex-direction:column;align-items:stretch}.results .compact-controls .task-field{flex:none;width:100%}}
+.reminder-card-head{flex-wrap:wrap;row-gap:8px}
+.reminder-card .reminder-title:hover{text-decoration:none}
