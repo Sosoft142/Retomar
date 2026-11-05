@@ -1,4 +1,4 @@
-import {activeItems,openItem} from './domain.js';
+import {visibleItems,openItem} from './domain.js';
 import {zonedInstant,validTime,reminderSignature,dateInZone,addDays} from './planning.js';
 export const PUSH_KEY='entrelinhas-vida:push:v1';
 export const PUSH_ITEMS_KEY='entrelinhas-vida:push-items:v1';
@@ -35,7 +35,7 @@ function outsideQuiet(at,o,zone){
 }
 export function pushSchedule(state,prefs,options,now=Date.now(),overrides={}){
   const o=validatePushOptions(options),entries=[];
-  for(const t of activeItems(state)){
+  for(const t of visibleItems(state)){
     const override=overrides[t.id]?validateItemPush(overrides[t.id]):{mode:'default'};
     if(override.mode==='off')continue;
     if(!openItem(t)||!t.date||!o.priorities.includes(t.priority)||(t.parentId?!o.includeSubitems:!o.includeItems)||(o.areas.length&&!o.areas.includes(t.areaId)))continue;

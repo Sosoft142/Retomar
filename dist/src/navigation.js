@@ -3,7 +3,7 @@ const KEY='retomarNavigationV1';
 export function createNavigation({target=window,capture,restore,hasModal,canCloseModal,dismissModal}){
   const history=target.history;
   let current=null,pending=null,queuedModal=false,restoring=false,enabled=true;
-  const key=view=>view.page+'|'+view.area;
+  const key=view=>view.page+'|'+view.area+'|'+(view.archiveMode===true?'archived':'active');
   const read=state=>{
     const entry=state?.[KEY];
     return entry&&typeof entry.session==='string'&&Number.isSafeInteger(entry.index)&&entry.index>=0&&entry.view&&typeof entry.view.page==='string'&&typeof entry.view.area==='string'?entry:null;

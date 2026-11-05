@@ -74,3 +74,9 @@ test('falha de acesso ao histórico mantém a navegação comum disponível',()=
 test('histórico alheio ao app não é reescrito nem impede a saída',()=>{
   const f=fixture({entries:[{external:true},null],index:1});f.target.history.back();f.flush();assert.deepEqual(f.target.history.state,{external:true});assert.equal(f.restored.length,0);
 });
+
+test('voltar das arquivadas restaura tarefas ativas, filtros e rolagem',()=>{
+  const f=fixture();f.filter('texto');f.scroll(640);f.view.archiveMode=true;f.view.query='';f.nav.record();assert.equal(f.entries.length,2);
+  f.target.history.back();f.flush();assert.equal(f.view.archiveMode,undefined);assert.equal(f.view.query,'texto');assert.equal(f.target.scrollY,640);
+  f.target.history.forward();f.flush();assert.equal(f.view.archiveMode,true);assert.equal(f.view.query,'');assert.equal(f.entries.length,2);
+});

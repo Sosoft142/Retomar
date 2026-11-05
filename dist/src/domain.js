@@ -1,5 +1,5 @@
 export const APP_ID='entrelinhas-vida';
-export const SCHEMA_VERSION=3;
+export const SCHEMA_VERSION=4;
 export const LEGACY_COLORS=['#687c61','#9a7456','#787194','#a16162','#587e91','#a28a45'];
 export const PALETTE=[['#14b8a6','Turquesa'],['#3b82f6','Azul vivo'],['#8b5cf6','Violeta'],['#ec4899','Rosa'],['#f97316','Laranja'],['#eab308','Amarelo'],['#22c55e','Verde'],['#06b6d4','Ciano'],['#6366f1','Índigo'],['#d946ef','Fúcsia'],['#ef4444','Vermelho'],['#84cc16','Lima'],['#0d9488','Petróleo'],['#2563eb','Cobalto'],['#a855f7','Ametista'],['#f43f5e','Coral']];
 export const COLORS=PALETTE.map(([c])=>c);
@@ -15,7 +15,7 @@ const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)
 const shape=(value,keys)=>record(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
 const ROOT_KEYS=['appId','schemaVersion','datasetId','clock','updatedAt','areas','items'];
 const AREA_KEYS=['id','name','color','order','deleted','revision'];
-const ITEM_KEYS=['id','title','notes','areaId','parentId','date','time','status','priority','order','createdAt','updatedAt','deleted','revision'];
+const ITEM_KEYS=['id','title','notes','areaId','parentId','date','time','status','priority','order','createdAt','updatedAt','deleted','archived','revision'];
 const rev=r=>shape(r,['counter','deviceId'])&&Number.isSafeInteger(r.counter)&&r.counter>=0&&str(r.deviceId,100)&&hasVisibleText(r.deviceId);
 const safeId=id=>str(id,100)&&id&&!/[\p{White_Space}\p{Default_Ignorable_Code_Point}\p{Cc}\p{Cs}]/u.test(id)&&!['__proto__','constructor','prototype'].includes(id);
 export function validateState(s){
@@ -28,7 +28,7 @@ export function validateState(s){
   const ids=new Set();let maxClock=0;
   for(const [id,a] of areas){if(!safeId(id)||ids.has(id)||!shape(a,AREA_KEYS)||a.id!==id||!str(a.name,60)||!hasVisibleText(a.name)||![...COLORS,...LEGACY_COLORS].includes(a.color)||!Number.isSafeInteger(a.order)||a.order<0||typeof a.deleted!=='boolean'||!rev(a.revision))throw Error('Há uma área inválida no backup.');ids.add(id);maxClock=Math.max(maxClock,a.revision.counter)}
   if(!areas.some(([,a])=>!a.deleted))throw Error('O planejamento precisa de pelo menos uma área.');
-  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!shape(t,ITEM_KEYS)||t.id!==id||!str(t.title,200)||!hasVisibleText(t.title)||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
+  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!shape(t,ITEM_KEYS)||t.id!==id||!str(t.title,200)||!hasVisibleText(t.title)||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||typeof t.archived!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
   for(const [,t] of items){
     if(!str(t.parentId,100)||(t.parentId&&!safeId(t.parentId)))throw Error('Há um vínculo de subitem inválido no backup.');
     if(!t.deleted&&t.parentId){const parent=s.items[t.parentId];if(!Object.hasOwn(s.items,t.parentId)||parent.deleted||parent.parentId||parent.id===t.id||parent.areaId!==t.areaId)throw Error('Há um subitem sem item principal válido ou em outra área no backup.');}
@@ -36,16 +36,29 @@ export function validateState(s){
   if(s.clock<maxClock)throw Error('As revisões do backup são inconsistentes.');return s;
 }
 export function migrateState(input){
-  if(![1,2].includes(input?.schemaVersion))return validateState(input);
+  if(![1,2,3].includes(input?.schemaVersion))return validateState(input);
   const s=structuredClone(input),legacy=s.schemaVersion;s.schemaVersion=SCHEMA_VERSION;
   // A migração conserva identidade e revisões. O mapa de cores é determinístico.
   if(legacy===1){for(const a of Object.values(s.areas||{})){const i=LEGACY_COLORS.indexOf(a?.color);if(i>=0)a.color=COLORS[i]}
     Object.values(s.items||{}).sort((a,b)=>String(a?.createdAt).localeCompare(String(b?.createdAt))||String(a?.id).localeCompare(String(b?.id))).forEach((t,i)=>{t.order=i});}
-  for(const t of Object.values(s.items||{}))if(t&&typeof t==='object'){if(t.parentId)throw Error('O backup declara uma versão antiga, mas contém vínculos de subitens. Preserve o arquivo original.');t.parentId='';}
+  for(const t of Object.values(s.items||{}))if(t&&typeof t==='object'){if(legacy<3&&t.parentId)throw Error('O backup declara uma versão antiga, mas contém vínculos de subitens. Preserve o arquivo original.');if(legacy<3)t.parentId='';if(Object.hasOwn(t,'archived')&&t.archived!==false)throw Error('O backup antigo contém arquivamento incompatível. Preserve o arquivo original.');t.archived=false;}
   return validateState(s);
 }
 export const activeAreas=s=>Object.values(s.areas).filter(a=>!a.deleted).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id));
 export const activeItems=s=>Object.values(s.items).filter(t=>!t.deleted);
+export const isArchived=(s,t)=>t.archived===true||!!(t.parentId&&s.items[t.parentId]?.archived);
+export const visibleItems=s=>activeItems(s).filter(t=>!isArchived(s,t));
+export const archivedItems=s=>activeItems(s).filter(t=>isArchived(s,t));
+export function setArchived(s,id,archived,deviceId,expectedRevision){
+  const t=s.items[id];if(!t||t.deleted)throw Error('Esta tarefa não está mais disponível.');
+  if(typeof archived!=='boolean')throw Error('Arquivamento inválido.');
+  if(!archived&&t.parentId&&s.items[t.parentId]?.archived)throw Error('Restaure primeiro o item principal para exibir este subitem.');
+  return updateItem(s,id,{archived,...(expectedRevision?{expectedRevision}:{})},deviceId);
+}
+export function completedToArchive(s,items=visibleItems(s)){
+  const pendingParents=new Set(visibleItems(s).filter(t=>t.parentId&&t.status!=='done').map(t=>t.parentId));
+  return items.filter(t=>!t.deleted&&!isArchived(s,t)&&t.status==='done'&&!pendingParents.has(t.id));
+}
 export const rootItems=s=>activeItems(s).filter(t=>!t.parentId);
 export const subitemsOf=(s,id)=>activeItems(s).filter(t=>t.parentId===id);
 export const openItem=t=>t.status==='pending'||t.status==='doing';
@@ -57,11 +70,11 @@ export function updateItem(s,id,fields,deviceId){
   const {expectedRevision,...data}=fields,parentId=data.parentId??prev?.parentId??'';
   if(typeof parentId!=='string')throw Error('Escolha um item principal válido.');
   let areaId=data.areaId??prev?.areaId;
-  if(parentId){const parent=s.items[parentId];if(!Object.hasOwn(s.items,parentId)||parent.deleted||parent.parentId||parent.id===id)throw Error('O item principal não está mais disponível ou não pode receber subitens.');if(subitemsOf(s,id).length)throw Error('Um item que já tem subitens não pode virar subitem.');areaId=parent.areaId;}
+  if(parentId){const parent=s.items[parentId];if(!Object.hasOwn(s.items,parentId)||parent.deleted||parent.parentId||parent.id===id||parent.archived&&(!prev||prev.parentId!==parentId))throw Error('O item principal não está mais disponível ou não pode receber subitens.');if(subitemsOf(s,id).length)throw Error('Um item que já tem subitens não pode virar subitem.');areaId=parent.areaId;}
   const changedParent=!!prev&&prev.parentId!==parentId;
   const order=data.order??(prev&&!changedParent?prev.order:Math.max(-1,...activeItems(s).filter(t=>t.id!==id&&t.parentId===parentId).map(t=>t.order))+1);
   const now=new Date().toISOString();
-  s.items[id]={id,createdAt:prev?.createdAt||now,...prev,...data,parentId,areaId,order,deleted:false,updatedAt:now,revision:stamp(s,deviceId)};
+  s.items[id]={id,archived:false,createdAt:prev?.createdAt||now,...prev,...data,parentId,areaId,order,deleted:false,updatedAt:now,revision:stamp(s,deviceId)};
   // A área do subitem é uma cópia derivada do pai, não uma edição do seu conteúdo.
   if(!parentId&&prev&&prev.areaId!==areaId)for(const child of subitemsOf(s,id))child.areaId=areaId;
   return s.items[id];

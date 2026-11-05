@@ -1,4 +1,4 @@
-import {PRIORITIES,activeItems,openItem,validDate} from './domain.js';
+import {PRIORITIES,visibleItems,openItem,validDate} from './domain.js';
 export const PLANNING_KEY='entrelinhas-vida:planning:v1';
 export const defaultTimeZone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Sao_Paulo';
 export function defaults(){return {version:3,timeZone:defaultTimeZone(),reminders:{enabled:true,aheadDays:3,overdue:true,snoozeMinutes:60},dismissals:{}}}
@@ -42,7 +42,7 @@ export const reminderSignature=(t,zone)=>JSON.stringify([t.date,t.time,t.revisio
 export function dueReminders(state,prefs,now=new Date()){
   if(!prefs.reminders.enabled)return [];
   const zone=prefs.timeZone,today=dateInZone(now,zone),last=addDays(today,prefs.reminders.aheadDays),cache=new Map(),rank=new Map(PRIORITIES.map((p,i)=>[p.id,i]));
-  return activeItems(state).filter(t=>openItem(t)&&t.date&&t.date<=last&&(prefs.reminders.overdue||t.date>=today)).flatMap(t=>{
+  return visibleItems(state).filter(t=>openItem(t)&&t.date&&t.date<=last&&(prefs.reminders.overdue||t.date>=today)).flatMap(t=>{
     const dismissed=prefs.dismissals[t.id];if(dismissed?.signature===reminderSignature(t,zone)&&dismissed.until>+now)return [];
     const key=t.date+'|'+t.time;let cached=cache.get(key);
     if(!cached){let deadline,invalidTime=false;try{deadline=zonedInstant(t.date,t.time||'23:59',zone)+(t.time?0:59999)}catch{invalidTime=true;deadline=Date.parse(t.date+'T23:59:59Z')}cached={deadline,invalidTime};cache.set(key,cached)}const {deadline,invalidTime}=cached;

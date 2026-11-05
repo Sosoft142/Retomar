@@ -1,5 +1,11 @@
 # Histórico
 
+## 0.9.0 — gerenciamento e arquivamento
+
+Botão próprio para gerenciar cartões e subitens; títulos deixam de abrir a edição e alças ficam exclusivas para arraste. Arquivo reversível em todos os status, atalho nas concluídas, lote que respeita filtros e preserva pais com subitens não concluídos. Arquivadas saem do planejamento, cronograma ativo e lembretes. Migração dos dados para esquema 4 preserva identidade, conteúdo e sincronização criptografada.
+
+[Relatório](docs/reports/2026-11-05-arquivamento.md).
+
 ## 0.8.3 — fluidez de uso
 
 Corrigido retorno ao topo/perda de foco ao salvar tarefas; foco restaurado nos seletores rápidos. Reaproveitamento de filtros, índice de subitens, texto pesquisável e conversões de fuso; resultados idênticos não remontam os controles. Grade de áreas ampliada em telas maiores e regras móveis substituídas removidas. Sem mudança no esquema dos dados, Gist ou identidade PWA.
