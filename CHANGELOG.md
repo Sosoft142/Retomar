@@ -1,5 +1,9 @@
 # Histórico
 
+## 0.9.1 — simplificação visual e espaçamento
+
+Gerenciar e Mover passam para uma linha própria, com rótulos visíveis no celular. Mais espaço interno e entre cartões, controles de toque de 44 px e cabeçalho com ícones separados. Fundos e sombras mais discretos. Dados e funções preservados. Revisão visual em 320 e 390 px; edição e movimentação pelo teclado verificadas.
+
 ## 0.9.0 — gerenciamento e arquivamento
 
 Botão próprio para gerenciar cartões e subitens; títulos deixam de abrir a edição e alças ficam exclusivas para arraste. Arquivo reversível em todos os status, atalho nas concluídas, lote que respeita filtros e preserva pais com subitens não concluídos. Arquivadas saem do planejamento, cronograma ativo e lembretes. Migração dos dados para esquema 4 preserva identidade, conteúdo e sincronização criptografada.

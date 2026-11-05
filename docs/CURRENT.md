@@ -1,10 +1,11 @@
 # Estado atual — Retomar
 
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **0.9.0**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **0.9.1**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
+- 0.9.1: controles de gerenciamento e arraste em linha própria, rótulos visíveis no celular, mais espaço entre botões/cartões e ícones do cabeçalho; fundos e sombras suavizados.
 - 0.9.0: botão Gerenciar separado da alça de arraste; arquivamento reversível de qualquer tarefa, consulta de arquivadas e lote de concluídas nos filtros atuais. Pais com subitens não concluídos ficam fora do lote. Arquivo do pai oculta os filhos sem alterar seus conteúdos/revisões.
 - Esquema de dados 4: migração automática dos esquemas 1–3, com IDs, Gist, chaves locais e status preservados. Atualizar os outros aparelhos antes de sincronizar; versões antigas rejeitam o novo esquema sem sobrescrever os dados.
 - [Relatório desta atualização](reports/2026-11-05-arquivamento.md).
