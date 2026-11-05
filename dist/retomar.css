@@ -1023,3 +1023,17 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .item-push-button .ui-icon{width:19px;height:19px}
 .item-push-marker{position:absolute;right:2px;top:1px;font-size:15px;color:var(--accent);line-height:1}
 @media(max-width:350px){.item-push-button{flex-basis:30px;padding:5px}}
+
+/* Ações explícitas: edição separada da alça de arraste. */
+.manage-task{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;min-width:44px;min-height:44px;padding:7px 9px;border:1px solid var(--line);border-radius:12px;background:var(--glass-strong);color:var(--accent);font-size:11px;font-weight:650}
+.manage-task svg{width:17px;height:17px}
+.manage-task:hover,.manage-task:focus-visible{background:var(--soft);border-color:var(--accent)}
+.task-title{cursor:default}
+.archive-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0}
+.archive-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.archive-tabs [aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:var(--soft)}
+.archive-toolbar>.field-help{flex-basis:100%;margin:0}
+.task-archive{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;margin-top:4px;border:1px solid var(--line);border-radius:10px}
+.item-management{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.item-management .btn{flex:1 1 130px;min-height:44px}
+@media(max-width:650px){.manage-task{padding:7px}.manage-task span{display:none}.compact-task .drag-handle{min-width:32px;min-height:44px}.archive-toolbar>.btn{width:100%}}
