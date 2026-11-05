@@ -18,3 +18,9 @@ No Chrome de teste, dados fictícios: abrir Gerenciar, salvar status, arquivar c
 ## Economia de tokens
 
 Leitura do estado e mapa do projeto, pesquisas por símbolos, testes direcionados durante ajustes e log completo com saída resumida na verificação final. Não foram removidos testes nem verificações para reduzir contexto. Não há contagem disponível que permita informar percentual comprovado de redução de tokens.
+
+## Complemento 0.9.1 — espaçamento e simplificação
+
+Ações Gerenciar/Mover separadas do título em uma linha própria; rótulos visíveis também no celular. Margens internas de 16 px, intervalos de 12 px entre ações e de 16 px entre cartões; controles de 44 px. Cabeçalho móvel pode usar uma segunda linha para manter os três ícones afastados. Fundos dos cartões e seletores simplificados, com sombras discretas e identificação de prioridade preservada.
+
+Chrome de teste: visualização em cartões/lista compacta, janela de edição, botão Gerenciar e movimentação com setas. Em 320/390 px, largura de rolagem igual à largura útil observada. O botão Gerenciar mediu aproximadamente 108 × 44 px em 320 px. Não houve teste em S24 físico nem nova medição de desempenho. A suíte completa e a CI continuam obrigatórias. Esta revisão apenas visual não altera o esquema 4 nem o conteúdo das tarefas. A economia de tokens continua sem percentual mensurável disponível.
