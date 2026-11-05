@@ -83,6 +83,11 @@ jobs:
         with:
           path: dist
           name: github-pages-${{ github.run_attempt }}
+      - name: Recuperar implantação explicitamente indicada
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_MESSAGE: ${{ github.event.head_commit.message }}
+        run: node scripts/pages-recover.mjs
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
