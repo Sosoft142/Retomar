@@ -1,11 +1,12 @@
 # Estado atual — Retomar
 
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **0.10.0**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **0.11.0**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
-- 0.10.0: áreas em seletor compacto, gerenciamento completo sem sair da central de lembretes, ações temporárias em Opções do aviso, configurações separadas de central/push, prioridade colorida e andamento neutro com rótulos.
+- 0.11.0: cartões centrados em título/prazo, prioridade e andamento como texto compacto, engrenagem para edição, subitens/avisos no gerenciamento, arquivo e botão de adicionar reduzidos. Agrupamento e visualização ficam em Filtros. [Relatório de hierarquia dos cartões](reports/2026-11-06-hierarquia-cartoes.md).
+- 0.10.0: áreas em seletor compacto, gerenciamento completo sem sair da central de lembretes, ações temporárias no gerenciamento (revisado em 0.11.0), configurações separadas de central/push, prioridade colorida e andamento neutro com rótulos.
 - [Relatório de áreas, lembretes e espaçamento](reports/2026-11-05-areas-lembretes.md).
 - 0.9.1: controles de gerenciamento e arraste em linha própria, rótulos visíveis no celular, mais espaço entre botões/cartões e ícones do cabeçalho; fundos e sombras suavizados.
 - 0.9.0: botão Gerenciar separado da alça de arraste; arquivamento reversível de qualquer tarefa, consulta de arquivadas e lote de concluídas nos filtros atuais. Pais com subitens não concluídos ficam fora do lote. Arquivo do pai oculta os filhos sem alterar seus conteúdos/revisões.

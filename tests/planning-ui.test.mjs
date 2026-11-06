@@ -26,13 +26,14 @@ test('central usa o prazo próprio do subitem sem ações de agenda',()=>{const 
 test('migração da interface elimina credenciais antigas sem mudar tarefas',()=>{const f=fixture('direct');assert.equal(f.saved().version,3);assert.equal(f.saved().calendar,undefined);assert.equal(f.calls.connect,0);assert.equal(f.state.items.child.time,'13:00')});
 test('cache da visualização de lembretes é invalidado por edição na mesma instância',()=>{const f=fixture();f.ui.beginRender();assert.match(f.ui.header(),/Lembretes: 1 /);updateItem(f.state,'child',{status:'done'},'qa');assert.match(f.ui.header(),/Lembretes: 0 /);updateItem(f.state,'undated',{date:'2026-10-30',time:'14:00'},'qa');assert.match(f.ui.header(),/Lembretes: 1 /);f.ui.beginRender();assert.match(f.ui.page(),/Sem data/)});
 
-test('lembrete oferece gerenciamento explícito e separa ações da tarefa das ações do aviso',async()=>{
+test('lembrete prioriza conteúdo com gerenciamento explícito e conclusão acessível',async()=>{
   const f=fixture(),html=f.ui.page();
   assert.match(html,/aria-label="Gerenciar: Etapa &amp; café &lt;teste&gt;"/);
   assert.match(html,/<h2 class="reminder-title">Etapa &amp; café &lt;teste&gt;<\/h2>/);
   assert.doesNotMatch(html,/<button class="reminder-title"/);
-  assert.match(html,/<details class="reminder-extra"><summary>Opções do aviso<\/summary>/);
-  assert.match(html,/Ocultar até amanhã/);assert.match(html,/Andamento: Pendente/);assert.match(html,/Prioridade: !! Urgente/);
+  assert.match(html,/aria-label="Concluir: Etapa &amp; café &lt;teste&gt;"/);
+  assert.doesNotMatch(html,/<select|reminder-extra|data-action="planning-snooze"|data-action="planning-dismiss"/);
+  assert.match(html,/aria-label="Andamento: Pendente"/);assert.match(html,/aria-label="Prioridade: Urgente"/);
   await f.ui.action('planning-edit',{id:'child'});assert.deepEqual(f.calls.edits,['child']);
 });
 test('configuração distingue central de notificações e conserva as opções existentes',async()=>{
