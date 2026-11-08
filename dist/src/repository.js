@@ -22,3 +22,6 @@ export class Repository{
     if(globalThis.navigator?.locks){const result=await navigator.locks.request(DATA_KEY,()=>{try{return {value:run()}}catch(error){return {error}}});if(result.error)throw result.error;return result.value}return run();
   }
 }
+
+// Adia o acesso à propriedade: alguns navegadores lançam SecurityError no getter.
+export function browserStorage(target=globalThis){return {getItem:key=>target.localStorage.getItem(key),setItem:(key,value)=>target.localStorage.setItem(key,value),removeItem:key=>target.localStorage.removeItem(key)}}
