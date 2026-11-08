@@ -93,17 +93,26 @@ export function undoDelete(s,deleted,deviceId){
 }
 export function removeArea(s,id,target,deviceId){const a=s.areas[id];if(!a||a.deleted)throw Error('Esta área já foi removida.');if(activeAreas(s).length<2)throw Error('Mantenha pelo menos uma área.');const linked=rootItems(s).filter(t=>t.areaId===id);if(linked.length&&(!s.areas[target]||s.areas[target].deleted||target===id))throw Error('Escolha uma área para receber os itens.');for(const t of linked)updateItem(s,t.id,{areaId:target},deviceId);a.deleted=true;a.revision=stamp(s,deviceId)}
 export function reorderAreas(s,id,beforeId,deviceId){const list=activeAreas(s),moving=list.find(a=>a.id===id);if(!moving)throw Error('Esta área não está mais disponível.');const rest=list.filter(a=>a.id!==id);const at=beforeId?rest.findIndex(a=>a.id===beforeId):-1;rest.splice(at<0?rest.length:at,0,moving);rest.forEach((a,i)=>{if(a.order!==i){a.order=i;a.revision=stamp(s,deviceId)}})}
-export function moveItem(s,id,{beforeId=null,areaId,priority,parentId}={},deviceId){
+export function moveItem(s,id,{beforeId=null,areaId,priority,parentId,expectedRevision}={},deviceId){
   const t=s.items[id];if(!t||t.deleted)throw Error('Este item não está mais disponível.');
+  if(expectedRevision&&JSON.stringify(t.revision)!==expectedRevision)throw Error('Este item mudou em outra janela. Reabra a organização para conferir a versão atual.');
+  if(isArchived(s,t))throw Error('Restaure a tarefa antes de reorganizar.');
   areaId=areaId||t.areaId;if(parentId===undefined)parentId=t.parentId&&areaId!==t.areaId?'':t.parentId;
   if(parentId){const parent=s.items[parentId];if(!parent||parent.deleted||parent.parentId||parent.id===id)throw Error('Escolha um item principal válido.');areaId=parent.areaId;}
   if(!s.areas[areaId]||s.areas[areaId].deleted)throw Error('A área de destino não está mais disponível.');
   if(priority&&!PRIORITIES.some(p=>p.id===priority))throw Error('Prioridade inválida.');
   if(beforeId===id)beforeId=null;
-  if(beforeId&&(!s.items[beforeId]||s.items[beforeId].deleted||s.items[beforeId].parentId!==parentId))throw Error('Escolha uma posição no mesmo grupo de itens.');
+  if(beforeId&&(!s.items[beforeId]||s.items[beforeId].deleted||isArchived(s,s.items[beforeId])||s.items[beforeId].parentId!==parentId))throw Error('Escolha uma posição no mesmo grupo de itens.');
   if(t.areaId!==areaId||t.parentId!==parentId||(priority&&t.priority!==priority))updateItem(s,id,{areaId,parentId,priority:priority||t.priority},deviceId);
-  const list=selectItems(activeItems(s).filter(x=>x.id!==id&&x.parentId===parentId),{order:'manual'});const at=beforeId?list.findIndex(x=>x.id===beforeId):-1;list.splice(at<0?list.length:at,0,s.items[id]);
+  const list=selectItems(visibleItems(s).filter(x=>x.id!==id&&x.parentId===parentId),{order:'manual'});const at=beforeId?list.findIndex(x=>x.id===beforeId):-1;list.splice(at<0?list.length:at,0,s.items[id]);
   list.forEach((x,i)=>{if(x.order!==i)updateItem(s,x.id,{order:i},deviceId)});
+}
+// Reordenação por teclado usa os pares visíveis nos filtros atuais.
+export function selectMovePeers(s,id,{area='all',groupBy='none',priorityBoard=false,...options}={}){
+  const current=s.items[id];if(!current||current.deleted||isArchived(s,current))return [];
+  const source=visibleItems(s).filter(t=>area==='all'||t.areaId===area);
+  const matches=(current.parentId?selectItems:selectPlanningItems)(source,{...options,order:'manual'});
+  return matches.filter(t=>t.parentId===current.parentId&&(current.parentId?true:priorityBoard?t.priority===current.priority:groupBy==='area'?t.areaId===current.areaId:true));
 }
 export function selectPlanningItems(items,options={}){
   const matched=selectItems(items,options),ids=new Set(matched.map(t=>t.parentId||t.id));

@@ -1,14 +1,14 @@
-import {updateMarkup} from './rendering.js';
+import {updateMarkup,updateFilterIndicator} from './rendering.js';
 import {createNavigation} from './navigation.js';
 import {CollectionWindow} from './collections.js';
-import {APP_ID,COLORS,PALETTE,PRIORITIES,STATUS_LABELS,areaNameKey,migrateState,reorderAreas,moveItem,restoreSnapshot,uid,initialState,activeAreas,activeItems,visibleItems,archivedItems,isArchived,setArchived,completedToArchive,rootItems,subitemsOf,selectPlanningItems,openItem,localDate,validateState,stamp,updateItem,deleteItem,undoDelete,removeArea,groupItems,selectItems} from './domain.js';
-import {Repository,DATA_KEY,UI_KEY,DEVICE_KEY} from './repository.js';
+import {APP_ID,COLORS,PALETTE,PRIORITIES,STATUS_LABELS,areaNameKey,migrateState,reorderAreas,moveItem,restoreSnapshot,uid,initialState,activeAreas,activeItems,visibleItems,archivedItems,isArchived,setArchived,completedToArchive,rootItems,subitemsOf,selectPlanningItems,openItem,localDate,validateState,stamp,updateItem,deleteItem,undoDelete,removeArea,groupItems,selectItems,selectMovePeers} from './domain.js';
+import {Repository,browserStorage,DATA_KEY,UI_KEY,DEVICE_KEY} from './repository.js';
 import {bindDrag} from './drag.js';
 import {createSyncUI} from './sync/ui.js';
 import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refreshSelectHint,fitTextArea,resizeTextArea,restoreUIFocus} from './forms.js';
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
-const VERSION='0.12.0';
+const VERSION='0.12.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation;
@@ -16,10 +16,11 @@ const ICONS={archive:'<rect x="3" y="3" width="18" height="5" rx="1"/><path d="M
 const icon=n=>`<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||ICONS.box}</svg>`;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const areaStyle=a=>`style="--area-color:${a?.color||COLORS[0]}"`;
-const repo=new Repository(localStorage);
+const storage=browserStorage();
+const repo=new Repository(storage);
 let fatal='',state,deviceId,ui={accent:'teal',visualVersion:3,motion:'subtle'};
 try{state=repo.load()}catch(e){fatal=e.message;state=initialState()}
-try{const savedUI=JSON.parse(localStorage.getItem(UI_KEY)||'{}');ui={...ui,...savedUI};if(Object.hasOwn(ui,'theme')){delete ui.theme;localStorage.setItem(UI_KEY,JSON.stringify(ui))}if(savedUI.visualVersion!==3){ui.accent='teal';ui.visualVersion=3;localStorage.setItem(UI_KEY,JSON.stringify(ui))}deviceId=localStorage.getItem(DEVICE_KEY);if(!deviceId){deviceId=uid();localStorage.setItem(DEVICE_KEY,deviceId)}}catch{deviceId=uid()}
+try{const savedUI=JSON.parse(storage.getItem(UI_KEY)||'{}');ui={...ui,...savedUI};if(Object.hasOwn(ui,'theme')){delete ui.theme;storage.setItem(UI_KEY,JSON.stringify(ui))}if(savedUI.visualVersion!==3){ui.accent='teal';ui.visualVersion=3;storage.setItem(UI_KEY,JSON.stringify(ui))}deviceId=storage.getItem(DEVICE_KEY);if(!deviceId){deviceId=uid();storage.setItem(DEVICE_KEY,deviceId)}}catch{deviceId=uid()}
 let archiveMode=false;
 let page='plan',area='all',status='all',scope='all',query='',priorityFilter='all',sortOrder=ui.order||'manual',moreFilters=false,toastTimer,returnFocus,modalDirty=false,lastDeletion=null;
 let childIndex=new Map(),indexedState=null,indexedArchive=null,viewItems=null,viewFiltered=null;
@@ -35,7 +36,7 @@ function enterView(){if(!motionEnabled())return;const content=document.querySele
 const today=()=>localDate();
 const dateLabel=(date,opts={day:'numeric',month:'short'})=>new Date(date+'T12:00:00').toLocaleDateString('pt-BR',opts).replace('.','');
 const statusLabel=STATUS_LABELS;
-function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify(ui))}catch{toast('A preferência de aparência vale apenas nesta sessão.')}}
+function saveUI(){try{storage.setItem(UI_KEY,JSON.stringify(ui))}catch{toast('A preferência de aparência vale apenas nesta sessão.')}}
 function toast(message,action){clearTimeout(toastTimer);const el=document.querySelector('#toasts');el.innerHTML=`<div class="toast"><span>${esc(message)}</span>${action?`<button id="toast-action">${esc(action.label)}</button>`:''}</div>`;if(action)document.querySelector('#toast-action').onclick=()=>{el.innerHTML='';action.run()};toastTimer=setTimeout(()=>el.innerHTML='',action?9000:5500)}
 async function mutate(operation,message,{replace=null}={}){try{state=await repo.commit(operation,{replace});fatal='';syncUI?.localSaved();render();syncUI?.changed();if(message)toast(message);return true}catch(e){if(e.code==='LOCAL_STORAGE_FAILED')syncUI?.localFailure(e.message);const err=document.querySelector('.formerror');if(err)err.textContent=e.message;else toast(e.message);return false}}
 function navButton(p,label,i){return `<button data-action="page" data-page="${p}" class="view-tab ${page===p?'active':''}" ${page===p?'aria-current="page"':''}>${icon(i)}<span>${label}</span></button>`}
@@ -123,7 +124,7 @@ function bindApp(){
   document.querySelectorAll('.subitem-order').forEach(el=>el.onchange=e=>{const id=e.target.id;subitemOrder=e.target.value;ui.subitemOrder=subitemOrder;saveUI();collections.reset();refreshResults();document.getElementById(id)?.focus()});
   const file=document.querySelector('#backup-file');if(file)file.onchange=importFile;
 }
-function refreshResults(){beginView();navigation?.record();indexChildren();const summary=document.querySelector('#results-summary');if(summary)summary.outerHTML=orderToolbar();const archiveTools=document.querySelector('#archive-toolbar');if(archiveTools)archiveTools.outerHTML=archiveToolbar();const results=document.querySelector('#task-results');const changed=updateMarkup(results,page==='agenda'?renderTimeline():planningResults());if(changed)bindApp();navigation?.record();syncVisualMotion()}
+function refreshResults(){beginView();updateFilterIndicator(document.querySelector('.filter-toggle'),[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length);navigation?.record();indexChildren();const summary=document.querySelector('#results-summary');if(summary)summary.outerHTML=orderToolbar();const archiveTools=document.querySelector('#archive-toolbar');if(archiveTools)archiveTools.outerHTML=archiveToolbar();const results=document.querySelector('#task-results');const changed=updateMarkup(results,page==='agenda'?renderTimeline():planningResults());if(changed)bindApp();navigation?.record();syncVisualMotion()}
 async function action(name,d={}){
   if(name.startsWith('planning-')){await planningUI.action(name,d);return}
   if(['page','area','areas','status','scope','undated','clear','priority-filter'].includes(name)){collections.reset();collapsedMatches.clear();}
@@ -196,7 +197,7 @@ async function applyDrop({type,id,target}){
 async function moveByDelta({type,id,delta}){
   const moving=state.items[id];manualOrder(type!=='area'&&!!moving?.parentId);
   const ok=await mutate(s=>{
-    const current=s.items[id],list=type==='area'?activeAreas(s):selectItems(visibleItems(s).filter(t=>t.parentId===current?.parentId&&(current?.parentId?true:priorityView()?t.priority===current?.priority:groupBy==='area'?t.areaId===current?.areaId:true)),{order:'manual'});
+    const list=type==='area'?activeAreas(s):selectMovePeers(s,id,{...filterOptions(),area,groupBy,priorityBoard:priorityView()});
     const index=list.findIndex(x=>x.id===id),to=index+delta;if(index<0||to<0||to>=list.length)return;
     const rest=list.filter(x=>x.id!==id),beforeId=rest[to]?.id||null;if(type==='area')reorderAreas(s,id,beforeId,deviceId);else moveItem(s,id,{beforeId},deviceId);
   });
@@ -204,7 +205,7 @@ async function moveByDelta({type,id,delta}){
 }
 function moveModal(id){
   const t=state.items[id];if(!t||t.deleted)return;
-  const hasChildren=subitemsOf(state,id).length>0;
+  const revision=JSON.stringify(t.revision),hasChildren=subitemsOf(state,id).length>0;
   const root=openModal(t.parentId?'Organizar subitem':'Organizar item',`<form id="move-item-form"><div class="formerror" role="alert"></div><p class="confirmtext">${esc(t.title)}</p><div class="field"><label for="move-area">Área</label><select data-full-value id="move-area">${activeAreas(state).map(a=>`<option value="${esc(a.id)}" ${a.id===t.areaId?'selected':''}>${esc(a.name)}</option>`).join('')}</select></div><div class="field"><label for="move-parent">Item principal</label><select data-full-value id="move-parent" ${hasChildren?'disabled':''}></select><small class="field-help">${hasChildren?'Este item já tem subitens. Ao mudar a área, eles acompanham o item.':'Escolha um item para aninhar ou deixe sem vínculo para usar como item principal.'}</small></div><div class="field"><label for="move-priority">Prioridade</label><select id="move-priority">${PRIORITIES.map(p=>`<option value="${p.id}" ${p.id===t.priority?'selected':''}>${p.symbol} ${p.label}</option>`).join('')}</select></div><div class="field"><label for="move-position">Posição</label><select data-full-value id="move-position"></select></div><p class="small muted">Segure a alça de pontos para arrastar. Na alça, use as setas do teclado para mover dentro da lista.</p><div class="dialogactions"><button type="button" class="btn secondary" id="cancel-move">Cancelar</button><button class="btn primary" type="submit">Salvar organização</button></div></form>`);
   const areaField=root.querySelector('#move-area'),parentField=root.querySelector('#move-parent'),position=root.querySelector('#move-position');
   const positions=(initial=false)=>{
@@ -215,7 +216,7 @@ function moveModal(id){
   const parents=(selected='')=>{parentField.innerHTML='<option value="">Sem vínculo · item principal</option>'+(hasChildren?'':visibleItems(state).filter(x=>!x.parentId&&x.id!==id&&x.areaId===areaField.value).map(x=>`<option value="${esc(x.id)}" ${x.id===selected?'selected':''}>${esc(x.title)}</option>`).join(''));refreshSelectHint(parentField);};
   parents(t.parentId);positions(true);areaField.onchange=()=>{parents();positions()};parentField.onchange=()=>positions();
   root.querySelector('#cancel-move').onclick=()=>closeModal();
-  root.querySelector('form').onsubmit=submitOnce(async e=>{e.preventDefault();const button=e.target.querySelector('[type=submit]');button.disabled=true;const areaId=areaField.value,parentId=parentField.value,priority=root.querySelector('#move-priority').value,beforeId=position.value||null;const ok=await mutate(s=>moveItem(s,id,{areaId,parentId,priority,beforeId},deviceId),'Organização salva.');if(ok){manualOrder(!!parentId);if(parentId){expandedItems.add(parentId);persistExpanded()}render();closeModal(true)}else button.disabled=false});
+  root.querySelector('form').onsubmit=submitOnce(async e=>{e.preventDefault();const button=e.target.querySelector('[type=submit]');button.disabled=true;const areaId=areaField.value,parentId=parentField.value,priority=root.querySelector('#move-priority').value,beforeId=position.value||null;const ok=await mutate(s=>moveItem(s,id,{areaId,parentId,priority,beforeId,expectedRevision:revision},deviceId),'Organização salva.');if(ok){manualOrder(!!parentId);if(parentId){expandedItems.add(parentId);persistExpanded()}render();closeModal(true)}else button.disabled=false});
 }
 
 function openModal(title,body,{id='',className=''}={}){returnFocus=document.activeElement;modalDirty=false;const root=document.querySelector('#dialog-root');root.innerHTML=`<dialog ${id?`id="${esc(id)}"`: ''} ${className?`class="${esc(className)}"`: ''} role="dialog" aria-labelledby="modal-title"><div class="dialoghead"><h2 id="modal-title">${title}</h2><button class="iconbtn" id="close-modal" aria-label="Fechar formulário">${icon('close')}</button></div><div class="dialogbody">${body}</div></dialog>`;const dialog=root.querySelector('dialog');root.querySelectorAll('form').forEach(bindFormErrors);dialog.showModal();navigation?.modalOpened();root.querySelectorAll('select[data-full-value]').forEach(bindSelectHint);root.querySelector('#close-modal').onclick=()=>closeModal();dialog.addEventListener('cancel',e=>{e.preventDefault();closeModal()});dialog.addEventListener('input',()=>modalDirty=true);dialog.addEventListener('change',()=>modalDirty=true);dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal()}});setTimeout(()=>root.querySelector('[autofocus]')?.focus(),30);syncVisualMotion();return root}
@@ -260,7 +261,7 @@ window.addEventListener('beforeunload',e=>{if(modalDirty){e.preventDefault();e.r
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(()=>{});
 syncUI=createSyncUI({repo,icon,esc,openModal,closeModal,toast,onExport:exportBackup,onApply:next=>{state=next;fatal='';render()},isBlocked:()=>!!fatal||modalDirty});
 if(fatal)syncUI.localFailure(fatal);
-planningUI=createPlanningUI({storage:localStorage,getState:()=>state,icon,esc,openModal,closeModal,toast,
+planningUI=createPlanningUI({storage,getState:()=>state,icon,esc,openModal,closeModal,toast,
   onOpen:open=>{if(open){page='reminders';window.scrollTo(0,0)}render()},
   onEdit:id=>{const t=state.items[id];if(!t||t.deleted)return;if(fatal){toast('Recupere os dados antes de editar.');return}itemModal(id)},
   onComplete:id=>{if(fatal)return;const current=state.items[id];if(!current||current.deleted)return;return mutate(s=>updateItem(s,id,{status:'done',expectedRevision:JSON.stringify(current.revision)},deviceId),'Tarefa concluída. O lembrete foi retirado.')}

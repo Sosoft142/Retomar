@@ -1,3 +1,4 @@
+import {browserStorage} from '../repository.js';
 import {checkForm,validToken} from '../forms.js';
 import {GistAdapter} from './gist.js';
 import {openWithKeys,prepareConnection} from './connect.js';
@@ -9,8 +10,8 @@ export function syncHeader(status,{icon,esc}){
   const {kind,message=''}=status;
   return `<button type="button" class="sync-trigger sync-indicator" data-action="sync" data-sync-indicator data-sync-state="${kind}" aria-label="${esc(labels[kind]+'. '+message+' Abrir sincronização.')}" aria-busy="${kind==='syncing'}" aria-haspopup="dialog" aria-controls="retomar-sync-modal">${icon('cloud')}</button>`;
 }
-export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,onExport,isBlocked}){
-  const saved=loadSync(localStorage);
+export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,onExport,isBlocked,storage=browserStorage()}){
+  const saved=loadSync(storage);
   let config=saved.config,credentials=saved.credentials,engine=null,connecting=false,connectionController=null,connectionEpoch=0,localError='';
   let status={kind:config.gistId?'pending':'local',message:config.gistId?'Conecte com o mesmo token para conferir seus dados.':'Conecte para usar o mesmo planejamento nos seus aparelhos.'};
   const currentStatus=()=>localError?{kind:'error',message:localError}:status;
@@ -30,13 +31,13 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
       isEditing:()=>!!localError||isBlocked()||document.activeElement?.matches('input,textarea,select')||!!document.querySelector('dialog[open]')||document.documentElement.classList.contains('drag-active'),
       isOnline:()=>navigator.onLine!==false,onState:setStatus,onApply,onConfirmed:({confirmedAt})=>{
         legacyKey='';config={...config,confirmedAt,mode:'token'};credentials={...credentials,secret:token};
-        try{saveConnection(localStorage,{...credentials,...config})}catch{toast('Sincronização conferida. Não foi possível atualizar a preferência de conexão neste aparelho.');}
+        try{saveConnection(storage,{...credentials,...config})}catch{toast('Sincronização conferida. Não foi possível atualizar a preferência de conexão neste aparelho.');}
       },lock:navigator.locks?fn=>navigator.locks.request('entrelinhas-vida:sync:'+config.gistId,{ifAvailable:true},lock=>fn(!!lock)):null});
     engine.schedule(500);
   }
   function attach({gistId,token,legacySecret,remember}){
     config={gistId,confirmedAt:'',mode:legacySecret?'password':'token'};credentials={token,secret:legacySecret||token,remember};
-    try{saveConnection(localStorage,{gistId,...credentials})}catch{toast('Conexão ativa nesta sessão. Não foi possível manter o token salvo neste aparelho.');}
+    try{saveConnection(storage,{gistId,...credentials})}catch{toast('Conexão ativa nesta sessão. Não foi possível manter o token salvo neste aparelho.');}
     startEngine();
   }
   function header(){return syncHeader(currentStatus(),{icon,esc});}
@@ -58,7 +59,7 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     root.querySelector('#sync-cancel')?.addEventListener('click',()=>closeModal(true));
     root.querySelector('#sync-disconnect')?.addEventListener('click',()=>{
       engine.stop();engine=null;credentials=null;config={};
-      try{clearConnection(localStorage)}catch{toast('Não foi possível remover a configuração salva. Confira o armazenamento do navegador.');}
+      try{clearConnection(storage)}catch{toast('Não foi possível remover a configuração salva. Confira o armazenamento do navegador.');}
       closeModal(true);setStatus({kind:'local',message:'Desconectado neste aparelho. Seu planejamento e o backup foram preservados.'});onApply(repo.load());toast('Aparelho desconectado.');
     });
     root.querySelector('#sync-form').onsubmit=async event=>{
@@ -85,7 +86,7 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     localFailure(message){localError=message;refresh();},localSaved(){localError='';refresh();},
     start(){startEngine();document.addEventListener('focusout',()=>queueMicrotask(()=>engine?.schedule(1400)));window.addEventListener('online',()=>engine?.run());window.addEventListener('storage',event=>{
       if(event.key!==SYNC_CONFIG_KEY&&event.key!==SYNC_CREDENTIAL_KEY)return;
-      const next=loadSync(localStorage);
+      const next=loadSync(storage);
       if(next.config.gistId!==config.gistId||JSON.stringify(next.credentials)!==JSON.stringify(credentials?.remember?credentials:null)){
         engine?.stop();engine=null;config=next.config;credentials=next.credentials;setStatus({kind:config.gistId?'pending':'local',message:config.gistId?'Conexão atualizada em outra aba.':'Conecte para sincronizar seus dados.'});startEngine();
       }
