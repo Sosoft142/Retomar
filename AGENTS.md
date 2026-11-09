@@ -10,7 +10,7 @@
 ## Preservar o produto
 - Fonte de execução em `dist/`; identidade PWA, chaves locais, Gist criptografado e esquema dos dados são contratos existentes.
 - Preservar dados, instalação, funcionamento offline, histórico de navegação e confirmação de descarte.
-- Preferências push são por aparelho. Servidor push ainda não implantado; não anunciar envio ativo sem verificação real.
+- Preferências push são por aparelho. Servidor push publicado; inscrição e entrega no aparelho ainda exigem verificação real. Não anunciar recebimento confirmado só porque /config responde.
 - Antes de implementar integração externa, verificar acesso e dependências necessárias. Não pedir tokens ou senhas no chat.
 
 ## Verificar sem reduzir qualidade
