@@ -4,9 +4,10 @@ A titular confirmou entrega no horário com o S24 fechado e vibração. A aprese
 
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
+- 1.0.2: fundos dos itens e lembretes voltam a usar gradientes claros e translúcidos, derivados da área ou da cor personalizada. Bordas iluminadas, sombras e botões de gerenciamento seguem a estética suave do app. Conferência no navegador em 360, 390 e 1200 px, incluindo cores próprias escuras e saturadas.
 - 1.0.1: lembretes usam as mesmas cores e prioridade visual do planejamento. Busca, botão Áreas, recuos e formulário corrigidos após revisão responsiva. [Relatório visual](reports/2026-11-09-alinhamento-lembretes.md).
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **1.0.1**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **1.0.2**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
