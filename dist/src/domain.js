@@ -29,7 +29,7 @@ export function validateState(s){
   const ids=new Set();let maxClock=0;
   for(const [id,a] of areas){if(!safeId(id)||ids.has(id)||!shape(a,AREA_KEYS)||a.id!==id||!str(a.name,60)||!hasVisibleText(a.name)||![...COLORS,...LEGACY_COLORS].includes(a.color)||!Number.isSafeInteger(a.order)||a.order<0||typeof a.deleted!=='boolean'||!rev(a.revision))throw Error('Há uma área inválida no backup.');ids.add(id);maxClock=Math.max(maxClock,a.revision.counter)}
   if(!areas.some(([,a])=>!a.deleted))throw Error('O planejamento precisa de pelo menos uma área.');
-  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!shape(t,ITEM_KEYS)||t.id!==id||!str(t.title,200)||!hasVisibleText(t.title)||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||typeof t.archived!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
+  for(const [id,t] of items){if(!safeId(id)||ids.has(id)||!shape(t,ITEM_KEYS)||t.id!==id||!str(t.title,200)||!hasVisibleText(t.title)||!str(t.notes)||!STATUSES.includes(t.status)||!PRIORITIES.some(p=>p.id===t.priority)||!Number.isSafeInteger(t.order)||t.order<0||!str(t.date,10)||(t.date&&!validDate(t.date))||!str(t.time,5)||(t.time&&(!t.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)))||typeof t.deleted!=='boolean'||typeof t.archived!=='boolean'||!rev(t.revision)||!str(t.createdAt,50)||!Number.isFinite(Date.parse(t.createdAt))||!str(t.updatedAt,50)||!Number.isFinite(Date.parse(t.updatedAt))||!str(t.areaId,100)||(t.areaId!==''&&(!Object.hasOwn(s.areas,t.areaId)||(!t.deleted&&s.areas[t.areaId].deleted))))throw Error('Há um item inválido ou sem área correspondente no backup.');ids.add(id);maxClock=Math.max(maxClock,t.revision.counter)}
   for(const [,t] of items){
     if(!str(t.parentId,100)||(t.parentId&&!safeId(t.parentId)))throw Error('Há um vínculo de subitem inválido no backup.');
     if(!t.deleted&&t.parentId){const parent=s.items[t.parentId];if(!Object.hasOwn(s.items,t.parentId)||parent.deleted||parent.parentId||parent.id===t.id||parent.areaId!==t.areaId)throw Error('Há um subitem sem item principal válido ou em outra área no backup.');}
@@ -70,7 +70,7 @@ export function updateItem(s,id,fields,deviceId){
   if(prev&&fields.expectedRevision&&JSON.stringify(prev.revision)!==fields.expectedRevision)throw Error('Este item mudou em outra janela. Feche e abra o formulário para conferir a versão atual.');
   const {expectedRevision,...data}=fields,parentId=data.parentId??prev?.parentId??'';
   if(typeof parentId!=='string')throw Error('Escolha um item principal válido.');
-  let areaId=data.areaId??prev?.areaId;
+  let areaId=data.areaId??prev?.areaId??'';
   if(parentId){const parent=s.items[parentId];if(!Object.hasOwn(s.items,parentId)||parent.deleted||parent.parentId||parent.id===id||parent.archived&&(!prev||prev.parentId!==parentId))throw Error('O item principal não está mais disponível ou não pode receber subitens.');if(subitemsOf(s,id).length)throw Error('Um item que já tem subitens não pode virar subitem.');areaId=parent.areaId;}
   const changedParent=!!prev&&prev.parentId!==parentId;
   const order=data.order??(prev&&!changedParent?prev.order:Math.max(-1,...activeItems(s).filter(t=>t.id!==id&&t.parentId===parentId).map(t=>t.order))+1);
@@ -97,9 +97,9 @@ export function moveItem(s,id,{beforeId=null,areaId,priority,parentId,expectedRe
   const t=s.items[id];if(!t||t.deleted)throw Error('Este item não está mais disponível.');
   if(expectedRevision&&JSON.stringify(t.revision)!==expectedRevision)throw Error('Este item mudou em outra janela. Reabra a organização para conferir a versão atual.');
   if(isArchived(s,t))throw Error('Restaure a tarefa antes de reorganizar.');
-  areaId=areaId||t.areaId;if(parentId===undefined)parentId=t.parentId&&areaId!==t.areaId?'':t.parentId;
+  areaId=areaId??t.areaId;if(parentId===undefined)parentId=t.parentId&&areaId!==t.areaId?'':t.parentId;
   if(parentId){const parent=s.items[parentId];if(!parent||parent.deleted||parent.parentId||parent.id===id)throw Error('Escolha um item principal válido.');areaId=parent.areaId;}
-  if(!s.areas[areaId]||s.areas[areaId].deleted)throw Error('A área de destino não está mais disponível.');
+  if(areaId!==''&&(!s.areas[areaId]||s.areas[areaId].deleted))throw Error('A área de destino não está mais disponível.');
   if(priority&&!PRIORITIES.some(p=>p.id===priority))throw Error('Prioridade inválida.');
   if(beforeId===id)beforeId=null;
   if(beforeId&&(!s.items[beforeId]||s.items[beforeId].deleted||isArchived(s,s.items[beforeId])||s.items[beforeId].parentId!==parentId))throw Error('Escolha uma posição no mesmo grupo de itens.');
