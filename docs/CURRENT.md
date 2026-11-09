@@ -1,6 +1,6 @@
 # Estado atual — Retomar
 
-0.12.3 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
+0.12.4 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
 
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
@@ -34,3 +34,7 @@ O S24 confirmou a inscrição. O log de /test identificou redirect inválido no 
 - `npm run release:prepare -- --base REF`: diferenças, integridade de `dist/`, confirmação de verificação atual e pacote de alterações para o conector.
 - CI executa verificação completa; Pages só republica quando `dist/` muda ou há acionamento manual.
 - Fonte atual e Git são a referência para comportamento; consultar o histórico apenas para investigar decisões antigas.
+
+0.12.4: retorno pelo nome/ícone, proteção do formulário e foco inicial sem teclado ao gerenciar. Teste agendado em dois minutos usa o alarme do Worker existente e informa horário previsto e recebido. Pequenos envios da fila podem terminar após sair da página. O atraso real no S24 ainda depende de medição no aparelho.
+
+S24: a titular confirmou entrega com o app fechado com quatro minutos de atraso. Worker atualizado no repositório para urgência alta e marcação do instante de tentativa. Publicação na Cloudflare e nova medição no aparelho pendentes.

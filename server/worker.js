@@ -55,7 +55,7 @@ export class Device{
     const now=Date.now(),jobs=this.sql.exec('SELECT * FROM jobs WHERE at<=? ORDER BY at LIMIT 10',now).toArray();
     await Promise.all(jobs.map(async job=>{try{
       if(now-job.at>3600000){this.sql.exec('DELETE FROM jobs WHERE tag=?',job.tag);return}
-      const response=await sendPush(subscription,{title:job.title,item:job.item,tag:job.tag,...JSON.parse(job.presentation||'{}')},this.env);
+      const response=await sendPush(subscription,{title:job.title,item:job.item,tag:job.tag,sentAt:Date.now(),...JSON.parse(job.presentation||'{}')},this.env);
       if(response.status===404||response.status===410){await this.ctx.storage.put('expired',true);return}
       if(!response.ok)throw Error('Delivery failed');
       this.ctx.storage.transactionSync(()=>{this.sql.exec('INSERT OR REPLACE INTO sent(tag,at) VALUES(?,?)',job.tag,now);this.sql.exec('DELETE FROM jobs WHERE tag=?',job.tag)});
