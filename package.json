@@ -8,6 +8,7 @@
     "context": "node scripts/context.mjs",
     "verify": "node scripts/verify.mjs",
     "release:prepare": "node scripts/release-prepare.mjs",
-    "release:watch": "node scripts/release-watch.mjs"
+    "release:watch": "node scripts/release-watch.mjs",
+    "push:deploy": "node server/deployment.mjs"
   }
 }

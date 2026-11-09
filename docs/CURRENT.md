@@ -15,6 +15,7 @@
 - Esquema de dados 4: migração automática dos esquemas 1–3, com IDs, Gist, chaves locais e status preservados. Atualizar os outros aparelhos antes de sincronizar; versões antigas rejeitam o novo esquema sem sobrescrever os dados.
 - [Relatório desta atualização](reports/2026-11-05-arquivamento.md).
 - Funcionalidades: áreas, prioridades, status, prazos, subitens, arraste, busca, cronograma, lembretes internos, backup, sincronização e histórico do navegador.
+- Implantação push simplificada por `npm run push:deploy`: preserva chaves existentes e só configura o endpoint após validar `/config`. Execução neste ambiente interrompida por falta de autenticação Cloudflare; envio real segue inativo. [Relatório da tentativa](reports/2026-11-08-implantacao-push.md).
 - Google Agenda removido. Push: preferências gerais e por tarefa, prévia e servidor preparado; **envio real inativo**, sem conta/implantação Cloudflare disponível.
 - Preferências de notificações e ajustes por tarefa são por aparelho; não são sincronizados pelo Gist.
 - Suíte ampliada nesta revisão: testes de foco, busca e invalidação dos cálculos. Resultado da fonte atual: `npm run verify`; logs não são documentação de estado permanente.

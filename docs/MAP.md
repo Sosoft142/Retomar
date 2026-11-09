@@ -9,7 +9,7 @@
 | Arraste e listas extensas | `dist/src/drag.js`, `collections.js` | `subitems`, `extreme` |
 | Lembretes internos e fuso | `dist/src/planning.js`, `planning-ui.js` | `planning`, `planning-ui` |
 | Preferências e ajustes push | `dist/src/push.js`, `push-ui.js` | `push`, `push-customization` |
-| Envio push — ainda sem implantação | `server/` | `push`, `push-customization` |
+| Envio e implantação push — ainda sem autenticação | `server/`, `server/deployment.mjs` | `push`, `push-customization`, `push-deployment` |
 | Gist, criptografia, combinação e conexão | `dist/src/sync/` | `sync`, `connection`, `transport`, `sync-ui` |
 | Instalação e cache offline | `dist/src/pwa.js`, `dist/service-worker.js`, manifest | `pwa`, `service-worker`; verificar instalação quando alterada |
 | Ferramentas de desenvolvimento | `scripts/`, `.github/workflows/pages.yml` | `workflow-tools`; `npm run verify` |
