@@ -1,8 +1,7 @@
-// Run once for a NEW service, after Cloudflare login. Secret material only travels over stdin.
-import {spawn} from 'node:child_process';
-const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
-const jwk=await crypto.subtle.exportKey('jwk',pair.privateKey);
-const publicKey=Buffer.from(await crypto.subtle.exportKey('raw',pair.publicKey)).toString('base64url');
-const child=spawn('npx',['--yes','wrangler@4','secret','bulk','--config','server/wrangler.jsonc'],{stdio:['pipe','inherit','inherit']});
-child.stdin.end(JSON.stringify({VAPID_PRIVATE_JWK:JSON.stringify(jwk),VAPID_PUBLIC_KEY:publicKey}));
-child.on('exit',code=>process.exit(code??1));
+// Legacy entry point: never rotate keys that are already in use.
+import {ensureKeys,hasCloudflareAuth,secretNames,wrangler} from './deployment.mjs';
+try{
+  if(!hasCloudflareAuth())throw Error('Autentique sua conta com npx wrangler@4 login antes de configurar as chaves.');
+  const result=await ensureKeys(secretNames(await wrangler(['secret','list'])));
+  console.log(result.created?'Chaves criadas no armazenamento de segredos do Worker.':'As chaves existentes foram preservadas.');
+}catch(error){console.error(error.message);process.exitCode=1}

@@ -2,17 +2,28 @@
 
 Este serviço ainda não foi publicado. É necessária uma conta Cloudflare com Workers e Durable Objects habilitados. O GitHub Pages continua hospedando o app no mesmo endereço; não é necessário migrar dados ou instalar outro app.
 
-## Implantação pelo responsável técnico
+## Implantação simplificada
 
-Na raiz do repositório:
+Na raiz de uma cópia deste repositório, com Node.js e npm instalados:
 
-1. Execute `npx wrangler@4 login` e autorize sua conta Cloudflare.
-2. Confira `server/wrangler.jsonc`, incluindo a origem do app.
-3. **Somente na primeira implantação**, execute `node server/setup-keys.mjs`. O script gera as chaves e envia os segredos pelo stdin ao armazenamento de segredos do Worker. Não grava nem imprime a chave privada. Não execute novamente num serviço que já possui assinaturas: trocar a chave invalida inscrições existentes.
-4. Execute `npx wrangler@4 deploy --config server/wrangler.jsonc` e guarde a URL retornada.
-5. Verifique `/config` com o cabeçalho Origin `https://sosoft142.github.io`; deve retornar uma chave pública. Confira a assinatura e os alarmes no runtime real antes de ativar a integração.
-6. Configure **somente a URL HTTPS do servidor** em `dist/src/push-config.js`, execute os testes e publique pelo fluxo habitual de PR/Pages. Nunca coloque chaves privadas em `dist/` ou no GitHub.
-7. No Chrome do S24, ative as notificações nas Configurações e autorize a permissão. Use Enviar teste. Crie um item e um subitem fictícios com prazo próximo; feche o app e confira entrega, abertura e cancelamento depois de concluir/excluir. Repita com atualização de horário, falta de rede e permissão negada.
+1. Autentique sua própria conta: `npx wrangler@4 login`. A autorização ocorre na Cloudflare; não envie tokens ou senhas no chat.
+2. Execute `npm run push:deploy`.
+
+O segundo comando publica o Worker, confere os nomes dos segredos existentes e cria as chaves VAPID **somente quando as duas estão ausentes**. Se já existem, preserva o par; se existe apenas uma, interrompe sem trocar chaves. O material privado segue apenas por stdin para o armazenamento de segredos do Worker, sem arquivo de chaves nem impressão no console.
+
+Depois, valida a URL pública do Worker de produção, a resposta de `/config`, a origem permitida e a chave pública P-256. Só após essa conferência atualiza `dist/src/push-config.js`. Uma falha não escreve uma URL não verificada no app. A conta deve permitir Workers, Durable Objects e os recursos de `server/wrangler.jsonc`; erros de conta ou permissão precisam ser resolvidos pelo titular.
+
+A publicação do Worker e a publicação do app são etapas diferentes: após o comando ter sucesso, execute `npm run verify` e integre/publique a alteração de `dist/src/push-config.js` pelo fluxo de PR/Pages. O app continua no GitHub Pages, com os mesmos dados e instalação. Sem autenticação, o comando encerra antes de chamar a Cloudflare.
+
+O comando antigo `node server/setup-keys.mjs` continua disponível para um serviço já existente, mas agora também verifica os segredos e preserva chaves em uso. Use o fluxo simplificado para a primeira implantação.
+
+### Conferência final no aparelho
+
+No Chrome do S24, ative as notificações no app e autorize a permissão. Use Enviar teste. Crie um item e um subitem fictícios com prazo próximo; feche o app e confira entrega, abertura e cancelamento depois de concluir/excluir. Repita com atualização de horário, falta de rede e permissão negada. `/config` validado **não comprova entrega push**, alarmes persistentes nem comportamento do Android.
+
+A sincronização entre aparelhos deve ser conferida com uma tarefa fictícia: criar em um aparelho, aguardar confirmação na nuvem, recuperar no outro, editar e conferir o retorno. Para offline, abrir o app já instalado, desligar a conexão, editar, fechar/reabrir e reconectar. Esses testes requerem os aparelhos e uma conexão Gist real; não podem ser substituídos por testes de lógica.
+
+Referências do fornecedor: [comandos do Wrangler](https://developers.cloudflare.com/workers/wrangler/commands/workers/) e [segredos do Worker](https://developers.cloudflare.com/workers/configuration/secrets/).
 
 ## Funcionamento e limites
 
