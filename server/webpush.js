@@ -24,5 +24,5 @@ export async function sendPush(subscription,payload,env,fetcher=fetch){
   const privateKey=JSON.parse(env.VAPID_PRIVATE_JWK),header=base64(enc.encode(JSON.stringify({typ:'JWT',alg:'ES256'}))),claims=base64(enc.encode(JSON.stringify({aud:new URL(subscription.endpoint).origin,exp:Math.floor(Date.now()/1000)+3600,sub:env.VAPID_SUBJECT})));
   const input=header+'.'+claims,key=await crypto.subtle.importKey('jwk',privateKey,{name:'ECDSA',namedCurve:'P-256'},false,['sign']);
   const signature=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},key,enc.encode(input));
-  return fetcher(subscription.endpoint,{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),headers:{Authorization:'vapid t='+input+'.'+base64(signature)+', k='+env.VAPID_PUBLIC_KEY,TTL:'3600','Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream',Urgency:'normal'},body:await encryptedBody(subscription,payload)});
+  return fetcher(subscription.endpoint,{method:'POST',redirect:'manual',signal:AbortSignal.timeout(10000),headers:{Authorization:'vapid t='+input+'.'+base64(signature)+', k='+env.VAPID_PUBLIC_KEY,TTL:'3600','Content-Encoding':'aes128gcm','Content-Type':'application/octet-stream',Urgency:'normal'},body:await encryptedBody(subscription,payload)});
 }
