@@ -42,3 +42,18 @@ test('configuração distingue central de notificações e conserva as opções 
   for(const id of ['reminders-enabled','reminders-days','reminders-overdue','reminders-snooze','reminders-zone','clear-reminder-dismissals'])assert.ok(modal.body.includes('id="'+id+'"'));
   assert.match(f.ui.settings(),/Notificações com o app fechado/);
 });
+
+test('lembretes usam a cor da área, respeitam cor própria e mantêm sem área branco',()=>{
+  const f=fixture();
+  const areaId=f.state.items.child.areaId;
+  f.state.areas[areaId].color='#3b82f6';
+  updateItem(f.state,'custom',{title:'Cor própria',notes:'',date:'2026-10-30',time:'14:00',areaId,priority:'low',status:'pending',color:'#f97316'},'qa');
+  updateItem(f.state,'no-area',{title:'Sem área com prazo',notes:'',date:'2026-10-30',time:'15:00',areaId:'',priority:'high',status:'pending'},'qa');
+  const html=f.ui.page();
+  assert.match(html,/style="--task-background:#3b82f6;--area-color:#3b82f6"/);
+  assert.match(html,/style="--task-background:#f97316;--area-color:#3b82f6"/);
+  assert.match(html,/style="--task-background:#ffffff;--area-color:#ffffff"/);
+  assert.match(html,/class="priority-mark" aria-hidden="true">!!<\/i>/);
+  assert.match(html,/<time class="reminder-date[^\"]*" datetime="2026-10-30T13:00">/);
+  assert.match(html,/aria-label="Gerenciar: Cor própria"/);
+});

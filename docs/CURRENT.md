@@ -1,11 +1,12 @@
 # Estado atual — Retomar
 
-1.0 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
+A titular confirmou entrega no horário com o S24 fechado e vibração. A apresentação de pop-up permanece pendente de verificação no aparelho.
 
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
+- 1.0.1: lembretes usam as mesmas cores e prioridade visual do planejamento. Busca, botão Áreas, recuos e formulário corrigidos após revisão responsiva. [Relatório visual](reports/2026-11-09-alinhamento-lembretes.md).
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **0.12.3**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **1.0.1**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
@@ -21,7 +22,7 @@ O S24 confirmou a inscrição. O log de /test identificou redirect inválido no 
 - [Relatório desta atualização](reports/2026-11-05-arquivamento.md).
 - Funcionalidades: áreas, prioridades, status, prazos, subitens, arraste, busca, cronograma, lembretes internos, backup, sincronização e histórico do navegador.
 - Implantação push simplificada por `npm run push:deploy`: preserva chaves existentes e só configura o endpoint após validar `/config`. A titular publicou o Worker; endpoint validado em 9/11. A autenticação Cloudflare segue fora deste ambiente. [Relatório da tentativa](reports/2026-11-08-implantacao-push.md).
-- Google Agenda removido. Push: preferências gerais e por tarefa, prévia e servidor preparado; servidor publicado em `https://retomar-push.sofiatorresmansur.workers.dev`; inscrição e recebimento real ainda precisam ser confirmados no aparelho.
+- Google Agenda removido. Push: preferências gerais e por tarefa, prévia e servidor preparado; servidor publicado em `https://retomar-push.sofiatorresmansur.workers.dev`; inscrição, entrega com o app fechado e vibração confirmadas pela titular.
 - Preferências de notificações e ajustes por tarefa são por aparelho; não são sincronizados pelo Gist.
 - Suíte ampliada nesta revisão: testes de foco, busca e invalidação dos cálculos. Resultado da fonte atual: `npm run verify`; logs não são documentação de estado permanente.
 - 0.8.3: foco e posição preservados ao salvar; menos cálculos e remontagens repetidos; grade de áreas mais legível em telas maiores. Dados, esquema, Gist e identidade PWA preservados.
