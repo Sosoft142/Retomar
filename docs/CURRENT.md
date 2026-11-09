@@ -1,9 +1,11 @@
 # Estado atual — Retomar
 
-O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. É necessário republicar o Worker na conta titular e testar a entrega.
+0.12.3 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
+
+O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **0.12.2**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **0.12.3**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
