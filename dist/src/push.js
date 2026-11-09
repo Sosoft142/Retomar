@@ -62,7 +62,10 @@ export class PushClient{
   options(){try{return validatePushOptions(this.data?.options||pushDefaults())}catch{this.error='As preferências de notificações precisam ser salvas novamente.';return pushDefaults()}}
   async saveOptions(options){return this.queue(async()=>{const next={...this.data,options:validatePushOptions(options)};this.persist(next);if(next.token){try{await this.upload(true)}catch(error){this.error='Preferências salvas neste aparelho, mas não foi possível atualizar o servidor. A fila anterior ainda pode gerar avisos. Tente novamente.';this.onChange();throw Error(this.error)}}this.onChange()})}
   async request(path,body,token=this.data?.token,method='POST'){
-    const response=await this.target.fetch(this.server+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000),cache:'no-store',credentials:'omit'});
+    const serialized=body===undefined?undefined:JSON.stringify(body);
+    // Keep small schedule updates alive if Android closes the page during upload.
+    const keepalive=path==='/schedule'&&serialized!==undefined&&new TextEncoder().encode(serialized).length<=32768;
+    const response=await this.target.fetch(this.server+path,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},keepalive,...(serialized===undefined?{}:{body:serialized}),signal:AbortSignal.timeout(20000),cache:'no-store',credentials:'omit'});
     if(!response.ok){const error=Error(response.status===410?'Este registro foi desativado. Ative novamente para registrar o aparelho.':'Não foi possível atualizar as notificações ('+response.status+'). Tente novamente.');error.status=response.status;throw error;}
     return response.json();
   }
@@ -78,13 +81,17 @@ export class PushClient{
     const registration=await this.target.navigator.serviceWorker.ready;
     const subscription=await registration.pushManager.getSubscription()||await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(config.publicKey)});
     const prior=this.data,token=prior?.token||this.target.crypto.randomUUID()+this.target.crypto.randomUUID();
-    const next={token,options,subscription:subscription.toJSON(),confirmed:false};
+    const next={...prior,token,options,subscription:subscription.toJSON(),confirmed:false};
     // Persist the capability before sending anything, so a failed save leaves no orphan server record.
     this.persist(next);
     try{try{await this.upload(true)}catch(error){if(error.status!==410)throw error;this.persist({...this.data,token:this.target.crypto.randomUUID()+this.target.crypto.randomUUID(),confirmed:false});await this.upload(true)}this.error='';this.onChange()}catch(error){this.error=error.message;this.onChange();throw error}
   })}
   async upload(force=false){if(!this.data?.token||!this.server)return;
     const entries=pushSchedule(this.getState(),this.getPreferences(),this.options(),Date.now(),loadItemPush(this.storage));
+    const testAt=this.data.backgroundTestAt;
+    if(Number.isSafeInteger(testAt)&&testAt>=Date.now()-60000){
+      entries.push({tag:'retomar-prova-'+testAt,item:'retomar-prova',title:'Teste com o Retomar fechado',at:testAt,silent:this.options().silent});
+    }
     const body={subscription:this.data.subscription,entries};const fingerprint=JSON.stringify(body);
     if(!force&&fingerprint===this.fingerprint)return;
     const result=await this.request('/schedule',body);if(result?.ok!==true)throw Error('O servidor não confirmou o agendamento. Tente novamente.');this.persist({...this.data,confirmed:true});this.fingerprint=fingerprint;const hadError=!!this.error;this.error='';if(hadError)this.onChange();
@@ -96,6 +103,14 @@ export class PushClient{
     const options=this.options();this.persist({...this.data,confirmed:false});
     const registration=await this.target.navigator.serviceWorker.ready;try{await (await registration.pushManager.getSubscription())?.unsubscribe()}finally{this.persist({options})}
     this.fingerprint='';this.error='';this.onChange();
+  })}
+  backgroundTest(){return this.queue(async()=>{
+    if(!this.active)throw Error('Ative as notificações primeiro.');
+    const now=Date.now(),pending=this.data.backgroundTestAt;
+    const at=pending>now?pending:now+120000;
+    this.persist({...this.data,backgroundTestAt:at});
+    await this.upload(true);
+    return at;
   })}
   test(){return this.queue(async()=>{if(!this.active)throw Error('Ative as notificações primeiro.');const result=await this.request('/test',{});if(result?.ok!==true)throw Error('O serviço não confirmou o envio do teste.');})}
 }

@@ -1,4 +1,4 @@
-const CACHE='entrelinhas-vida-shell-v33';
+const CACHE='entrelinhas-vida-shell-v34';
 const SHELL=['./','./index.html','./retomar.css','./fonts/inter-latin.woff','./fonts/manrope-latin.woff','./fonts/space-grotesk-latin.woff','./icon.svg','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./manifest.webmanifest','./src/app.js','./src/rendering.js','./src/navigation.js','./src/domain.js','./src/repository.js','./src/drag.js','./src/forms.js','./src/collections.js','./src/pwa.js','./src/planning.js','./src/planning-ui.js','./src/push.js','./src/push-ui.js','./src/push-config.js','./src/sync/connect.js','./src/sync/merge.js','./src/sync/crypto.js','./src/sync/gist.js','./src/sync/engine.js','./src/sync/preferences.js','./src/sync/ui.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('entrelinhas-vida-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -20,13 +20,16 @@ self.addEventListener('fetch',e=>{
 self.addEventListener('push',event=>{event.waitUntil((async()=>{
   let message;try{message=event.data?.json()}catch{return}
   if(!message||typeof message.title!=='string')return;
+  const test=/^retomar-prova-(\d{13})$/.exec(message.tag);
+  const testTime=test?new Date(Number(test[1])).toLocaleTimeString('pt-BR'):'';
+  const sentTime=Number.isSafeInteger(message.sentAt)?new Date(message.sentAt).toLocaleTimeString('pt-BR'):'';
   await self.registration.showNotification('Retomar',{
-    body:message.title.slice(0,200),
+    body:test?message.title+' · previsto '+testTime+(sentTime?' · envio '+sentTime:'')+' · recebido '+new Date().toLocaleTimeString('pt-BR'):message.title.slice(0,200),
     ...(message.silent===true ? {silent:true} : {vibrate:[200,100,200],renotify:true}),
     requireInteraction:message.sticky===true,tag:String(message.tag||'retomar').slice(0,200),
     icon:new URL('./icon-192.png',self.registration.scope).href,
     badge:new URL('./icon-192.png',self.registration.scope).href,
-    data:{item:typeof message.item==='string'?message.item.slice(0,200):''}
+    data:{item:!test&&typeof message.item==='string'?message.item.slice(0,200):''}
   });
 })())});
 self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil((async()=>{
