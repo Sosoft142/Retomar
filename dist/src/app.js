@@ -8,7 +8,7 @@ import {createSyncUI} from './sync/ui.js';
 import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refreshSelectHint,fitTextArea,resizeTextArea,restoreUIFocus} from './forms.js';
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
-const VERSION='0.12.1';
+const VERSION='0.12.2';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation;

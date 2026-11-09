@@ -1,6 +1,6 @@
 # Serviço de notificações Retomar
 
-Este serviço ainda não foi publicado. É necessária uma conta Cloudflare com Workers e Durable Objects habilitados. O GitHub Pages continua hospedando o app no mesmo endereço; não é necessário migrar dados ou instalar outro app.
+Servidor publicado: https://retomar-push.sofiatorresmansur.workers.dev. A configuração pública foi validada em 9/11/2026; a entrega precisa ser confirmada no aparelho. Para administrar o serviço, é necessária a conta Cloudflare titular. O GitHub Pages continua hospedando o app no mesmo endereço; não é necessário migrar dados ou instalar outro app.
 
 ## Implantação simplificada
 
