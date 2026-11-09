@@ -37,3 +37,17 @@ test('erro de autenticação continua bloqueado após novas edições até tenta
 test('arquivo remoto com senha incorreta não altera nem envia os dados locais',async()=>{const local=initialState();add(local,'Local fictício');const h=await harness(local);const envelope=await sealState(h.remote,'outra-senha-123');h.adapter.read=async()=>envelope;h.engine.unseal=unsealState;h.engine.secret='senha-ficticia-123';const before=comparable(h.repo.load());await h.engine.run();assert.equal(h.engine.status.kind,'error');assert.equal(h.writes,0);assert.equal(comparable(h.repo.load()),before);h.engine.stop()});
 test('criação remota envia somente envelope em Gist secreto com arquivo próprio',async()=>{let sent;const adapter=new GistAdapter('token-ficticio',{fetchImpl:async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({id:'abcde12345',public:false}))}});await adapter.create('envelope-ficticio');assert.equal(sent.public,false);assert.equal(sent.files[SYNC_FILE].content,'envelope-ficticio');assert.equal(JSON.stringify(sent).includes('token-ficticio'),false)});
 test('conferência sem alterações não grava novamente nem alimenta eventos entre abas',async()=>{const initial=initialState();add(initial,'Estável');const h=await harness(initial);let writes=0,applies=0;const set=h.disk.setItem;h.disk.setItem=(k,v)=>{writes++;set(k,v)};h.engine.onApply=()=>applies++;await h.engine.run();await h.engine.run();assert.equal(h.engine.status.kind,'confirmed');assert.equal(h.writes,0);assert.equal(writes,0);assert.equal(applies,0);h.engine.stop()});
+
+test('tarefas sem área e cor própria conservam conteúdo em backup e sincronização',()=>{
+ const state=initialState(),before=structuredClone(state);
+ updateItem(state,'without-area',{title:'Sem área',notes:'',areaId:'',date:'',time:'',status:'pending',priority:'normal',color:'#a855f7'},'test');
+ const restored=migrateState(JSON.parse(JSON.stringify(state)));
+ const merged=mergeStates(before,restored);
+ assert.equal(merged.items['without-area'].areaId,'');
+ assert.equal(merged.items['without-area'].color,'#a855f7');
+ moveItem(merged,'without-area',{areaId:activeAreas(merged)[0].id},'test');
+ moveItem(merged,'without-area',{areaId:''},'test');
+ assert.equal(merged.items['without-area'].areaId,'');
+ const corrupt=structuredClone(merged);corrupt.items['without-area'].color='url(bad)';
+ assert.throws(()=>validateState(corrupt));
+});

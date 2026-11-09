@@ -1142,3 +1142,51 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 @media(max-width:350px){.planning-overview{column-gap:10px}.planning-overview .page-heading p,.planning-overview .reminder-summary strong{font-size:12px}}
 
 @media(min-width:360px) and (max-width:650px){#item-form .fieldsrow:has(#item-area){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}#item-form .fieldsrow:has(#item-area) .field{min-width:0}#item-form .fieldsrow:has(#item-area) select{min-width:0;width:100%;font-size:15px;padding-left:10px;padding-right:25px}}
+
+/* 1.0 — hierarchy, density and area colour */
+.viewnav{display:none}
+.filter-main{display:flex;gap:8px;align-items:center}
+.searchline{flex:1;min-width:0;max-width:360px}
+.searchline input{min-height:36px;height:36px;padding:6px 8px;font-size:14px}
+.filter-toggle{min-height:38px;padding:7px 10px;gap:5px}
+.filter-toggle .ui-icon{width:19px;height:19px}
+.results .task-content,.results .subitem-row.task-content{border:1px solid #b8c5ce55;border-left-width:1px;background:color-mix(in srgb,var(--task-background,#fff) 18%,white);box-shadow:none}
+.results .task-content .task-priority-label{color:inherit}
+.priority-mark{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;font-style:normal;font-size:16px;font-weight:800;color:var(--priority-ink);background:white;border-radius:50%}
+.task-information .due-date{display:flex;gap:7px;align-items:center;font-size:15px;font-weight:700}
+.task-information .due-date .ui-icon{display:inline-block;width:16px;height:16px}
+.due-date>span{display:inline-flex;align-items:center;gap:5px;padding-left:8px;border-left:1px solid #81919f66}
+.results .compact-task.task-content{padding:7px 10px;border-radius:9px}
+.compact-list{gap:6px}
+.results .compact-task .task-title{font-size:16px;line-height:1.3;padding:3px 0}
+.compact-task .task-head{gap:6px}
+.compact-task .task-information,.compact-task .task-tags{margin-top:2px}
+.compact-task .task-tags{gap:5px 10px}
+.compact-task .taskcheck,.compact-task .manage-task{width:34px;height:34px;min-height:34px}
+.compact-task .task-status-label{font-size:12px}
+.compact-task .task-information .due-date{font-size:13px}
+.compact-task .subitems-bar{font-size:12px}
+.color-swatch{display:inline-block;width:13px;height:13px;border-radius:50%;border:1px solid #7b899f55;background:var(--priority-color);margin-right:5px}
+.item-tools{margin:18px 0 12px;border-top:1px solid #a4b1bf44;padding-top:12px}
+.item-tools summary{font-size:14px;font-weight:650;cursor:pointer}
+.item-tools .item-management{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.item-tools .btn{font-size:13px;min-height:42px;padding:9px}
+.settings-stack{gap:18px;max-width:900px;margin:auto}
+.settingscard{padding:20px}
+.settings-heading{margin-bottom:14px}
+.settingscard>p{font-size:14px;line-height:1.6}
+.settings-buttons{gap:10px}
+.settings-buttons .btn{font-size:14px;min-height:42px;padding:10px 14px}
+.dialogbody .fieldsrow{gap:16px}
+.dialogbody .more-details{margin:14px 0}
+@media(max-width:600px){
+.filter-main{gap:6px}.filter-toggle{padding:7px}.filter-toggle span{font-size:12px}
+.searchline{padding:0 6px}.searchline input{width:100%;padding:5px 0}
+.settingscard{padding:16px}
+}
+.searchline{position:relative}
+.searchline>.ui-icon{position:static;flex:none;width:16px;height:16px}
+.searchline input{position:static;min-width:0}
+.settings-category>summary{cursor:pointer;font-size:17px;font-weight:700;padding:3px 0}
+.settings-category[open]>summary{margin-bottom:16px}
+.item-tools:not(:has(button)){display:none}

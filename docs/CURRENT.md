@@ -1,6 +1,6 @@
 # Estado atual — Retomar
 
-0.12.5 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
+1.0 solicita vibração nos avisos com alerta. A entrega agendada com o S24 fechado e a vibração física ainda exigem confirmação no aparelho.
 
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
@@ -39,3 +39,6 @@ O S24 confirmou a inscrição. O log de /test identificou redirect inválido no 
 
 S24: a titular confirmou entrega com o app fechado com quatro minutos de atraso. Worker atualizado no repositório para urgência alta e marcação do instante de tentativa. Publicação na Cloudflare e nova medição no aparelho pendentes.
 Tarefas admitem Sem área e a criação reutiliza a última área salva no aparelho.
+
+1.0 reúne agrupamento e cronograma no painel Ordenar. Filtros usam funil. Lista reduzida, prazos com ícones, fundo derivado da área e cor opcional por tarefa, prioridade sinalizada no ícone. Área padrão reutiliza a última escolha ao criar no aparelho. Versões maiores seguem 1.0, 1.1 até 1.9 e 2.0; correções podem usar terceiro número.
+Cores personalizadas acompanham o item no backup e na sincronização, com campo opcional validado para arquivos anteriores. Configurações organizadas em seções expansíveis. Revisão visual móvel realizada. Pop-up do Android permanece dependente da categoria de notificação do aparelho; entrega e vibração foram confirmadas pela titular.
