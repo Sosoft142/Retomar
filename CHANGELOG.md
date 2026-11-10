@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.2 — lista, cartões, gerenciamento e avisos
+
+Conclui os itens 4–8 da avaliação de usabilidade: lista compacta com colunas no PC, cartões em grade adaptável, editor lateral e ações agrupadas por finalidade. Nomes de prioridade e indicadores da cor da área ficam visíveis. Notificações distinguem cálculo local, permissão e agendamento aceito pelo servidor; falhas preservam o registro anterior e explicam a atualização pendente. Gradientes, dados, Gist e identidade PWA preservados.
+
+[Relatório](docs/reports/2026-11-10-melhorias-4-8.md).
+
 ## 0.10.0 — áreas, lembretes e leitura visual
 
 Áreas passam a usar seletor compacto e acesso a Organizar áreas. Cartões de lembretes oferecem Gerenciar e Concluir; adiar e ocultar até amanhã ficam em Opções do aviso, com explicação. Gerenciar abre as ações completas da tarefa e preserva a central ao salvar/fechar. Configurações da central organizadas em três grupos, separadas de push e opções avançadas. Prioridade usa cores e rótulos; andamento usa aparência neutra e texto explícito. Espaçamento revisto em 320/390 px, incluindo correção de altura e corte nos seletores. Sem mudança no esquema de dados.

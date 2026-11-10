@@ -33,30 +33,37 @@ function outsideQuiet(at,o,zone){
   const date=addDays(dateInZone(new Date(at),zone),overnight&&time>=o.quietStart?1:0);
   return zonedInstant(date,o.quietEnd,zone);
 }
-export function pushSchedule(state,prefs,options,now=Date.now(),overrides={}){
-  const o=validatePushOptions(options),entries=[];
+export function pushScheduleDetails(state,prefs,options,now=Date.now(),overrides={}){
+  const o=validatePushOptions(options),entries=[],excluded=[];
   for(const t of visibleItems(state)){
+    const skip=reason=>excluded.push({item:t.id,reason});
     const override=overrides[t.id]?validateItemPush(overrides[t.id]):{mode:'default'};
-    if(override.mode==='off')continue;
-    if(!openItem(t)||!t.date||!o.priorities.includes(t.priority)||(t.parentId?!o.includeSubitems:!o.includeItems)||(o.areas.length&&!o.areas.includes(t.areaId)))continue;
-    let due;try{due=zonedInstant(t.date,t.time||o.defaultTime,prefs.timeZone)}catch{continue}
+    if(!openItem(t)){skip('closed');continue}
+    if(!t.date){skip('undated');continue}
+    if(override.mode==='off'){skip('muted');continue}
+    if(!o.priorities.includes(t.priority)){skip('priority');continue}
+    if(t.parentId?!o.includeSubitems:!o.includeItems){skip('type');continue}
+    if(o.areas.length&&!o.areas.includes(t.areaId)){skip('area');continue}
+    let due;try{due=zonedInstant(t.date,t.time||o.defaultTime,prefs.timeZone)}catch{skip('invalid-time');continue}
     const leads=override.mode==='custom'?[override.minutes]:[...new Set([o.priorityMinutes[t.priority],...(o.atDeadline?[0]:[])])];
-    const emitted=new Set();
+    const emitted=new Set(),before=entries.length;let invalidTime=false;
     for(const lead of leads){
       const at=due-lead*60000,dismissal=prefs.dismissals[t.id];
       const deferred=dismissal?.signature===reminderSignature(t,prefs.timeZone)?Math.max(at,dismissal.until):at;
-      let sendAt;try{sendAt=outsideQuiet(deferred,o,prefs.timeZone)}catch{continue}
+      let sendAt;try{sendAt=outsideQuiet(deferred,o,prefs.timeZone)}catch{invalidTime=true;continue}
       if(sendAt<now-60000||emitted.has(sendAt))continue;
       emitted.add(sendAt);
       entries.push({tag:JSON.stringify([t.id,t.date,t.time,o.defaultTime,prefs.timeZone,sendAt]),item:t.id,title:o.private?'Você tem uma tarefa para acompanhar.':t.title,at:sendAt,silent:o.silent,sticky:o.sticky});
     }
+    if(entries.length===before)skip(invalidTime?'invalid-time':'past');
   }
   if(entries.length>5000)throw Error('Há mais de 5.000 avisos programados. Reduza as áreas, prioridades ou avisos adicionais.');
-  return entries.sort((a,b)=>a.at-b.at||a.item.localeCompare(b.item));
+  return {entries:entries.sort((a,b)=>a.at-b.at||a.item.localeCompare(b.item)),excluded};
 }
+export const pushSchedule=(...args)=>pushScheduleDetails(...args).entries;
 export function keyBytes(key){return Uint8Array.from(atob(key.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))}
 export class PushClient{
-  constructor({storage,target=window,server,getState,getPreferences,onChange=()=>{}}){Object.assign(this,{storage,target,server,getState,getPreferences,onChange});this.data=null;this.error='';this.tail=Promise.resolve();this.fingerprint='';try{this.data=JSON.parse(storage.getItem(PUSH_KEY)||'null')}catch{this.error='Não foi possível ler a configuração push.'}}
+  constructor({storage,target=window,server,getState,getPreferences,onChange=()=>{}}){Object.assign(this,{storage,target,server,getState,getPreferences,onChange});this.data=null;this.error='';this.pending=false;this.verified=false;this.tail=Promise.resolve();this.fingerprint='';try{this.data=JSON.parse(storage.getItem(PUSH_KEY)||'null')}catch{this.error='Não foi possível ler a configuração push.'}}
   supported(){return this.target.isSecureContext&&!!this.target.navigator?.serviceWorker&&!!this.target.PushManager&&!!this.target.Notification}
   get active(){return !!this.data?.token&&this.data.confirmed===true}
   options(){try{return validatePushOptions(this.data?.options||pushDefaults())}catch{this.error='As preferências de notificações precisam ser salvas novamente.';return pushDefaults()}}
@@ -93,8 +100,14 @@ export class PushClient{
       entries.push({tag:'retomar-prova-'+testAt,item:'retomar-prova',title:'Teste com o Retomar fechado',at:testAt,silent:this.options().silent});
     }
     const body={subscription:this.data.subscription,entries};const fingerprint=JSON.stringify(body);
-    if(!force&&fingerprint===this.fingerprint)return;
-    const result=await this.request('/schedule',body);if(result?.ok!==true)throw Error('O servidor não confirmou o agendamento. Tente novamente.');this.persist({...this.data,confirmed:true});this.fingerprint=fingerprint;const hadError=!!this.error;this.error='';if(hadError)this.onChange();
+    if(!force&&!this.error&&fingerprint===this.fingerprint)return;
+    this.pending=true;this.onChange();
+    try{
+      const result=await this.request('/schedule',body);if(result?.ok!==true)throw Error('O servidor não confirmou o agendamento. Tente novamente.');
+      const nextAt=entries.length?Math.min(...entries.map(e=>e.at)):null;
+      this.persist({...this.data,confirmed:true,lastSchedule:{at:Date.now(),count:entries.length,nextAt}});
+      this.fingerprint=fingerprint;this.verified=true;this.error='';
+    }finally{this.pending=false;this.onChange()}
   }
   sync(){return this.queue(async()=>{if(!this.data?.token)return;try{await this.upload()}catch(error){if(this.error!==error.message){this.error=error.message;this.onChange()}}})}
   disable(){return this.queue(async()=>{if(!this.data?.token)return;
@@ -102,7 +115,7 @@ export class PushClient{
     const result=await this.request('/schedule',undefined,undefined,'DELETE');if(result?.ok!==true)throw Error('O servidor não confirmou o cancelamento. Tente novamente.');
     const options=this.options();this.persist({...this.data,confirmed:false});
     const registration=await this.target.navigator.serviceWorker.ready;try{await (await registration.pushManager.getSubscription())?.unsubscribe()}finally{this.persist({options})}
-    this.fingerprint='';this.error='';this.onChange();
+    this.fingerprint='';this.verified=false;this.error='';this.onChange();
   })}
   backgroundTest(){return this.queue(async()=>{
     if(!this.active)throw Error('Ative as notificações primeiro.');
@@ -112,5 +125,5 @@ export class PushClient{
     await this.upload(true);
     return at;
   })}
-  test(){return this.queue(async()=>{if(!this.active)throw Error('Ative as notificações primeiro.');const result=await this.request('/test',{});if(result?.ok!==true)throw Error('O serviço não confirmou o envio do teste.');})}
+  test(){return this.queue(async()=>{if(!this.active)throw Error('Ative as notificações primeiro.');const result=await this.request('/test',{});if(result?.ok!==true)throw Error('O serviço não confirmou o envio do teste.');this.persist({...this.data,lastTestAcceptedAt:Date.now()});this.onChange()})}
 }

@@ -15,3 +15,7 @@ Derivados das solicitações e do uso prioritário no celular.
 - Arquivar deve preservar conteúdo e permitir restauração; concluir deve continuar acessível diretamente.
 - Conferir lista preenchida, título longo, subitem expandido, formulário e lembretes em celular; medir botões não substitui inspecionar a hierarquia.
 - Preservar dados, sincronização, instalação, voltar do Android e confirmação de descarte em qualquer revisão visual.
+
+- Lista compacta prioriza leitura rápida, com colunas alinhadas em telas de PC. Cartões têm notas e maior respiro; a grade acompanha a largura disponível e o cartão com subitens abertos ocupa uma linha completa.
+- Gerenciamento usa painel lateral no PC, com a tarefa selecionada identificada ao fundo. Ações de notificação, organização e exclusão ficam em seções próprias; salvar e cancelar permanecem acessíveis durante a rolagem.
+- Mostrar nomes de prioridade e ponto da cor da área, inclusive quando a tarefa tem outra cor. Explicar próximo aviso calculado, última aceitação do servidor e motivos de ausência; confirmação do agendamento não prova recebimento.

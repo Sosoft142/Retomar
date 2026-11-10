@@ -20,5 +20,8 @@ export function taskAppearance(item,areas){
 }
 export function priorityIndicator(id){
   const priority=PRIORITIES.find(p=>p.id===id);
-  return `<span class="task-priority-label" aria-label="Prioridade: ${priority.label}"><i class="priority-mark" aria-hidden="true">${priority.symbol}</i><span class="sr-only">${priority.label}</span></span>`;
+  return `<span class="task-priority-label" aria-label="Prioridade: ${priority.label}" title="Prioridade: ${priority.label}"><i class="priority-mark" aria-hidden="true">${priority.symbol}</i><span class="priority-name">${priority.label}</span></span>`;
+}
+export function areaIndicator(area,esc){
+  return `<span class="task-area-label" title="${area?'Área: ':''}${esc(area?.name??'Sem área')}"><i class="area-dot" aria-hidden="true"></i><span>${esc(area?.name??'Sem área')}</span></span>`;
 }
