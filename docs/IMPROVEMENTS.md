@@ -19,3 +19,15 @@ Lista da avaliação do Retomar 1.0.2, mantida para continuidade do projeto. Os 
 - Priorizar título, prazo e andamento. Engrenagem explícita para gerenciar, controles com espaço confortável e sem teclado automático ao abrir gerenciamento/configurações.
 - Verificar celular e PC. Preservar dados, funcionamento offline, sincronização, arquivamento e confirmação de descarte.
 - A lista original 1–8 está concluída. Novas funcionalidades e mudanças de escopo dependem das próximas solicitações da titular.
+
+## Próxima etapa autorizada — 1.3
+
+| Recomendação | Situação |
+| --- | --- |
+| Validar PC/S24, sincronização offline e notificações reais | Pendente de execução nos aparelhos; navegador e conta real não acessados. Roteiro no relatório. |
+| Edição rápida de prazo, prioridade e andamento | Implementada; testada por lógica e simulação de DOM em Node. |
+| Desfazer ampliado | Implementado com proteção de concorrência e revisões monotônicas. |
+| Seleção e ações em lote | Implementadas com aplicação integral, verificação de revisões e proteção dos vínculos. |
+| Visualizações favoritas | Implementadas: salvar, aplicar, renomear e remover; parâmetros salvos por aparelho. |
+
+Revisão visual de 1.3 pendente: a titular proibiu o acesso ao navegador. Essa restrição tem precedência sobre o fluxo de revisão visual. Não declarar os testes em Node como conferência de layout ou teste real no S24.

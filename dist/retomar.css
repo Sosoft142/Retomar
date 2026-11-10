@@ -1342,6 +1342,42 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .push-reasons li strong{font-variant-numeric:tabular-nums}
 #push-delivery-status>.field-help{font-size:12px;line-height:1.7;margin:12px 0}
 .push-main-actions{margin:18px 0}
+.quick-edit{appearance:none;background:transparent;border:1px solid transparent;border-radius:7px;padding:3px 4px;margin:-3px -4px;min-height:32px;max-width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.quick-edit:hover,.quick-edit:focus-visible{background:rgba(255,255,255,.72);border-color:var(--line);box-shadow:0 1px 5px rgba(30,70,90,.05)}
+.quick-edit>.due-date,.quick-edit>.no-date{font-size:inherit;margin:0;white-space:normal}
+.quick-edit>.task-priority-label{font-size:inherit}
+.workflow-toolbar{margin:4px 0 12px}
+.workflow-tools{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap}
+.workflow-tools .textbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:13px;padding:4px 0;color:var(--muted)}
+.workflow-tools .textbtn.selected{color:var(--accent);font-weight:600}
+.workflow-tools .ui-icon{width:16px;height:16px}
+.bulk-bar{position:fixed;z-index:30;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(780px,calc(100% - 28px));display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;border:1px solid rgba(255,255,255,.9);border-radius:20px;background:linear-gradient(130deg,rgba(238,251,249,.98),rgba(241,245,255,.98));box-shadow:0 8px 38px rgba(30,70,90,.2)}
+.bulk-bar strong{font-size:14px;margin-right:auto;font-weight:600}
+.bulk-bar .textbtn{font-size:13px;min-height:36px}
+.bulk-bar .btn{font-size:14px;min-height:42px}
+.is-selecting #task-results{padding-bottom:140px}
+.results .task-content.is-selected{outline:2px solid var(--accent);outline-offset:-2px;box-shadow:0 3px 14px rgba(20,160,150,.13)}
+.selection-check.chosen .checkbox{background:var(--accent);border-color:var(--accent);color:white}
+.quick-dialog{width:min(430px,calc(100% - 32px))}
+.quick-dialog .dialogbody,.bulk-dialog .dialogbody,.saved-views-dialog .dialogbody{padding-top:6px}
+.quick-task-name{font-size:14px;font-weight:600;line-height:1.5;margin:0 0 20px;overflow-wrap:anywhere}
+.quick-dialog .dialogactions,.bulk-dialog .dialogactions,.saved-views-dialog .dialogactions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;position:sticky;bottom:0;background:linear-gradient(120deg,rgba(248,252,253,.98),rgba(245,249,252,.98));padding:14px 0 2px;margin-top:18px;z-index:2}
+.quick-dialog .dialogactions>.btn,.bulk-dialog .dialogactions>.btn,.saved-views-dialog .dialogactions>.btn{min-width:0;white-space:normal;font-size:14px}
+.saved-views{display:grid;gap:10px;margin:22px 0}
+.saved-view{display:grid;grid-template-columns:minmax(0,1fr) 36px 36px;align-items:center;gap:4px;padding:8px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(130deg,rgba(235,250,247,.55),rgba(242,244,255,.5))}
+.saved-view-apply{border:0;background:transparent;text-align:left;min-width:0;padding:6px;cursor:pointer;color:var(--ink);display:grid;gap:5px;overflow-wrap:anywhere}
+.saved-view-apply strong{font-size:14px;font-weight:600}
+.saved-view-apply small{font-size:12px;line-height:1.5;color:var(--muted)}
+.saved-view .iconbtn{min-width:36px;width:36px;height:40px}
+@media(max-width:650px){
+ .quick-dialog[open],.bulk-dialog[open],.saved-views-dialog[open]{inset:auto 0 0;width:100%;max-width:100%;max-height:88dvh;border-radius:22px 22px 0 0}
+ .quick-edit{min-height:36px}
+ .workflow-tools{gap:2px 16px}
+ .bulk-bar{padding:12px;gap:5px 12px;border-radius:17px;bottom:max(10px,env(safe-area-inset-bottom))}
+ .bulk-bar strong{flex:1 1 100%}
+ .bulk-bar .btn{flex:1 1 100%;min-height:44px}
+ .is-selecting #task-results{padding-bottom:200px}
+}
 @media(min-width:1024px){
  .results.layout-compact{--list-columns:36px minmax(0,1fr) 150px 110px 88px 106px 40px 32px}
  .results.layout-compact .list-columns{display:grid;grid-template-columns:var(--list-columns);gap:10px;padding:6px 10px;color:var(--muted);font-size:12px;line-height:1.5}

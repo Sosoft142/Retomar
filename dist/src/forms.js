@@ -60,7 +60,7 @@ export function restoreUIFocus(previous,root=document){
   const visible=el=>el&&!el.disabled&&el.getClientRects().length>0;
   let target=previous?.isConnected&&visible(previous)?previous:null;
   if(!target&&previous?.id){const candidate=root.getElementById(previous.id);if(visible(candidate))target=candidate}
-  if(!target&&previous?.dataset?.action){target=[...root.querySelectorAll('[data-action]')].find(el=>visible(el)&&el.dataset.action===previous.dataset.action&&el.dataset.id===previous.dataset.id&&el.dataset.parentId===previous.dataset.parentId)}
+  if(!target&&previous?.dataset?.action){target=[...root.querySelectorAll('[data-action]')].find(el=>visible(el)&&el.dataset.action===previous.dataset.action&&el.dataset.id===previous.dataset.id&&el.dataset.parentId===previous.dataset.parentId&&el.dataset.field===previous.dataset.field)}
   if(!target)for(const [key,selector] of [['itemStatus','[data-item-status]'],['itemPriority','[data-item-priority]']]){if(previous?.dataset?.[key])target=[...root.querySelectorAll(selector)].find(el=>visible(el)&&el.dataset[key]===previous.dataset[key]);if(target)break}
   target||=[...root.querySelectorAll('.view-tab, .settings-trigger')].find(visible);
   target?.focus({preventScroll:true});return target||null;

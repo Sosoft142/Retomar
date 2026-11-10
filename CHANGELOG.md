@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.3 — ações rápidas, seleção e visualizações favoritas
+
+Prazo, prioridade e andamento abrem editores compactos ao toque. Desfazer reverte a última alteração da sessão com revisões novas e rejeita registros alterados depois; inclui área, organização, arquivamento, edição e exclusão. A seleção substitui o controle de conclusão temporariamente e permite editar tarefas em lote, com revisão de concorrência e preservação da hierarquia. Visualizações favoritas salvam área, busca, filtros, agrupamento e ordenação neste aparelho e permitem aplicar, renomear e remover.
+
+Dados, esquema, Gist, gradientes e identidade PWA preservados. Novos módulos incluídos no cache offline. [Relatório e pendências](docs/reports/2026-11-10-acoes-e-visualizacoes.md).
+
 ## 1.2 — lista, cartões, gerenciamento e avisos
 
 Conclui os itens 4–8 da avaliação de usabilidade: lista compacta com colunas no PC, cartões em grade adaptável, editor lateral e ações agrupadas por finalidade. Nomes de prioridade e indicadores da cor da área ficam visíveis. Notificações distinguem cálculo local, permissão e agendamento aceito pelo servidor; falhas preservam o registro anterior e explicam a atualização pendente. Gradientes, dados, Gist e identidade PWA preservados.

@@ -1,6 +1,6 @@
 {
   "name": "retomar",
-  "version": "1.2",
+  "version": "1.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,5 +10,8 @@
     "release:prepare": "node scripts/release-prepare.mjs",
     "release:watch": "node scripts/release-watch.mjs",
     "push:deploy": "node server/deployment.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
   }
 }
