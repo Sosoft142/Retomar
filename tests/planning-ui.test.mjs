@@ -13,12 +13,15 @@ function fixture(mode='web'){
   const prefs=defaults();prefs.timeZone='America/Sao_Paulo';
   if(mode==='direct'){prefs.version=1;prefs.calendar={timeZone:prefs.timeZone,clientId:'antigo'};delete prefs.timeZone}
   let raw=JSON.stringify(prefs),failSave=false;
-  const calls={prepare:0,connect:0,disconnect:0,send:0,popups:0,edits:[],toasts:[],renders:0,modals:[]};
+  const calls={prepare:0,connect:0,disconnect:0,send:0,popups:0,edits:[],toasts:[],renders:0,clocks:0,modals:[]};
   const nodes={};
   const storage={getItem:key=>key===PLANNING_KEY?raw:null,setItem:(key,value)=>{if(failSave)throw Error('quota');raw=value}};
-  const target={location:{href:'https://sosoft142.github.io/Retomar/'},document:{querySelector:()=>null,querySelectorAll:()=>[],activeElement:null},navigator:{},open:()=>{calls.popups++}};
-  const ui=createPlanningUI({storage,getState:()=>state,icon:()=>'<svg></svg>',esc,target,now:()=>new Date('2026-10-30T15:00Z'),toast:(message,action)=>calls.toasts.push({message,action}),onEdit:id=>calls.edits.push(id),onOpen:()=>{calls.renders++},openModal:(title,body)=>{calls.modals.push({title,body});return {querySelector:selector=>nodes[selector]||={}}}});
-  return {ui,state,calls,nodes,target,saved:()=>JSON.parse(raw),failSave:()=>{failSave=true}};
+  let instant=new Date('2026-10-30T15:00Z'),sequence=0;
+  const listeners={window:new Map(),document:new Map()},timers=new Map();
+  const events=group=>({addEventListener(type,fn){if(!listeners[group].has(type))listeners[group].set(type,new Set());listeners[group].get(type).add(fn)},removeEventListener(type,fn){listeners[group].get(type)?.delete(fn)}});
+  const target={...events('window'),setInterval:(fn,delay)=>{const id=++sequence;timers.set(id,{fn,delay});return id},clearInterval:id=>timers.delete(id),location:{href:'https://sosoft142.github.io/Retomar/'},document:{...events('document'),hidden:false,documentElement:{classList:{contains:()=>false}},querySelector:()=>null,querySelectorAll:()=>[],activeElement:null},navigator:{},open:()=>{calls.popups++}};
+  const ui=createPlanningUI({storage,getState:()=>state,icon:()=>'<svg></svg>',esc,target,now:()=>instant,onClockChange:()=>calls.clocks++,toast:(message,action)=>calls.toasts.push({message,action}),onEdit:id=>calls.edits.push(id),onOpen:()=>{calls.renders++},openModal:(title,body)=>{calls.modals.push({title,body});return {querySelector:selector=>nodes[selector]||={}}}});
+  return {ui,state,calls,nodes,target,timers,emit:(group,type,event={})=>{for(const fn of listeners[group].get(type)||[])fn(event)},advance:date=>instant=new Date(date),saved:()=>JSON.parse(raw),failSave:()=>{failSave=true}};
 }
 
 test('servidor configurado permite ativação sem declarar o aparelho já inscrito',()=>{const f=fixture();const html=f.ui.settings();assert.match(html,/Desativado neste aparelho/);assert.doesNotMatch(html,/Servidor ainda não ativado|Google|OAuth|calendar|Agenda/);assert.match(html,/data-action="planning-push-enable" >Ativar neste aparelho/);assert.doesNotMatch(html,/Confirmado pelo servidor|data-action="planning-push-test"/)});
@@ -56,4 +59,20 @@ test('lembretes usam a cor da área, respeitam cor própria e mantêm sem área 
   assert.match(html,/class="priority-mark" aria-hidden="true">!!<\/i>/);
   assert.match(html,/<time class="reminder-date[^\"]*" datetime="2026-10-30T13:00">/);
   assert.match(html,/aria-label="Gerenciar: Cor própria"/);
+});
+
+
+test('retornar ao app e o relógio atualizam prazos vencidos sem interromper formulário ou busca',()=>{
+  const f=fixture();f.ui.beginRender();assert.doesNotMatch(f.ui.page(),/Atrasado · Hoje às 13:00/);
+  f.ui.start();assert.equal(f.ui.timeZone(),'America/Sao_Paulo');
+  f.advance('2026-10-30T17:00Z');f.emit('window','focus');
+  assert.equal(f.calls.clocks,1);assert.match(f.ui.page(),/Atrasado · Hoje às 13:00/);
+  f.target.document.hidden=true;f.emit('document','visibilitychange');assert.equal(f.calls.clocks,1);
+  f.target.document.hidden=false;f.emit('document','visibilitychange');assert.equal(f.calls.clocks,2);
+  const tick=[...f.timers.values()].find(t=>t.delay===30000).fn;
+  f.target.document.activeElement={matches:()=>true};tick();assert.equal(f.calls.clocks,2);
+  f.target.document.activeElement=null;f.target.document.querySelector=selector=>selector==='dialog[open]'?{}:null;tick();assert.equal(f.calls.clocks,2);
+  f.target.document.querySelector=()=>null;f.target.document.documentElement.classList.contains=()=>true;tick();assert.equal(f.calls.clocks,2);
+  f.target.document.documentElement.classList.contains=()=>false;tick();assert.equal(f.calls.clocks,3);
+  f.ui.dispose();assert.equal(f.timers.size,0);f.emit('window','focus');f.emit('document','visibilitychange');assert.equal(f.calls.clocks,3);
 });

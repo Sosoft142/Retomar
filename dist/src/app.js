@@ -8,7 +8,8 @@ import {createSyncUI} from './sync/ui.js';
 import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refreshSelectHint,fitTextArea,resizeTextArea,restoreUIFocus} from './forms.js';
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
-const VERSION='1.0.2';
+import {createDeadlineContext,dateInZone} from './planning.js';
+const VERSION='1.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation;
@@ -23,9 +24,10 @@ let fatal='',state,deviceId,ui={accent:'teal',visualVersion:3,motion:'subtle'};
 try{state=repo.load()}catch(e){fatal=e.message;state=initialState()}
 try{const savedUI=JSON.parse(storage.getItem(UI_KEY)||'{}');ui={...ui,...savedUI};if(Object.hasOwn(ui,'theme')){delete ui.theme;storage.setItem(UI_KEY,JSON.stringify(ui))}if(savedUI.visualVersion!==3){ui.accent='teal';ui.visualVersion=3;storage.setItem(UI_KEY,JSON.stringify(ui))}deviceId=storage.getItem(DEVICE_KEY);if(!deviceId){deviceId=uid();storage.setItem(DEVICE_KEY,deviceId)}}catch{deviceId=uid()}
 let archiveMode=false;
-let page='plan',area='all',status='all',scope='all',query='',priorityFilter='all',sortOrder=ui.order||'manual',moreFilters=false,moreOrder=false,toastTimer,returnFocus,modalDirty=false,lastDeletion=null;
+let page='plan',area='all',status='all',scope='all',query='',priorityFilter='all',sortOrder=['manual','priority','date','title','newest'].includes(ui.order)?ui.order:'manual',toastTimer,returnFocus,modalDirty=false,lastDeletion=null;
+let deadlines=null;
 let childIndex=new Map(),indexedState=null,indexedArchive=null,viewItems=null,viewFiltered=null;
-function beginView(){viewItems=null;viewFiltered=null;planningUI?.beginRender();}
+function beginView(){const now=new Date();deadlines=createDeadlineContext(now,planningUI?.timeZone());viewItems=null;viewFiltered=null;planningUI?.beginRender(now);}
 const expandedItems=new Set(Array.isArray(ui.expandedItems)?ui.expandedItems.filter(id=>Object.hasOwn(state.items,id)&&!state.items[id].deleted&&!state.items[id].parentId):[]),collapsedMatches=new Set();
 let subitemOrder=['manual','priority','date'].includes(ui.subitemOrder)?ui.subitemOrder:'manual';
 let groupBy=['area','priority','none','date'].includes(ui.groupBy)?ui.groupBy:'none',layout=ui.layout==='cards'?'cards':'compact';
@@ -34,7 +36,8 @@ const motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
 function motionEnabled(){return ui.motion!=='off'&&!motionPreference.matches}
 function syncVisualMotion(){const root=document.documentElement;root.dataset.motion=motionEnabled()?'subtle':'off';const typing=document.activeElement?.matches('input,textarea,select');root.dataset.pageHidden=String(document.hidden);root.dataset.ambientPaused=String(!motionEnabled()||document.hidden||!!typing||!!document.querySelector('dialog[open]'))}
 function enterView(){if(!motionEnabled())return;const content=document.querySelector('#task-results')||document.querySelector('main');content?.animate?.([{opacity:.94,transform:'translate3d(0,3px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],{duration:180,easing:'cubic-bezier(.2,.7,.3,1)'})}
-const today=()=>localDate();
+const today=()=>deadlines?.today||dateInZone(new Date(),planningUI?.timeZone());
+const isTaskOverdue=t=>deadlines.forItem(t).overdue;
 const dateLabel=(date,opts={day:'numeric',month:'short'})=>new Date(date+'T12:00:00').toLocaleDateString('pt-BR',opts).replace('.','');
 const statusLabel=STATUS_LABELS;
 function saveUI(){try{storage.setItem(UI_KEY,JSON.stringify(ui))}catch{toast('A preferência de aparência vale apenas nesta sessão.')}}
@@ -60,10 +63,69 @@ function areaTabs(){return `<section class="area-selector" aria-label="Áreas da
 function indexChildren(){if(indexedState===state&&indexedArchive===archiveMode)return;indexedState=state;indexedArchive=archiveMode;childIndex=new Map();for(const t of (archiveMode?archivedItems(state):visibleItems(state)))if(t.parentId){if(!childIndex.has(t.parentId))childIndex.set(t.parentId,[]);childIndex.get(t.parentId).push(t)}}
 const childrenOf=id=>childIndex.get(id)||[];
 function persistExpanded(){ui.expandedItems=[...expandedItems].filter(id=>state.items[id]&&!state.items[id].deleted&&!state.items[id].parentId).slice(-500);saveUI()}
-function filterOptions(){return {status,scope,query,priority:priorityFilter,order:sortOrder,today:today()}}
+function filterOptions(){return {status,scope,query,priority:priorityFilter,order:sortOrder,today:today(),isOverdue:isTaskOverdue}}
 function isExpanded(t){return expandedItems.has(t.id)||(filtersActive()&&!collapsedMatches.has(t.id)&&selectItems(childrenOf(t.id),filterOptions()).length>0)}
 function areaItems(){return viewItems??=(archiveMode?archivedItems(state):visibleItems(state)).filter(t=>area==='all'||t.areaId===area)}
-function controls(){const count=[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length;return `<section class="filter-panel" aria-label="Busca e filtros"><div class="filter-main"><div class="searchline">${icon('search')}<label class="sr-only" for="search-input">Buscar itens e subitens</label><input id="search-input" type="search" maxlength="200" value="${esc(query)}" placeholder="Buscar"></div><button class="filter-toggle" data-action="filters" aria-expanded="${moreFilters}" aria-controls="extra-filters">${icon('filter')}<span>Filtros${count?' · '+count:''}</span></button><button class="filter-toggle" data-action="ordering" aria-expanded="${moreOrder}" aria-controls="order-controls">${icon('sort')}<span>Ordenar</span></button></div><div id="order-controls" class="extra-filters" ${moreOrder?'':'hidden'}><div class="filter-field"><label for="view-layout">Formato</label><select id="view-layout"><option value="compact" ${layout==='compact'?'selected':''}>Lista compacta</option><option value="cards" ${layout==='cards'?'selected':''}>Cartões</option></select></div>${page==='plan'?`<div class="filter-field"><label for="group-by">Agrupar por</label><select id="group-by">${[['none','Sem agrupamento'],['area','Área'],['priority','Prioridade'],['date','Por prazo · cronograma']].map(([v,l])=>`<option value="${v}" ${groupBy===v?'selected':''}>${l}</option>`).join('')}</select></div>`:''}<div class="filter-field"><label for="sort-filter">Ordenar por</label><select id="sort-filter">${[['manual','Minha ordem'],['priority','Prioridade'],['date','Data'],['title','Título'],['newest','Mais recentes']].map(([v,l])=>`<option value="${v}" ${sortOrder===v?'selected':''}>${l}</option>`).join('')}</select></div></div><div id="extra-filters" class="extra-filters" ${moreFilters?'':'hidden'}><div class="filter-field"><label for="status-filter">Andamento</label><select id="status-filter">${[['all','Todos'],['open','Em aberto'],['pending','Pendente'],['doing','Em andamento'],['done','Concluído'],['canceled','Cancelado']].map(([v,l])=>`<option value="${v}" ${status===v?'selected':''}>${l}</option>`).join('')}</select></div><div class="filter-field"><label for="scope-filter">Prazo</label><select id="scope-filter">${[['all','Com e sem data'],['overdue','Atrasados'],['today','Hoje'],['upcoming','Próximos'],['undated','Sem data']].map(([v,l])=>`<option value="${v}" ${scope===v?'selected':''}>${l}</option>`).join('')}</select></div><div class="filter-field"><label for="priority-filter">Prioridade</label><select id="priority-filter"><option value="all" ${priorityFilter==='all'?'selected':''}>Todas</option>${PRIORITIES.map(p=>`<option value="${p.id}" ${priorityFilter===p.id?'selected':''}>${p.label}</option>`).join('')}</select></div><button class="textbtn" data-action="clear">Limpar filtros</button></div></section>`}
+const viewChoices={
+  layout:[['compact','Lista compacta'],['cards','Cartões']],
+  group:[['none','Sem agrupamento'],['area','Área'],['priority','Prioridade'],['date','Prazo']],
+  order:[['manual','Minha ordem'],['priority','Prioridade'],['date','Data'],['title','Título'],['newest','Mais recentes']],
+  status:[['all','Todos'],['open','Em aberto'],['pending','Pendente'],['doing','Em andamento'],['done','Concluído'],['canceled','Cancelado']],
+  scope:[['all','Com e sem data'],['overdue','Atrasados'],['today','Hoje'],['upcoming','Próximos'],['undated','Sem data']],
+  priority:[['all','Todas'],...PRIORITIES.map(p=>[p.id,p.label])]
+};
+function viewSelection(){
+  const selected=[];
+  if(status!=='all')selected.push(viewChoices.status.find(([id])=>id===status)?.[1]);
+  if(scope!=='all')selected.push(viewChoices.scope.find(([id])=>id===scope)?.[1]);
+  if(priorityFilter!=='all')selected.push('Prioridade '+viewChoices.priority.find(([id])=>id===priorityFilter)?.[1]?.toLocaleLowerCase('pt-BR'));
+  if(layout==='cards')selected.push('Cartões');
+  if(groupBy!=='none')selected.push('Agrupado por '+viewChoices.group.find(([id])=>id===groupBy)?.[1]?.toLocaleLowerCase('pt-BR'));
+  if(sortOrder!=='manual')selected.push('Ordem por '+viewChoices.order.find(([id])=>id===sortOrder)?.[1]?.toLocaleLowerCase('pt-BR'));
+  return `<p id="view-selection" class="view-selection" aria-label="Visualização atual" aria-live="polite" ${selected.length?'':'hidden'}>${selected.filter(Boolean).map(esc).join(' · ')}</p>`;
+}
+function controls(){
+  const count=[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length;
+  const ordered=layout!=='compact'||groupBy!=='none'||sortOrder!=='manual';
+  return `<section class="filter-panel" aria-label="Busca e filtros"><div class="filter-main"><div class="searchline">${icon('search')}<label class="sr-only" for="search-input">Buscar itens e subitens</label><input id="search-input" type="search" maxlength="200" value="${esc(query)}" placeholder="Buscar"></div><button class="filter-toggle ${count?'selected':''}" data-action="filters" aria-haspopup="dialog">${icon('filter')}<span>Filtros${count?' · '+count:''}</span></button><button class="filter-toggle ${ordered?'selected':''}" data-action="ordering" aria-haspopup="dialog">${icon('sort')}<span>Ordenar</span></button></div>${viewSelection()}</section>`;
+}
+function openViewOptions(kind){
+  const filters=kind==='filters',trigger=document.querySelector(`[data-action="${kind}"]`);
+  const fields=filters?[
+    ['status-filter','Andamento',viewChoices.status,status],
+    ['scope-filter','Prazo',viewChoices.scope,scope],
+    ['priority-filter','Prioridade',viewChoices.priority,priorityFilter]
+  ]:[
+    ['view-layout','Formato',viewChoices.layout,layout],
+    ['group-by','Agrupar por',viewChoices.group,groupBy],
+    ['sort-filter','Ordenar por',viewChoices.order,sortOrder]
+  ];
+  const root=openModal(filters?'Filtros':'Ordenar e agrupar',`<form id="view-options-form">${fields.map(([id,label,options,current])=>`<div class="field"><label for="${id}">${label}</label><select id="${id}">${options.map(([value,text])=>`<option value="${value}" ${value===current?'selected':''}>${text}</option>`).join('')}</select></div>`).join('')}${filters?'<button type="button" class="textbtn" id="reset-view-filters">Limpar seleção</button>':''}<div class="dialogactions"><button type="button" class="btn secondary" id="cancel-view-options">Cancelar</button><button type="submit" class="btn primary">Aplicar</button></div></form>`,{className:'view-options-dialog'});
+  const dialog=root.querySelector('dialog');
+  root.querySelector('#close-modal').setAttribute('aria-label',filters?'Fechar filtros':'Fechar ordenação');
+  function position(){
+    const rect=trigger.getBoundingClientRect(),width=Math.min(380,window.innerWidth-32);
+    const left=Math.max(16,Math.min(rect.right-width,window.innerWidth-width-16));
+    const top=Math.max(16,Math.min(rect.bottom+8,window.innerHeight-dialog.offsetHeight-16));
+    dialog.style.setProperty('--options-left',left+'px');dialog.style.setProperty('--options-top',top+'px');
+  }
+  position();window.addEventListener('resize',position);
+  dialog.addEventListener('close',()=>window.removeEventListener('resize',position),{once:true});
+  root.querySelector('#cancel-view-options').onclick=()=>closeModal();
+  root.querySelector('#reset-view-filters')?.addEventListener('click',()=>{
+    for(const [id] of fields)root.querySelector('#'+id).value='all';
+    modalDirty=true;
+  });
+  root.querySelector('form').onsubmit=submitOnce(async e=>{
+    if(!checkForm(e.target))return;
+    if(filters){status=root.querySelector('#status-filter').value;scope=root.querySelector('#scope-filter').value;priorityFilter=root.querySelector('#priority-filter').value}
+    else{
+      layout=root.querySelector('#view-layout').value;groupBy=root.querySelector('#group-by').value;sortOrder=root.querySelector('#sort-filter').value;
+      ui.layout=layout;ui.groupBy=groupBy;ui.order=sortOrder;saveUI();
+    }
+    collapsedMatches.clear();collections.reset();render();closeModal(true);
+  });
+}
 
 function archiveToolbar(){const count=archivedItems(state).length,candidates=completedToArchive(state,selectItems(areaItems(),filterOptions()));return `<section id="archive-toolbar" class="archive-toolbar" aria-label="Arquivo de tarefas"><div class="archive-tabs" role="group" aria-label="Mostrar tarefas"><button data-action="archive-view" data-mode="active" aria-pressed="${!archiveMode}">Ativas</button><button data-action="archive-view" data-mode="archived" aria-pressed="${archiveMode}">Arquivadas <span>${count}</span></button></div>${!archiveMode&&candidates.length?`<button class="textbtn" data-action="archive-completed">Arquivar concluídas (${candidates.length})</button>`:''}</section>`}
 
@@ -71,6 +133,7 @@ function manageButton(t){return `<button class="manage-task" data-action="edit" 
 
 function archiveButton(t){return isArchived(state,t)?`<button class="textbtn task-archive" data-action="restore-item" data-id="${esc(t.id)}">${icon('resume')} Restaurar</button>`:t.status==='done'?`<button class="textbtn task-archive" data-action="archive-item" data-id="${esc(t.id)}">${icon('archive')} Arquivar</button>`:''}
 function pageHeading(title,subtitle){return `<div class="page-heading"><h1>${title}</h1>${subtitle?`<p>${subtitle}</p>`:''}</div>`}
+function timelineView(){return page==='agenda'||page==='plan'&&groupBy==='date'}
 function priorityView(){return !archiveMode&&page==='plan'&&groupBy==='priority'}
 
 function orderToolbar(){const active=filtersActive();return `<div id="results-summary" class="results-caption" ${active?'':'hidden'}>${active?`<span>${filtered().length} ${filtered().length===1?'resultado':'resultados'}</span><button class="textbtn" data-action="clear">Limpar filtros</button>`:''}</div>`}
@@ -87,11 +150,19 @@ function areaSection(a,items){const all=visibleItems(state).filter(t=>!t.parentI
 function completion(t){return `<button class="taskcheck ${t.status}" data-action="toggle" data-id="${esc(t.id)}" aria-label="${t.status==='done'?'Reabrir':'Concluir'}: ${esc(t.title)}" aria-pressed="${t.status==='done'}"><span class="checkbox">${t.status==='done'?icon('check'):t.status==='canceled'?icon('close'):t.status==='doing'?'<i></i>':''}</span></button>`}
 
 function dragHandle(t){return page==='agenda'||archiveMode?'':`<button class="drag-handle" data-drag-handle data-id="${esc(t.id)}" aria-label="Mover: ${esc(t.title)}" title="Segure para arrastar. Pelo teclado, use as setas.">${icon('grip')}<span class="sr-only">Mover</span></button>`}
-function compactDue(t){if(!t.date)return '<span class="no-date">Sem data</span>';const sameYear=t.date.slice(0,4)===today().slice(0,4),label=t.date===today()?'Hoje':dateLabel(t.date,{day:'2-digit',month:'2-digit',...(sameYear?{}:{year:'numeric'})});return `<time class="due-date ${openItem(t)&&t.date<today()?'late':''}" datetime="${t.date}${t.time?'T'+t.time:''}" title="${esc(t.date+(t.time?' '+t.time:''))}">${openItem(t)&&t.date<today()?'Atrasada · ':''}${icon('calendar')}${label}${t.time?` <span>${icon('clock')}${esc(t.time)}</span>`:''}</time>`}
+function compactDue(t){
+  if(!t.date)return '<span class="no-date">Sem data</span>';
+  const {overdue,invalidTime}=deadlines.forItem(t),sameYear=t.date.slice(0,4)===today().slice(0,4);
+  const label=t.date===today()?'Hoje':dateLabel(t.date,{day:'2-digit',month:'2-digit',...(sameYear?{}:{year:'numeric'})});
+  return `<time class="due-date ${overdue?'late':''}" datetime="${t.date}${t.time?'T'+t.time:''}" title="${esc(t.date+(t.time?' '+t.time:''))}">${overdue?'Atrasado · ':''}${icon('calendar')}${label}${t.time?` <span>${icon('clock')}${esc(t.time)}</span>`:''}${invalidTime?'<small>Confira o fuso</small>':''}</time>`;
+}
 function itemAttributes(t){return `data-drag-item="${esc(t.id)}" data-parent-id="${esc(t.parentId)}" ${t.parentId?'':'data-root-item'} data-drag-label="${esc(t.title)}" ${taskAppearance(t,state.areas)}`}
-function parentContext(t){const parent=t.parentId&&state.items[t.parentId];if(archiveMode&&parent)return `<p class="parent-link">Em: ${esc(parent.title)}</p>`;return page==='agenda'&&parent?`<button class="parent-link" data-action="reveal-parent" data-id="${esc(parent.id)}">${icon('resume')}<span>Em: ${esc(parent.title)}</span></button>`:''}
+function parentContext(t){
+  const parent=t.parentId&&state.items[t.parentId];
+  return parent&&(archiveMode||timelineView())?`<p class="parent-link">Subitem de ${esc(parent.title)}</p>`:'';
+}
 function subitemFooter(t){
-  if(t.parentId||archiveMode)return '';
+  if(t.parentId||archiveMode||timelineView())return '';
   const children=childrenOf(t.id);if(!children.length)return '';const done=children.filter(x=>x.status==='done').length,open=page==='plan'&&isExpanded(t),panelId='subitems-'+t.id;
   const bar=`<div class="subitems-bar"><button type="button" class="subitems-toggle" data-action="${page==='agenda'?'reveal-parent':'expand-item'}" data-id="${esc(t.id)}" aria-expanded="${open}" ${page==='plan'?`aria-controls="${esc(panelId)}"`:''} aria-label="${open?'Recolher':'Expandir'} subitens de ${esc(t.title)}">${icon('right')}<span>${children.length} ${children.length===1?'subitem':'subitens'}</span><span class="subitems-progress" aria-label="${done} de ${children.length} subitens concluídos">${done}/${children.length}</span></button></div>`;
 
@@ -107,8 +178,8 @@ function itemCollection(items,key='all'){const {visible,remaining,step}=collecti
 
 function empty(title,text,label,action,example=false){return `<div class="empty"><span class="emptyicon">${icon('list')}</span><h2>${title}</h2><p>${text}</p><button class="btn primary" data-action="${action}">${icon(action==='new'?'plus':'settings')}${label}</button>${example?'<button class="textbtn example" data-action="example">Ver com exemplos fictícios</button>':''}</div>`}
 const groupLabels={overdue:'Atrasados',today:'Hoje',upcoming:'Próximos',undated:'Sem data',closed:'Encerrados'};
-function renderAgenda(){const items=filtered(),groups=groupItems(items,today());return `${pageHeading(archiveMode?'Arquivadas':'Cronograma',archiveMode?'Tarefas arquivadas organizadas por prazo.':'Itens organizados por prazo.')}${planningUI?.summary()||''}${areaTabs()}${controls()}${archiveToolbar()}${orderToolbar()}<div id="task-results" class="results layout-${layout}" aria-live="polite">${renderTimeline(groups)}</div>`}
-function renderTimeline(groups=groupItems(filtered(),today())){collections.begin();if(!Object.values(groups).some(v=>v.length))return empty('Nenhum item neste cronograma.','Adicione um item ou ajuste os filtros para consultar outros prazos.','Limpar filtros','clear');return Object.entries(groups).filter(([,items])=>items.length).map(([k,items])=>`<section class="timeline-section" aria-label="${groupLabels[k]}"><div class="timeline-heading ${k==='overdue'?'late':''}">${icon(k==='undated'?'box':k==='closed'?'check':'calendar')}<h2>${groupLabels[k]}</h2><span class="section-count mono">${items.length}</span></div>${itemCollection(selectItems(items,{order:sortOrder}),'timeline-'+k)}</section>`).join('')}
+function renderAgenda(){const items=filtered(),groups=groupItems(items,today(),isTaskOverdue);return `${pageHeading(archiveMode?'Arquivadas':'Cronograma',archiveMode?'Tarefas arquivadas organizadas por prazo.':'Itens organizados por prazo.')}${planningUI?.summary()||''}${areaTabs()}${controls()}${archiveToolbar()}${orderToolbar()}<div id="task-results" class="results layout-${layout}" aria-live="polite">${renderTimeline(groups)}</div>`}
+function renderTimeline(groups=groupItems(filtered(),today(),isTaskOverdue)){collections.begin();if(!Object.values(groups).some(v=>v.length))return empty('Nenhum item neste cronograma.','Adicione um item ou ajuste os filtros para consultar outros prazos.','Limpar filtros','clear');return Object.entries(groups).filter(([,items])=>items.length).map(([k,items])=>`<section class="timeline-section" aria-label="${groupLabels[k]}"><div class="timeline-heading ${k==='overdue'?'late':''}">${icon(k==='undated'?'box':k==='closed'?'check':'calendar')}<h2>${groupLabels[k]}</h2><span class="section-count mono">${items.length}</span></div>${itemCollection(selectItems(items,{order:sortOrder}),'timeline-'+k)}</section>`).join('')}
 function renderAreas(){return `${pageHeading('Áreas','Organize nomes, cores e posições.')}<div class="between" style="margin-bottom:20px"><button class="textbtn" data-action="page" data-page="plan">${icon('left')} Voltar ao planejamento</button><button class="btn primary" data-action="new-area">${icon('plus')} Nova área</button></div><div class="areagrid">${activeAreas(state).map(a=>`<article class="areacard" data-drag-area="${esc(a.id)}" data-drag-label="${esc(a.name)}"><div class="between"><div class="areaicon" ${areaStyle(a)}>${icon('box')}</div><button class="iconbtn" data-action="edit-area" data-id="${esc(a.id)}" aria-label="Editar área ${esc(a.name)}">${icon('edit')}</button></div><h3>${esc(a.name)}</h3><p>${openSummary(visibleItems(state).filter(t=>t.areaId===a.id))}</p><div class="areaactions"><button class="drag-handle" data-drag-handle aria-label="Arrastar área ${esc(a.name)}">${icon('grip')}</button><button data-action="move-area" data-id="${esc(a.id)}" data-delta="-1" aria-label="Mover ${esc(a.name)} para antes">${icon('up')}</button><button data-action="move-area" data-id="${esc(a.id)}" data-delta="1" aria-label="Mover ${esc(a.name)} para depois">${icon('down')}</button><button data-action="area" data-id="${esc(a.id)}">Abrir área ${icon('arrow')}</button></div></article>`).join('')}</div>`}
 function installSection(){const info=installation.snapshot();return `<section id="retomar-install-section" class="settingscard install-section" ${info.hidden?'hidden':''} aria-labelledby="install-heading"><h2 id="install-heading">Instalar Retomar</h2><p id="install-status" role="status" aria-live="polite">${esc(info.message)}</p><button id="install-app-button" class="btn primary" data-action="install" aria-describedby="install-status" ${info.enabled?'':'disabled'}>${icon('download')}<span data-install-label>${esc(info.label)}</span></button><p class="field-help">Sem o botão habilitado, use o menu do Chrome → Adicionar à tela inicial → Instalar. No iPhone ou iPad, use Compartilhar → Adicionar à Tela de Início no Safari.</p></section>`;}
 function updateInstallControls(){const section=document.querySelector('#retomar-install-section');if(!section)return;const info=installation.snapshot();section.hidden=info.hidden;document.querySelector('#install-status').textContent=info.message;const button=document.querySelector('#install-app-button');button.disabled=!info.enabled;button.querySelector('[data-install-label]').textContent=info.label;}
@@ -129,16 +200,13 @@ function bindApp(){
   const areaSelect=document.querySelector('#area-filter');if(areaSelect)areaSelect.onchange=async e=>{await action('area',{id:e.target.value});document.querySelector('#area-filter')?.focus({preventScroll:true})};
   document.querySelector('#app').onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;const previous=page+'|'+area;await action(b.dataset.action,b.dataset);if(previous!==page+'|'+area&&!document.querySelector('dialog[open]'))enterView()};
   const search=document.querySelector('#search-input');if(search)search.oninput=e=>{query=e.target.value;collapsedMatches.clear();collections.reset();refreshResults()};
-  for(const [id,set] of [['status-filter',v=>status=v],['sort-filter',v=>sortOrder=v],['scope-filter',v=>scope=v],['priority-filter',v=>priorityFilter=v]]){const el=document.getElementById(id);if(el)el.onchange=e=>{set(e.target.value);collapsedMatches.clear();collections.reset();if(id==='sort-filter'){ui.order=sortOrder;saveUI()}refreshResults()}}
   bindDrag(document.querySelector('#app'),{onDrop:applyDrop,onMove:moveByDelta,onAnnounce:announceMove});
   const accent=document.querySelector('#accent');if(accent)accent.onchange=e=>{ui.accent=e.target.value;document.documentElement.dataset.accent=ui.accent;saveUI()};
   const motion=document.querySelector('#motion');if(motion)motion.onchange=e=>{ui.motion=e.target.value;syncVisualMotion();saveUI()};
-  const grouping=document.querySelector('#group-by');if(grouping)grouping.onchange=e=>{groupBy=e.target.value;collections.reset();ui.groupBy=groupBy;saveUI();render();document.querySelector('#group-by')?.focus()};
-  const view=document.querySelector('#view-layout');if(view)view.onchange=e=>{layout=e.target.value;collections.reset();ui.layout=layout;saveUI();render();document.querySelector('#view-layout')?.focus()};
   document.querySelectorAll('.subitem-order').forEach(el=>el.onchange=e=>{const id=e.target.id;subitemOrder=e.target.value;ui.subitemOrder=subitemOrder;saveUI();collections.reset();refreshResults();document.getElementById(id)?.focus()});
   const file=document.querySelector('#backup-file');if(file)file.onchange=importFile;
 }
-function refreshResults(){beginView();updateFilterIndicator(document.querySelector('.filter-toggle'),[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length);navigation?.record();indexChildren();const summary=document.querySelector('#results-summary');if(summary)summary.outerHTML=orderToolbar();const archiveTools=document.querySelector('#archive-toolbar');if(archiveTools)archiveTools.outerHTML=archiveToolbar();const results=document.querySelector('#task-results');const changed=updateMarkup(results,page==='agenda'?renderTimeline():planningResults());if(changed)bindApp();navigation?.record();syncVisualMotion()}
+function refreshResults(){beginView();updateFilterIndicator(document.querySelector('.filter-toggle'),[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length);navigation?.record();indexChildren();const summary=document.querySelector('#results-summary');if(summary)summary.outerHTML=orderToolbar();const selection=document.querySelector('#view-selection');if(selection)selection.outerHTML=viewSelection();const archiveTools=document.querySelector('#archive-toolbar');if(archiveTools)archiveTools.outerHTML=archiveToolbar();const results=document.querySelector('#task-results');const changed=updateMarkup(results,page==='agenda'?renderTimeline():planningResults());if(changed)bindApp();navigation?.record();syncVisualMotion()}
 async function action(name,d={}){
   if(name==='home'){
     if(document.querySelector('dialog[open]')&&!closeModal())return;
@@ -163,8 +231,7 @@ async function action(name,d={}){
   else if(name==='status'){status=d.status;render()}
   else if(name==='scope'){scope=d.scope;status='open';render()}
   else if(name==='undated'){page='plan';scope='undated';status='open';area='all';query='';render()}
-  else if(name==='ordering'){moreOrder=!moreOrder;render()}
-  else if(name==='filters'){moreFilters=!moreFilters;render()}
+  else if(name==='ordering'||name==='filters')openViewOptions(name)
   else if(name==='clear'){status='all';scope='all';priorityFilter='all';query='';render()}
   else if(name==='new'||name==='edit'){if(fatal){toast('Recupere os dados em Configurações antes de editar.');return}itemModal(name==='edit'?d.id:null,d.areaId,d.priority)}
   else if(name==='toggle'){if(fatal)return;await mutate(s=>{const t=s.items[d.id];if(!t||t.deleted)throw Error('Este item não está mais disponível.');updateItem(s,t.id,{status:t.status==='done'?'pending':'done'},deviceId)},'Alteração salva neste aparelho.')}
@@ -288,10 +355,11 @@ if(fatal)syncUI.localFailure(fatal);
 planningUI=createPlanningUI({storage,getState:()=>state,icon,esc,openModal,closeModal,toast,
   onOpen:open=>{if(open){page='reminders';window.scrollTo(0,0)}render()},
   onEdit:id=>{const t=state.items[id];if(!t||t.deleted)return;if(fatal){toast('Recupere os dados antes de editar.');return}itemModal(id)},
+  onClockChange:()=>{if(page==='plan'||page==='agenda'){const focus=document.hasFocus()?document.activeElement:null;refreshResults();if(focus&&!focus.isConnected)restoreUIFocus(focus)}},
   onComplete:id=>{if(fatal)return;const current=state.items[id];if(!current||current.deleted)return;return mutate(s=>updateItem(s,id,{status:'done',expectedRevision:JSON.stringify(current.revision)},deviceId),'Tarefa concluída. O lembrete foi retirado.')}
 });
 const linkedId=new URLSearchParams(location.search).get('item'),linked=linkedId&&state.items[linkedId];if(linked&&!linked.deleted){page='plan';archiveMode=isArchived(state,linked);area=linked.areaId;if(linked.parentId)expandedItems.add(linked.parentId)}
-function captureView(){return {page,archiveMode,area,status,scope,query,priorityFilter,moreFilters,windows:[...collections.limits]}}
+function captureView(){return {page,archiveMode,area,status,scope,query,priorityFilter,windows:[...collections.limits]}}
 function restoreView(view){
   archiveMode=view.archiveMode===true;
   page=view.page==='agenda'?'plan':['plan','areas','settings','reminders'].includes(view.page)?view.page:'plan';
@@ -300,7 +368,7 @@ function restoreView(view){
   scope=['all','overdue','today','upcoming','undated'].includes(view.scope)?view.scope:'all';
   query=typeof view.query==='string'?view.query.slice(0,200):'';
   priorityFilter=['all',...PRIORITIES.map(p=>p.id)].includes(view.priorityFilter)?view.priorityFilter:'all';
-  moreFilters=view.moreFilters===true;collapsedMatches.clear();collections.reset();
+  collapsedMatches.clear();collections.reset();
   if(Array.isArray(view.windows))for(const entry of view.windows.slice(0,1000))if(Array.isArray(entry)&&typeof entry[0]==='string'&&Number.isSafeInteger(entry[1])&&entry[1]>=0&&entry[1]<=10000)collections.limits.set(entry[0],entry[1]);
   render();enterView();
 }

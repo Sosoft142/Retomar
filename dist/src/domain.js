@@ -118,7 +118,7 @@ export function selectPlanningItems(items,options={}){
   const matched=selectItems(items,options),ids=new Set(matched.map(t=>t.parentId||t.id));
   return selectItems(items.filter(t=>!t.parentId&&ids.has(t.id)),{order:options.order||'date'});
 }
-export function groupItems(items,today){const out={overdue:[],today:[],upcoming:[],undated:[],closed:[]};for(const t of items){const key=!openItem(t)?'closed':!t.date?'undated':t.date<today?'overdue':t.date===today?'today':'upcoming';out[key].push(t)}for(const key in out)out[key]=selectItems(out[key],{order:'date'});return out}
+export function groupItems(items,today,isOverdue=t=>t.date<today){const out={overdue:[],today:[],upcoming:[],undated:[],closed:[]};for(const t of items){const key=!openItem(t)?'closed':!t.date?'undated':isOverdue(t)?'overdue':t.date===today?'today':'upcoming';out[key].push(t)}for(const key in out)out[key]=selectItems(out[key],{order:'date'});return out}
 // Reutiliza o texto pesquisável de registros curtos; notas extensas não ganham
 // uma cópia permanente. Comparar os campos invalida edições na mesma instância.
 const searchTextCache=new WeakMap();
@@ -129,8 +129,8 @@ function searchableText(item){
   if(text.length<=1024)searchTextCache.set(item,{title:item.title,notes:item.notes,text});else searchTextCache.delete(item);
   return text;
 }
-export function selectItems(items,{status='all',scope='all',query='',priority='all',order='date',today}={}){
-  const q=query.trim().toLocaleLowerCase('pt-BR');const result=items.filter(t=>!t.deleted&&(status==='all'||(status==='open'?openItem(t):status==='closed'?!openItem(t):t.status===status))&&(priority==='all'||t.priority===priority)&&(!q||searchableText(t).includes(q))&&(scope==='all'||(scope==='undated'?!t.date:scope==='today'?t.date===today:scope==='overdue'?!!t.date&&t.date<today&&openItem(t):!!t.date&&t.date>today&&openItem(t))));
+export function selectItems(items,{status='all',scope='all',query='',priority='all',order='date',today,isOverdue=t=>!!t.date&&t.date<today&&openItem(t)}={}){
+  const q=query.trim().toLocaleLowerCase('pt-BR');const result=items.filter(t=>!t.deleted&&(status==='all'||(status==='open'?openItem(t):status==='closed'?!openItem(t):t.status===status))&&(priority==='all'||t.priority===priority)&&(!q||searchableText(t).includes(q))&&(scope==='all'||(scope==='undated'?!t.date:scope==='today'?t.date===today:scope==='overdue'?isOverdue(t):!!t.date&&t.date>today&&openItem(t))));
   const byDate=(a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||(a.time||'23:59').localeCompare(b.time||'23:59');const byPriority=(a,b)=>PRIORITIES.findIndex(p=>p.id===a.priority)-PRIORITIES.findIndex(p=>p.id===b.priority);
   return result.sort((a,b)=>(order==='manual'?a.order-b.order:order==='title'?a.title.localeCompare(b.title,'pt-BR'):order==='newest'?b.createdAt.localeCompare(a.createdAt):order==='priority'?byPriority(a,b)||a.order-b.order||byDate(a,b):byDate(a,b)||byPriority(a,b))||a.id.localeCompare(b.id));
 }

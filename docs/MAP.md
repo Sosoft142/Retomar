@@ -1,5 +1,7 @@
 # Onde procurar
 
+Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.md).
+
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
 | Renderização, ações e formulários do app | `dist/src/app.js`, `dist/src/rendering.js`, `dist/retomar.css` | `forms`, `fluency`, `extreme`; revisão visual |

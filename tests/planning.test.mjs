@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,activeAreas,updateItem,deleteItem,validateState} from '../dist/src/domain.js';
-import {PLANNING_KEY,defaults,validatePreferences,PlanningPreferences,migratePlanningPreferences,validZone,zonedInstant,addDays,dateInZone,dueReminders,postpone,reminderDate} from '../dist/src/planning.js';
+import {initialState,activeAreas,updateItem,deleteItem,validateState,visibleItems,selectItems,groupItems} from '../dist/src/domain.js';
+import {PLANNING_KEY,defaults,validatePreferences,PlanningPreferences,migratePlanningPreferences,validZone,zonedInstant,addDays,dateInZone,createDeadlineContext,dueReminders,postpone,reminderDate} from '../dist/src/planning.js';
 const now=new Date('2026-10-30T15:00:00Z'),clone=structuredClone;
 const prefs=()=>{const p=defaults();p.timeZone='America/Sao_Paulo';return p};
 function add(s,id,fields={}){return updateItem(s,id,{title:'Fictício '+id,notes:'',areaId:activeAreas(s)[0].id,status:'pending',priority:'normal',date:'',time:'',...fields},'qa')}
@@ -39,4 +39,37 @@ for(const version of [1,2])test('migração da agenda v'+version+' preserva fuso
 });
 test('falha de persistência da migração mantém os bytes e usa preferências sem agenda na sessão',()=>{
  const old={version:2,calendar:{timeZone:'America/Sao_Paulo'},reminders:prefs().reminders,dismissals:{}},raw=JSON.stringify(old),disk=storage(raw);disk.setItem=()=>{throw Error('quota')};const store=new PlanningPreferences(disk);assert.equal(store.value.version,3);assert.ok(!store.value.calendar);assert.equal(disk.raw(),raw);assert.ok(store.error);
+});
+
+test('filtro, agrupamento e lembretes concordam sobre horários vencidos hoje, sem data e encerrados',()=>{
+ const s=fixture();add(s,'canceled',{date:'2026-10-29',time:'08:00',status:'canceled'});
+ const clock=createDeadlineContext(now,prefs().timeZone),isOverdue=t=>clock.forItem(t).overdue,items=visibleItems(s);
+ const filtered=selectItems(items,{scope:'overdue',today:clock.today,isOverdue}).map(t=>t.id).sort();
+ const grouped=groupItems(items,clock.today,isOverdue).overdue.map(t=>t.id).sort();
+ const reminders=dueReminders(s,prefs(),now).filter(x=>x.overdue).map(x=>x.item.id).sort();
+ assert.deepEqual(filtered,['late','past-hour']);assert.deepEqual(grouped,filtered);assert.deepEqual(reminders,filtered);
+ assert.equal(clock.forItem(s.items.undated).deadline,null);
+});
+test('um prazo só vence depois do instante exato e o cálculo compartilhado não confunde status',()=>{
+ const s=initialState();add(s,'open',{date:'2026-10-30',time:'12:00'});add(s,'done',{date:'2026-10-30',time:'12:00',status:'done'});add(s,'canceled',{date:'2026-10-30',time:'12:00',status:'canceled'});
+ const exact=createDeadlineContext(now,'America/Sao_Paulo');assert.equal(exact.forItem(s.items.open).overdue,false);
+ const after=createDeadlineContext(new Date(+now+1),'America/Sao_Paulo');
+ assert.equal(after.forItem(s.items.done).overdue,false);assert.equal(after.forItem(s.items.open).overdue,true);assert.equal(after.forItem(s.items.canceled).overdue,false);
+ updateItem(s,'open',{status:'done'},'qa');assert.equal(after.forItem(s.items.open).overdue,false);
+});
+test('sem horário vence na virada do dia do fuso escolhido, inclusive para os filtros',()=>{
+ const s=initialState();add(s,'date-only',{date:'2026-10-30'});
+ for(const [instant,expected] of [['2026-10-31T02:59:59.999Z',false],['2026-10-31T03:00:00Z',true]]){
+  const clock=createDeadlineContext(new Date(instant),'America/Sao_Paulo'),isOverdue=t=>clock.forItem(t).overdue;
+  assert.equal(isOverdue(s.items['date-only']),expected);
+  assert.equal(selectItems(visibleItems(s),{scope:'overdue',today:clock.today,isOverdue}).length,expected?1:0);
+ }
+ const instant=new Date('2026-10-31T01:00Z'),local=createDeadlineContext(instant,'America/Sao_Paulo'),utc=createDeadlineContext(instant,'UTC');
+ assert.equal(local.today,'2026-10-30');assert.equal(utc.today,'2026-10-31');
+ assert.equal(local.forItem(s.items['date-only']).overdue,false);assert.equal(utc.forItem(s.items['date-only']).overdue,true);
+});
+test('horário inexistente usa a mesma sinalização e classificação na lista e nos lembretes',()=>{
+ const s=initialState();add(s,'dst',{date:'2026-03-08',time:'02:30'});const p=prefs();p.timeZone='America/New_York';
+ const instant=new Date('2026-03-08T12:00Z'),clock=createDeadlineContext(instant,p.timeZone),entry=dueReminders(s,p,instant)[0];
+ assert.equal(clock.forItem(s.items.dst).invalidTime,true);assert.equal(clock.forItem(s.items.dst).overdue,entry.overdue);assert.equal(clock.forItem(s.items.dst).deadline,entry.deadline);
 });

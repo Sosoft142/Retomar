@@ -9,6 +9,9 @@ Derivados das solicitações e do uso prioritário no celular.
 - Poucos controles permanentes. Campos principais visíveis no editor; informações opcionais podem ser recolhidas.
 - Espaçamento regular sem desperdiçar a tela. Evitar títulos, explicações e resumos repetidos.
 - Subitens devem continuar legíveis na menor largura, sem recuos cumulativos excessivos.
+- No agrupamento por prazo, cada subitem aparece somente no próprio grupo e identifica a tarefa principal. A hierarquia expansível fica nas outras visualizações.
+- Atraso considera o horário e o fuso configurado em todo o app. Tarefa sem horário vence ao terminar o dia nesse fuso; concluídas e canceladas não ficam atrasadas.
+- Filtros e ordenação usam um único painel sobre o conteúdo, com aplicação explícita e resumo das escolhas. No celular, folha inferior com rodapé acessível; no PC, janela compacta junto ao botão. Abrir o painel não deve acionar o teclado.
 - Arquivar deve preservar conteúdo e permitir restauração; concluir deve continuar acessível diretamente.
 - Conferir lista preenchida, título longo, subitem expandido, formulário e lembretes em celular; medir botões não substitui inspecionar a hierarquia.
 - Preservar dados, sincronização, instalação, voltar do Android e confirmação de descarte em qualquer revisão visual.

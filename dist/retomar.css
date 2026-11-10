@@ -1236,3 +1236,29 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 
 .settings-category>.settings-status{font-size:14px;font-weight:600;color:var(--muted);margin:0 0 14px}
 .settings-category>summary .sync-dot{display:inline-block;margin-left:8px}
+
+/* Controles da visualização: escolhas sobre a lista, sem empurrar as tarefas. */
+.view-selection{margin:10px 0 0;font-size:12px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.view-options-dialog{position:fixed;inset:auto;left:var(--options-left,16px);top:var(--options-top,80px);margin:0;width:380px;max-width:calc(100vw - 32px);border-radius:20px}
+.view-options-dialog::backdrop{background:rgba(19,44,61,.18);backdrop-filter:none;-webkit-backdrop-filter:none}
+.view-options-dialog .dialoghead{grid-template-columns:minmax(0,1fr) 40px;padding:18px 20px 12px;gap:12px}
+.view-options-dialog #modal-home{display:none}
+.view-options-dialog .dialoghead h2{font-size:19px;line-height:1.4}
+.view-options-dialog .dialoghead .iconbtn{width:40px;height:40px}
+.view-options-dialog .dialogbody{padding:6px 20px 20px}
+.view-options-dialog .field{margin-bottom:16px}
+.view-options-dialog .field label{font-size:13px;margin-bottom:7px}
+.view-options-dialog select{min-height:44px}
+.view-options-dialog #reset-view-filters{min-height:40px;margin-top:-4px;padding-inline:0}
+.view-options-dialog .dialogactions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:4px;padding-top:16px;background:transparent}
+.view-options-dialog .dialogactions>.btn{width:100%;min-height:44px;font-size:14px;padding:10px 12px}
+.task-content>.parent-link{display:block;min-height:0;margin:0 0 8px;padding:0;color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:650px){
+ .view-options-dialog{inset:auto 0 0;width:100%;max-width:100%;border-radius:24px 24px 0 0}
+ .view-options-dialog[open]{max-height:82dvh}
+ .view-options-dialog .dialoghead{padding:16px 20px 10px}
+ .view-options-dialog .dialogbody{padding:6px 20px 20px}
+ .view-options-dialog select{min-height:48px}
+ .view-options-dialog .dialogactions{background:var(--glass-strong);padding-bottom:2px}
+ .view-options-dialog .dialogactions>.btn{min-height:48px}
+}
