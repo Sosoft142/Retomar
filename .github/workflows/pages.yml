@@ -48,6 +48,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+      - name: Instalar dependências de teste
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verificar o aplicativo
         run: npm run verify
 

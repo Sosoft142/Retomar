@@ -4,12 +4,13 @@ A titular confirmou entrega no horário com o S24 fechado e vibração. A aprese
 
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
+- 1.3: ações rápidas de prazo, prioridade e andamento; Desfazer da última alteração da sessão com proteção de concorrência; seleção e ações em lote; até 20 visualizações favoritas por aparelho. [Relatório](reports/2026-11-10-acoes-e-visualizacoes.md). Nenhum navegador foi acessado nesta entrega: revisão visual e testes no S24/conta real pendentes por restrição da titular. Formulários e fluxos são exercitados em uma simulação de DOM em Node, sem navegador, recursos externos ou autenticação.
 - 1.2: lista compacta com colunas no PC; cartões com grade adaptável; editor lateral no PC e seções de gerenciamento reorganizadas no celular. Prioridades têm nome visível e áreas têm ponto de cor próprio. Notificações mostram permissão, próximo aviso calculado, última confirmação e motivos de exclusão, preservando a confirmação anterior em falhas. [Relatório da entrega](reports/2026-11-10-melhorias-4-8.md). Itens 1–8 concluídos.
 - 1.1: subitens aparecem uma única vez no agrupamento por prazo, com identificação do pai. Planejamento, filtros e lembretes compartilham a regra de atraso com horário e fuso. Filtros/ordenação abrem um painel por vez, em folha inferior no celular e janela compacta no PC; escolhas aplicadas ficam resumidas na tela. [Relatório da entrega](reports/2026-11-10-primeiras-melhorias.md). [Lista completa de próximas melhorias](IMPROVEMENTS.md): itens 1–3 concluídos em 1.1; 4–8 concluídos em 1.2.
 - 1.0.2: fundos dos itens e lembretes voltam a usar gradientes claros e translúcidos, derivados da área ou da cor personalizada. Bordas iluminadas, sombras e botões de gerenciamento seguem a estética suave do app. Conferência no navegador em 360, 390 e 1200 px, incluindo cores próprias escuras e saturadas.
 - 1.0.1: lembretes usam as mesmas cores e prioridade visual do planejamento. Busca, botão Áreas, recuos e formulário corrigidos após revisão responsiva. [Relatório visual](reports/2026-11-09-alinhamento-lembretes.md).
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **1.2**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **1.3**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.

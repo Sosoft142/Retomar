@@ -19,3 +19,6 @@ Derivados das solicitações e do uso prioritário no celular.
 - Lista compacta prioriza leitura rápida, com colunas alinhadas em telas de PC. Cartões têm notas e maior respiro; a grade acompanha a largura disponível e o cartão com subitens abertos ocupa uma linha completa.
 - Gerenciamento usa painel lateral no PC, com a tarefa selecionada identificada ao fundo. Ações de notificação, organização e exclusão ficam em seções próprias; salvar e cancelar permanecem acessíveis durante a rolagem.
 - Mostrar nomes de prioridade e ponto da cor da área, inclusive quando a tarefa tem outra cor. Explicar próximo aviso calculado, última aceitação do servidor e motivos de ausência; confirmação do agendamento não prova recebimento.
+- Prazo, prioridade e andamento são alvos de edição rápida, com nome acessível e foco visível. A seleção substitui temporariamente o controle de conclusão, mantém contagem explícita e limpa a seleção ao mudar filtros. Não selecionar automaticamente subitens recolhidos.
+- Desfazer permanece na barra enquanto houver uma alteração reversível nesta sessão. Mudanças de outros registros são preservadas; alterações posteriores nos mesmos registros impedem a reversão.
+- Favoritas armazenam apenas parâmetros da visualização neste aparelho. Remover ou renomear uma favorita não altera tarefas.
