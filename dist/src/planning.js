@@ -39,14 +39,31 @@ export function zonedInstant(date,time,zone){
   return Math.min(...matches);
 }
 export const reminderSignature=(t,zone)=>JSON.stringify([t.date,t.time,t.revision?.counter,t.revision?.deviceId,zone]);
+// Um relógio por renderização evita divergências entre os prazos da mesma tela.
+export function createDeadlineContext(now=new Date(),zone=defaultTimeZone()){
+  const instant=+now,today=dateInZone(now,zone),cache=new Map();
+  function forItem(item){
+    if(!item.date)return {deadline:null,overdue:false,invalidTime:false};
+    const key=item.date+'|'+item.time;
+    let value=cache.get(key);
+    if(!value){
+      let deadline,invalidTime=false;
+      try{deadline=zonedInstant(item.date,item.time||'23:59',zone)+(item.time?0:59999)}
+      catch{invalidTime=true;deadline=Date.parse(item.date+'T23:59:59Z')}
+      value={deadline,invalidTime};cache.set(key,value);
+    }
+    const overdue=openItem(item)&&(item.time?value.deadline<instant:item.date<today);
+    return {...value,overdue};
+  }
+  return {today,forItem};
+}
 export function dueReminders(state,prefs,now=new Date()){
   if(!prefs.reminders.enabled)return [];
-  const zone=prefs.timeZone,today=dateInZone(now,zone),last=addDays(today,prefs.reminders.aheadDays),cache=new Map(),rank=new Map(PRIORITIES.map((p,i)=>[p.id,i]));
+  const zone=prefs.timeZone,deadlines=createDeadlineContext(now,zone),today=deadlines.today;
+  const last=addDays(today,prefs.reminders.aheadDays),rank=new Map(PRIORITIES.map((p,i)=>[p.id,i]));
   return visibleItems(state).filter(t=>openItem(t)&&t.date&&t.date<=last&&(prefs.reminders.overdue||t.date>=today)).flatMap(t=>{
     const dismissed=prefs.dismissals[t.id];if(dismissed?.signature===reminderSignature(t,zone)&&dismissed.until>+now)return [];
-    const key=t.date+'|'+t.time;let cached=cache.get(key);
-    if(!cached){let deadline,invalidTime=false;try{deadline=zonedInstant(t.date,t.time||'23:59',zone)+(t.time?0:59999)}catch{invalidTime=true;deadline=Date.parse(t.date+'T23:59:59Z')}cached={deadline,invalidTime};cache.set(key,cached)}const {deadline,invalidTime}=cached;
-    const overdue=t.time?deadline<+now:t.date<today;
+    const {deadline,overdue,invalidTime}=deadlines.forItem(t);
     if(overdue&&!prefs.reminders.overdue)return [];
     return [{item:t,deadline,overdue,invalidTime,group:overdue?'overdue':t.date===today?'today':'upcoming'}];
   }).sort((a,b)=>a.deadline-b.deadline||rank.get(a.item.priority)-rank.get(b.item.priority)||a.item.id.localeCompare(b.item.id));
