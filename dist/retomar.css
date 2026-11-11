@@ -1347,6 +1347,59 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .quick-edit>.due-date,.quick-edit>.no-date{font-size:inherit;margin:0;white-space:normal}
 .quick-edit>.task-priority-label{font-size:inherit}
 .workflow-toolbar{margin:4px 0 12px}
+.viewnav.calendar-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,420px);margin:0 0 22px}
+.calendar-nav .view-tab{min-height:44px;font-size:13px}
+.day-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:20px 0}
+.day-controls .field{margin:0;min-width:0}
+.day-controls input,.day-controls select{min-height:44px}
+.day-controls .iconbtn{height:44px;flex-shrink:0}
+.day-controls .textbtn{min-height:44px}
+.day-connection{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;border:1px solid var(--glass-border);border-radius:18px;padding:18px 20px;margin:16px 0 24px;background:linear-gradient(125deg,rgba(228,249,245,.72),rgba(238,242,255,.75));box-shadow:var(--shadow)}
+.day-connection>div{min-width:0}
+.day-connection strong{font-size:14px;font-weight:600}
+.day-connection p,.day-connection small{font-size:13px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}
+.day-connection-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px}
+.day-connection-actions .btn,.day-connection-actions .textbtn{font-size:13px;min-height:40px;white-space:normal}
+.day-grid{display:grid;gap:18px;align-items:start}
+.day-grid-week{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))}
+.day-column{min-width:0;padding:16px;border:1px solid var(--glass-border);border-radius:20px;background:linear-gradient(140deg,rgba(255,255,255,.57),rgba(246,250,255,.5))}
+.day-column-heading{margin:0 0 16px}
+.day-column-heading h2{font-size:16px;line-height:1.5;text-transform:none;overflow-wrap:anywhere}
+.day-column-heading>span{font-size:12px;line-height:1.6;color:var(--muted)}
+.day-event,.day-task{min-width:0;margin:12px 0;padding:14px 16px;border:1px solid rgba(255,255,255,.9);border-radius:14px;background:linear-gradient(125deg,rgba(255,255,255,.92),rgba(244,248,253,.82));box-shadow:0 5px 15px rgba(32,70,90,.05);overflow-wrap:anywhere}
+.day-event{border-left:4px solid var(--event-color);background:linear-gradient(125deg,color-mix(in srgb,var(--event-color) 8%,white),rgba(255,255,255,.86))}
+.day-entry-head{display:flex;justify-content:space-between;align-items:center;gap:4px 12px;flex-wrap:wrap;margin-bottom:6px}
+.day-entry-time{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.day-entry-source{font-size:11px;color:var(--muted);line-height:1.5}
+.day-event h3,.day-task h3{font-size:16px;line-height:1.5;min-width:0;font-weight:600}
+.day-task-title{display:flex;justify-content:space-between;align-items:start;gap:8px}
+.day-task-title .iconbtn{flex-shrink:0;width:36px;min-width:36px;height:36px}
+.day-event-location{display:flex;align-items:start;gap:6px;font-size:13px;line-height:1.6;margin:8px 0;color:var(--muted)}
+.day-event-location .ui-icon{width:15px;height:15px;flex-shrink:0;margin-top:3px}
+.day-event details{font-size:13px;line-height:1.7;margin-top:10px}
+.day-event summary{cursor:pointer;color:var(--muted)}
+.day-event-description{white-space:pre-wrap;padding-top:8px}
+.day-event>a{font-size:12px;min-height:36px;display:inline-flex;align-items:center;gap:5px;margin-top:5px}
+.day-event>a .ui-icon{width:14px;height:14px}
+.day-empty{font-size:13px;line-height:1.8;color:var(--muted);padding:10px 0}
+.day-other-tasks{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0}
+.calendar-choices{display:grid;gap:8px;margin:16px 0}
+.calendar-choices .planning-check span{overflow-wrap:anywhere}
+.calendar-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+@media(max-width:650px){
+ .viewnav.calendar-nav{width:100%;margin-bottom:18px}
+ .day-controls{display:grid;grid-template-columns:36px minmax(0,1fr) 36px;gap:8px}
+ .day-controls>.field:first-of-type{grid-column:2;grid-row:1}
+ .day-controls>.field:nth-of-type(2){grid-column:2/4;grid-row:2}
+ .day-controls>[data-action=calendar-prev]{grid-column:1;grid-row:1}
+ .day-controls>[data-action=calendar-next]{grid-column:3;grid-row:1}
+ .day-controls .field input,.day-controls .field select{width:100%;min-width:0;font-size:13px;padding-inline:8px}
+ .day-controls .iconbtn{min-width:36px;width:36px}
+ .day-controls>.textbtn{grid-column:1;grid-row:2;justify-self:center;min-height:44px;padding-inline:0;font-size:12px}
+ .day-connection{padding:14px;border-radius:16px;gap:10px}
+ .day-column{padding:12px}
+ .day-event,.day-task{padding:12px}
+}
 .workflow-tools{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap}
 .workflow-tools .textbtn{display:inline-flex;align-items:center;gap:6px;min-height:36px;font-size:13px;padding:4px 0;color:var(--muted)}
 .workflow-tools .textbtn.selected{color:var(--accent);font-weight:600}

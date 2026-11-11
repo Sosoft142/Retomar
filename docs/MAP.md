@@ -4,6 +4,8 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
+| Meu dia, autorização Google e consulta somente leitura | `dist/src/calendar.js`, `calendar-ui.js`; `docs/GOOGLE-AGENDA.md` | `calendar`, `workflow-ui`; login real e revisão visual pendentes |
+| Retornar à versão anterior à agenda | `scripts/calendar-rollback.mjs` | `calendar-rollback`; ponto preservado 1.3 |
 | Ações rápidas, seleção/lote, reversão e visualizações locais | `dist/src/workflows.js`, `workflow-ui.js`, integração em `app.js` | `workflows`, `workflow-ui`, `fluency`; revisão visual pendente em 1.3 |
 | Renderização, ações e formulários do app | `dist/src/app.js`, `dist/src/rendering.js`, `dist/retomar.css` | `forms`, `fluency`, `extreme`; revisão visual |
 | Validação, prioridades e hierarquia | `dist/src/domain.js` | `core`, `subitems`, `extreme`, `checkup` |

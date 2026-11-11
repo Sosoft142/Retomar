@@ -5,6 +5,7 @@ import {JSDOM} from 'jsdom';
 import {initialState,activeAreas,updateItem} from '../dist/src/domain.js';
 import {DATA_KEY} from '../dist/src/repository.js';
 import {VIEWS_KEY} from '../dist/src/workflows.js';
+import {GOOGLE_SCOPES,CALENDAR_KEY} from '../dist/src/calendar.js';
 
 // Simulação de DOM em Node: não abre navegador, não carrega recursos nem faz login.
 test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',async t=>{
@@ -23,6 +24,15 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
   const s=initialState(),area=activeAreas(s)[0].id;
   for(const [id,parentId] of [['p',''],['c','p'],['b','']])updateItem(s,id,{title:'Teste '+id,notes:'',areaId:area,parentId,date:'2200-11-12',time:id==='c'?'00:00':'14:35',priority:'normal',status:'pending'},'fixture');
   w.localStorage.setItem(DATA_KEY,JSON.stringify(s));
+  const calendarRequests=[];let googleConfig,googleFailure=false,holdGoogle=false,releaseGoogle;
+  w.google={accounts:{oauth2:{initTokenClient(config){googleConfig=config;return {requestAccessToken(){queueMicrotask(()=>config.callback({access_token:'calendar_ui_token',scope:GOOGLE_SCOPES.join(' '),expires_in:3600}));}}}}}};
+  w.fetch=async(url,options)=>{
+    calendarRequests.push({url,options});const isList=new URL(url).pathname.endsWith('/calendarList');
+    const items=isList?[{id:'test@example.invalid',summary:'Agenda fictícia',primary:true,backgroundColor:'#123456'}]:[{id:'event',summary:'Evento <script>fictício</script>',location:'Local de teste',start:{dateTime:'2200-11-12T09:00:00-03:00'},end:{dateTime:'2200-11-12T10:00:00-03:00'},htmlLink:'https://calendar.google.com/calendar/event?eid=test'}];
+    const result={ok:!googleFailure,status:googleFailure?401:200,json:async()=>({items})};
+    if(holdGoogle&&!isList)return new Promise(resolve=>{releaseGoogle=()=>resolve(result);});return result;
+  };
+
   const settle=async()=>{await new Promise(resolve=>setImmediate(resolve));await new Promise(resolve=>nativeTimeout(resolve,10));};
   const node=selector=>{const el=w.document.querySelector(selector);assert.ok(el,'Elemento ausente: '+selector);return el;};
   const click=async selector=>{node(selector).click();await settle();};
@@ -71,6 +81,23 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
     await t.test('renomear e remover favoritas mantém o planejamento',async()=>{
       await click('[data-action="workflow-views"]');await click('[data-view-rename]');fill('#view-rename','Nome atualizado');await submit();assert.equal(JSON.parse(w.localStorage.getItem(VIEWS_KEY))[0].name,'Nome atualizado');const raw=w.localStorage.getItem(DATA_KEY);
       await click('[data-action="workflow-views"]');await click('[data-view-remove]');assert.deepEqual(JSON.parse(w.localStorage.getItem(VIEWS_KEY)),[]);assert.equal(w.localStorage.getItem(DATA_KEY),raw);await click('[data-workflow-cancel]');
+    });
+    await t.test('Meu dia funciona sem Google e mantém as tarefas no formato anterior',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);await click('[data-action="page"][data-page="day"]');fill('#calendar-date','2200-11-12');node('#calendar-date').dispatchEvent(new w.Event('change',{bubbles:true}));await settle();assert.equal(w.document.querySelectorAll('.day-task').length,3);assert.equal(calendarRequests.length,0);assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+      await click('[data-action="calendar-connect"]');fill('#google-client-id','invalid');await submit();assert.match(node('dialog .formerror').textContent,/ID público/);assert.equal(calendarRequests.length,0);fill('#google-client-id','12345-public.apps.googleusercontent.com');await submit();
+    });
+    await t.test('conexão somente de leitura exibe eventos escapados e mantém token fora do armazenamento',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);await click('[data-action="calendar-connect"]');assert.equal(calendarRequests.length,0);await click('[data-action="calendar-connect"]');assert.equal(calendarRequests.length,2);assert.equal(w.document.querySelectorAll('.day-event').length,1);assert.equal(node('.day-event h3').textContent,'Evento <script>fictício</script>');assert.equal(w.document.querySelectorAll('.day-event script').length,0);assert.equal(w.localStorage.getItem(DATA_KEY),raw);assert.equal(googleConfig.scope,GOOGLE_SCOPES.join(' '));
+      for(const call of calendarRequests)assert.equal(call.options.method,'GET');for(let i=0;i<w.localStorage.length;i++)assert.ok(!w.localStorage.getItem(w.localStorage.key(i)).includes('calendar_ui_token'));
+    });
+    await t.test('falha do Google informa expiração sem repetir consultas em ciclo ou afetar tarefas',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);googleFailure=true;await click('[data-action="calendar-refresh"]');const count=calendarRequests.length;await settle();assert.equal(calendarRequests.length,count);assert.match(node('.day-connection').textContent,/expirou/);assert.equal(w.localStorage.getItem(DATA_KEY),raw);assert.equal(w.document.querySelectorAll('.day-task').length,3);googleFailure=false;
+    });
+    await t.test('desconectar ignora consulta tardia e remove eventos desta sessão',async()=>{
+      await click('[data-action="calendar-connect"]');holdGoogle=true;await click('[data-action="calendar-refresh"]');assert.equal(typeof releaseGoogle,'function');await click('[data-action="calendar-disconnect"]');releaseGoogle();await settle();assert.equal(w.document.querySelectorAll('.day-event').length,0);assert.equal(w.document.querySelectorAll('.day-task').length,3);holdGoogle=false;
+    });
+    await t.test('desativar a integração retorna ao planejamento sem alterar dados ou favoritas',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY),views=w.localStorage.getItem(VIEWS_KEY);await click('[data-action="page"][data-page="settings"]');node('details.settings-category').open=true;await click('[data-action="calendar-settings"]');node('#calendar-enabled').checked=false;await submit();assert.equal(JSON.parse(w.localStorage.getItem(CALENDAR_KEY)).enabled,false);assert.equal(w.document.querySelector('[data-action="page"][data-page="day"]'),null);assert.equal(w.localStorage.getItem(DATA_KEY),raw);assert.equal(w.localStorage.getItem(VIEWS_KEY),views);
     });
   }finally{
     dom.window.close();for(const h of intervals)clearInterval(h);for(const h of timeouts)clearTimeout(h);globalThis.setInterval=nativeInterval;globalThis.setTimeout=nativeTimeout;
