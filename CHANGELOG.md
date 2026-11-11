@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.4 — Meu dia e Google Agenda opcional
+
+Consulta de compromissos em um dia ou sete dias, junto às tarefas, com seleção de agendas. Acesso somente de leitura, token e eventos em memória, conexão iniciada pela titular e falhas isoladas do planejamento. A configuração OAuth do Google precisa ser feita pela titular; o recurso pode ser usado apenas com tarefas ou desativado.
+
+Versão 1.3 preservada antes da integração em branch própria, com preparação e teste de restauração. [Configuração e retorno](docs/GOOGLE-AGENDA.md) · [Relatório e limites](docs/reports/2026-11-11-google-agenda.md).
+
 ## 1.3 — ações rápidas, seleção e visualizações favoritas
 
 Prazo, prioridade e andamento abrem editores compactos ao toque. Desfazer reverte a última alteração da sessão com revisões novas e rejeita registros alterados depois; inclui área, organização, arquivamento, edição e exclusão. A seleção substitui o controle de conclusão temporariamente e permite editar tarefas em lote, com revisão de concorrência e preservação da hierarquia. Visualizações favoritas salvam área, busca, filtros, agrupamento e ordenação neste aparelho e permitem aplicar, renomear e remover.
