@@ -27,7 +27,7 @@ export async function handleAgenda(request,env){
       if(!['/agenda/status','/agenda/token','/agenda/account'].includes(url.pathname))return wrap(json({error:'Not found'},404));
       const key=request.headers.get('Authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];if(!key)return wrap(json({error:'Unauthorized'},401));account=await hash(key);if(request.method==='POST')body=await limited(request);
     }
-    const headers=new Headers(request.headers);headers.set('X-Retomar-Agenda-Account',account);if(body!==undefined)headers.set('Content-Type','application/json');
+    const headers=new Headers(request.headers);headers.delete('Content-Length');headers.delete('Authorization');headers.set('X-Retomar-Agenda-Account',account);if(body!==undefined)headers.set('Content-Type','application/json');
     const forwarded=new Request(request.url,{method:request.method,headers,...(body!==undefined?{body}:{})});
     const response=await env.AGENDA_ACCOUNTS.get(env.AGENDA_ACCOUNTS.idFromName(account)).fetch(forwarded);return callback?response:wrap(response);
   }catch(e){return callback?page('Não foi possível concluir a conexão. Tente novamente pelo Retomar.',e.status||503):wrap(json({error:e.status===413?'Request too large':'Agenda service unavailable'},e.status||503));}
