@@ -1,0 +1,40 @@
+name: Verificar ativação da agenda no Windows
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - server/**
+      - tests/agenda-*.test.mjs
+      - tests/calendar-deployment.test.mjs
+      - tests/push-deployment.test.mjs
+      - .github/workflows/agenda-windows.yml
+  push:
+    branches: [main]
+    paths:
+      - server/**
+      - tests/agenda-*.test.mjs
+      - tests/calendar-deployment.test.mjs
+      - tests/push-deployment.test.mjs
+      - .github/workflows/agenda-windows.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-cli:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    env:
+      RETOMAR_VERIFY_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v6
+      - name: Preparar Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verificar PowerShell 5.1, entrada e implantação simulada
+        shell: powershell
+        run: node --test tests/agenda-powershell.test.mjs tests/agenda-input.test.mjs tests/calendar-deployment.test.mjs tests/push-deployment.test.mjs
