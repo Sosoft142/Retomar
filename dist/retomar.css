@@ -1364,10 +1364,15 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .day-grid-week{grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr))}
 .day-column{min-width:0;padding:16px;border:1px solid var(--glass-border);border-radius:20px;background:linear-gradient(140deg,rgba(255,255,255,.57),rgba(246,250,255,.5))}
 .day-column-heading{margin:0 0 16px}
+.day-column-heading{display:flex;align-items:start;justify-content:space-between;gap:12px}
+.day-column-heading>div{min-width:0}
+.day-column-heading>div>span{font-size:12px;line-height:1.6;color:var(--muted)}
 .day-column-heading h2{font-size:16px;line-height:1.5;text-transform:none;overflow-wrap:anywhere}
 .day-column-heading>span{font-size:12px;line-height:1.6;color:var(--muted)}
 .day-event,.day-task{min-width:0;margin:12px 0;padding:14px 16px;border:1px solid rgba(255,255,255,.9);border-radius:14px;background:linear-gradient(125deg,rgba(255,255,255,.92),rgba(244,248,253,.82));box-shadow:0 5px 15px rgba(32,70,90,.05);overflow-wrap:anywhere}
-.day-event{border-left:4px solid var(--event-color);background:linear-gradient(125deg,color-mix(in srgb,var(--event-color) 8%,white),rgba(255,255,255,.86))}
+.day-event{border-left:5px solid var(--event-color);background:linear-gradient(125deg,color-mix(in srgb,var(--event-color) 24%,white),color-mix(in srgb,var(--event-color) 12%,white))}
+.day-entry-source .event-color-dot{display:inline-block;width:10px;height:10px;vertical-align:baseline;margin-right:6px;border-radius:50%;background:var(--event-color);border:1px solid rgba(32,52,63,.18)}
+.day-event :is(.day-entry-source,.day-event-location,details,summary,a){color:#3b4c58}
 .day-entry-head{display:flex;justify-content:space-between;align-items:center;gap:4px 12px;flex-wrap:wrap;margin-bottom:6px}
 .day-entry-time{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .day-entry-source{font-size:11px;color:var(--muted);line-height:1.5}
@@ -1386,6 +1391,29 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .calendar-choices{display:grid;gap:8px;margin:16px 0}
 .calendar-choices .planning-check span{overflow-wrap:anywhere}
 .calendar-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.day-planning-tools{margin:16px 0 20px;min-width:0}
+.day-planning-toolbar{display:flex;align-items:center;gap:10px 20px;flex-wrap:wrap;margin-bottom:12px}
+.day-layout-tabs{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--glass)}
+.day-layout-tabs button{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;min-height:40px;border-radius:8px;font-size:13px;color:var(--muted)}
+.day-layout-tabs button[aria-pressed=true]{background:var(--glass-strong);color:var(--accent);box-shadow:var(--shadow);font-weight:600}
+.day-layout-tabs .ui-icon{width:17px;height:17px}
+.day-task-filters{display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(150px,1fr) minmax(140px,1fr) auto;gap:12px;align-items:end}
+.day-task-filters .field{margin:0}
+.day-task-filters label{display:block;font-size:12px;margin-bottom:6px}
+.day-task-filters .searchline{min-height:46px;max-width:none;width:100%}
+.day-task-filters .textbtn{min-height:44px}
+.day-entries>.day-task{padding:0;border:0;background:transparent;box-shadow:none}
+.day-task-source{font-size:11px;line-height:1.5;color:var(--muted);margin:0 0 5px 3px}
+.day-entries.layout-cards .day-task>.task-content{padding:14px}
+.day-entries.layout-compact .day-event{padding:10px 12px;border-radius:12px;margin-block:10px}
+.day-entries.layout-compact .day-event h3{font-size:15px}
+.day-entries.layout-compact .day-event .day-entry-head{margin-bottom:3px}
+.day-more{margin-top:10px;width:100%;font-size:13px}
+@media(max-width:850px){
+ .day-task-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .day-task-filters>.searchline{grid-column:1/-1}
+ .day-task-filters>.textbtn{grid-column:1/-1;justify-self:start}
+}
 @media(max-width:650px){
  .viewnav.calendar-nav{width:100%;margin-bottom:18px}
  .day-controls{display:grid;grid-template-columns:36px minmax(0,1fr) 36px;gap:8px}

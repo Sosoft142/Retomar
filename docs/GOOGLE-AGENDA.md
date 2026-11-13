@@ -1,6 +1,6 @@
 # Consultar Google Agenda no Retomar
 
-A visão **Meu dia** mostra tarefas e compromissos em um dia ou sete dias. A conexão é opcional e somente para leitura. As tarefas funcionam sem configurar o Google.
+A visão **Meu dia** mostra tarefas e compromissos em um dia ou sete dias, em Lista ou Cartões. As tarefas são as mesmas do Planejamento: é possível criar no dia escolhido, concluir, gerenciar, alterar prazo/prioridade/andamento e desfazer diretamente aqui. A conexão é opcional e somente para leitura. As tarefas funcionam sem configurar o Google.
 
 ## Configuração inicial pela titular
 
@@ -8,7 +8,7 @@ A visão **Meu dia** mostra tarefas e compromissos em um dia ou sete dias. A con
 
 1. No [Google Cloud Console](https://console.cloud.google.com/), selecione ou crie um projeto e ative **Google Calendar API** na biblioteca de APIs.
 2. Configure a plataforma Google Auth com o nome Retomar e seu e-mail de contato. Para uma conta pessoal, use público **Externo**. Enquanto estiver em teste, inclua seu próprio e-mail em **Usuários de teste**.
-3. Em acesso a dados, configure somente os escopos `https://www.googleapis.com/auth/calendar.events.readonly` e `https://www.googleapis.com/auth/calendar.calendarlist.readonly`.
+3. Em acesso a dados, configure os escopos de consulta `https://www.googleapis.com/auth/calendar.events.readonly` e `https://www.googleapis.com/auth/calendar.calendarlist.readonly`. Para reproduzir cores de rótulos personalizados, inclua também `https://www.googleapis.com/auth/calendar.calendars.readonly`, uma leitura opcional dos metadados/configurações das agendas. Sem autorizar essa opção, eventos e cores padrão continuam disponíveis.
 4. Em clientes, crie um cliente OAuth do tipo **Aplicativo da Web**. Adicione a origem JavaScript **`https://sosoft142.github.io`**, sem `/Retomar/`. Este fluxo usa a janela do Google; não há segredo de cliente para colar no app.
 5. Copie o **ID do cliente**, terminado em `.apps.googleusercontent.com`.
 6. No Retomar, abra **Configurações → Meu dia e Google Agenda → Configurar agenda**, cole o ID público e salve.
@@ -16,6 +16,17 @@ A visão **Meu dia** mostra tarefas e compromissos em um dia ou sete dias. A con
 8. Use **Escolher agendas** para selecionar quais compromissos aparecem. A agenda principal é a seleção inicial. **Atualizar** consulta novamente o período visível.
 
 Se o Google indicar origem incorreta, confira a origem do passo 4. Se a conta não puder autorizar um projeto em teste, confira o e-mail em Usuários de teste. Não é necessário tornar sua agenda pública. A disponibilização para outras pessoas pode exigir configuração e revisão adicionais do Google.
+
+## Cores e ligação com o Planejamento
+
+- A cor individual do evento tem prioridade sobre a cor padrão da agenda. A paleta é consultada no próprio Google; cores de rótulos personalizados são lidas nos metadados da agenda, quando a opção correspondente foi autorizada.
+- Eventos sem cor própria usam a cor da agenda. **Atualizar** relê eventos, paleta e cores das agendas. Caso uma cor não possa ser consultada, os eventos continuam visíveis com uma indicação de que houve substituição da cor.
+- Após atualizar o app, reconecte ao Google. Para rótulos personalizados, autorize também a leitura das configurações das agendas. A conexão continua somente para consulta, sem criação, alteração ou exclusão de eventos.
+- Lista apresenta os dias em sequência; Cartões distribui os dias em uma grade adaptável no período de sete dias. Um dia mantém apenas a data escolhida. A escolha fica neste aparelho e não muda o formato do Planejamento.
+- A busca, a área e a prioridade são compartilhadas com o Planejamento. Busca inclui eventos do Google; área, prioridade e andamento filtram apenas tarefas. O andamento de Meu dia é independente e começa em Em aberto.
+- Criar pelo botão de um dia já preenche a data e a área selecionadas. Os atalhos gerais de Adicionar usam a data inicial do período. As tarefas são salvas no Retomar e acompanham o backup e a sincronização existentes.
+- Concluir ou editar uma tarefa atualiza o mesmo registro usado pelo Planejamento. Desfazer fica disponível em Meu dia. Subitens mantêm seus próprios prazos; concluir o pai não conclui os filhos.
+- Dias com muitos registros exibem 60 inicialmente; **Mostrar mais** acrescenta 60 sem consultar novamente a agenda. Contagens e busca usam o conteúdo completo carregado.
 
 ## Funcionamento e privacidade
 
@@ -45,8 +56,10 @@ Para manutenção técnica, `node scripts/calendar-rollback.mjs --check` confere
 - [Configuração e exemplo JavaScript](https://developers.google.com/workspace/calendar/api/quickstart/js).
 - [Consentimento e usuários de teste](https://developers.google.com/workspace/guides/configure-oauth-consent).
 - [Autorização e validade do acesso](https://developers.google.com/identity/oauth2/web/guides/use-token-model).
+- [Paleta de cores](https://developers.google.com/workspace/calendar/api/v3/reference/colors).
+- [Rótulos personalizados](https://developers.google.com/workspace/calendar/api/guides/labels).
 - [Permissões da Calendar API](https://developers.google.com/workspace/calendar/api/auth).
 
 ## Limites desta entrega
 
-Sem acesso ao navegador da titular. Autorização e dados reais do Google não foram usados. Testes de transporte, autorização e DOM usam respostas fictícias. A revisão visual, o login real e a instalação no S24 permanecem pendentes.
+Sem acesso ao navegador da titular. Autorização e dados reais do Google não foram usados na validação pelo agente. Testes de transporte, autorização e DOM usam respostas fictícias. A revisão visual, o login real e a instalação no S24 permanecem pendentes.

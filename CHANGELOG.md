@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.5 — Meu dia integrado e cores do Google Agenda
+
+Lista/Cartões em um ou sete dias, com criação na data escolhida, conclusão, gerenciamento, ações rápidas e Desfazer sobre as mesmas tarefas do Planejamento. Busca, área e prioridade compartilhadas; andamento de Meu dia e formato independentes, salvos no aparelho. Subitens usam seus próprios prazos e não são duplicados; sair da seleção para outra tela restaura controles normais. Busca preserva foco e cursor.
+
+Eventos consultam a paleta do Google e usam cor individual, rótulo personalizado quando autorizado e cor padrão da agenda. Atualizar relê a lista de agendas e suas cores. O acesso de metadados para rótulos é opcional e somente de leitura. Fundos, bordas e indicadores de cor reforçados, com legendas mais escuras. Conteúdo por dia tem Mostrar mais, mantendo contagens completas.
+
+Dados, Gist, identidade PWA e retorno 1.3 preservados; cache offline v44. Sem navegador na validação. [Relatório](docs/reports/2026-11-13-meu-dia-cores-planejamento.md).
+
 ## 1.4.1 — consistência entre PC e celular
 
 Seleção oculta Adicionar no cabeçalho do PC, como já ocorria no celular; o andamento conserva seu rótulo e posicionamento ao selecionar. Renderizações mantêm foco no controle equivalente; limpar seleção retorna a Selecionar exibidas. A identificação de foco distingue abas, arquivo e listas com Mostrar mais. Meu dia conserva o foco na data, período e navegação.
