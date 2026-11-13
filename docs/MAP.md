@@ -6,7 +6,7 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 | --- | --- | --- |
 | Paridade PC/celular, lista/cartões e mouse/toque/teclado | `app.js`, `workflow-ui.js`, `forms.js`, `drag.js`, `retomar.css` | `responsive-ui`, `drag`, `fluency`; DOM Node, sem revisão visual real |
 | Meu dia, autorização Google e consulta somente leitura | `dist/src/calendar.js`, `calendar-ui.js`; `docs/GOOGLE-AGENDA.md` | `calendar`, `calendar-colors`, `day-planning`, `workflow-ui`, `responsive-ui`; conta real e revisão visual pendentes |
-| Pareamento da agenda, autorização contínua e ativação pendente | `calendar-pairing.js`, `calendar-session.js`, `server/calendar-auth.js`, `server/calendar-deployment.mjs`; `docs/AGENDA-PAREADA.md` | `calendar-pairing`, `calendar-session`, `calendar-auth`, `calendar-deployment`, `calendar-paired-ui`, `agenda-input`, `sync-ui` |
+| Pareamento da agenda, autorização contínua e ativação pendente | `calendar-pairing.js`, `calendar-session.js`, `server/calendar-auth.js`, `server/calendar-deployment.mjs`; `docs/AGENDA-PAREADA.md` | `calendar-pairing`, `calendar-session`, `calendar-auth`, `calendar-deployment`, `calendar-paired-ui`, `agenda-input`, `agenda-powershell` (CI Windows), `sync-ui` |
 | Retornar à versão anterior à agenda | `scripts/calendar-rollback.mjs` | `calendar-rollback`; ponto preservado 1.3 |
 | Ações rápidas, seleção/lote, reversão e visualizações locais | `dist/src/workflows.js`, `workflow-ui.js`, integração em `app.js` | `workflows`, `workflow-ui`, `fluency`; revisão visual pendente em 1.3 |
 | Renderização, ações e formulários do app | `dist/src/app.js`, `dist/src/rendering.js`, `dist/retomar.css` | `forms`, `fluency`, `extreme`; revisão visual |
