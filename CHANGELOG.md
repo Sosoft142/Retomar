@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.6 — agenda e pareamento entre aparelhos
+
+ID público Google e seleção de agendas são sincronizados em arquivo criptografado próprio no mesmo Gist; formulário aberto adia alterações remotas. Ocultar Meu dia continua por aparelho. Tarefas e esquema de dados preservados.
+
+Preparados OAuth por código no servidor, renovação compartilhada, credencial derivada do pareamento, armazenamento criptografado, proteção por estado/PKCE/cookie e desconexão global com resultado de revogação. Configuração de implantação conserva VAPID e chave de dados. **Ativação Cloudflare e cadastro do cliente Google pendentes pela titular**: publicar o app não ativa o Worker. Conexão por sessão mantida como alternativa até a ativação. Cache offline v45.
+
+[Guia de ativação](docs/AGENDA-PAREADA.md) · [Relatório e limites](docs/reports/2026-11-13-agenda-pareada.md).
+
 ## 1.5 — Meu dia integrado e cores do Google Agenda
 
 Lista/Cartões em um ou sete dias, com criação na data escolhida, conclusão, gerenciamento, ações rápidas e Desfazer sobre as mesmas tarefas do Planejamento. Busca, área e prioridade compartilhadas; andamento de Meu dia e formato independentes, salvos no aparelho. Subitens usam seus próprios prazos e não são duplicados; sair da seleção para outra tela restaura controles normais. Busca preserva foco e cursor.

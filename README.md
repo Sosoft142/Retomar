@@ -11,6 +11,8 @@ Planejamento de vida em PWA. Produção: https://sosoft142.github.io/Retomar/
 
 Dados locais e sincronização via Gist permanecem como antes. O servidor de notificações push está publicado; inscrição, entrega com o app fechado e vibração foram confirmadas pela titular no S24. O diagnóstico no app distingue agendamento aceito e recebimento real.
 
+1.6: configuração e agendas selecionadas acompanham o pareamento. Conexão contínua e renovação entre aparelhos implementadas, com **ativação Cloudflare/Google pendente pela titular**. Sem ativação, permanece a conexão por sessão. [Ativar a agenda pareada](docs/AGENDA-PAREADA.md) · [Relatório](docs/reports/2026-11-13-agenda-pareada.md).
+
 1.5: Meu dia integrado ao Planejamento, em Lista/Cartões, com criação, conclusão, ações rápidas, filtros e Desfazer. Eventos respeitam cores individuais e da agenda. [Relatório e limites](docs/reports/2026-11-13-meu-dia-cores-planejamento.md).
 
 1.4.1: correções de consistência na seleção e no foco entre PC/celular e lista/cartões. [Verificação e limites](docs/reports/2026-11-13-paridade-pc-celular.md).

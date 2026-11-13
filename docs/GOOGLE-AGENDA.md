@@ -2,6 +2,10 @@
 
 A visão **Meu dia** mostra tarefas e compromissos em um dia ou sete dias, em Lista ou Cartões. As tarefas são as mesmas do Planejamento: é possível criar no dia escolhido, concluir, gerenciar, alterar prazo/prioridade/andamento e desfazer diretamente aqui. A conexão é opcional e somente para leitura. As tarefas funcionam sem configurar o Google.
 
+## Conexão entre aparelhos
+
+Desde a versão 1.6, o ID público e a seleção de agendas acompanham o pareamento. A conexão contínua exige uma ativação única do servidor e uma autorização Google. Siga o [guia de agenda pareada](AGENDA-PAREADA.md). Sem essa ativação, os passos abaixo mantêm a conexão por sessão.
+
 ## Configuração inicial pela titular
 
 É necessário um ID público de cliente do Google para este app. A conexão do Google Agenda no ChatGPT não fornece essa configuração ao Retomar. Não envie senha, token ou segredo de cliente pelo chat.
@@ -30,16 +34,18 @@ Se o Google indicar origem incorreta, confira a origem do passo 4. Se a conta n�
 
 ## Funcionamento e privacidade
 
-- A API é chamada apenas por GET. O Retomar não cria, altera ou exclui eventos e não muda notificações do Google.
-- O token de acesso e os eventos ficam na memória da sessão. Não vão para o armazenamento de tarefas, JSON de backup, Gist ou servidor push. Recarregar ou fechar perde a consulta autenticada; reconecte para atualizar.
-- Desconectar limpa o acesso e os eventos desta sessão. O consentimento concedido na conta Google pode continuar registrado; para revogá-lo, use as permissões de apps na sua conta Google.
-- A configuração pública e a seleção de agendas ficam neste aparelho. Eventos não são transformados em tarefas.
+- A Calendar API de eventos é chamada apenas por GET. O Retomar não cria, altera ou exclui eventos e não muda notificações do Google.
+- O acesso temporário e os eventos ficam na memória. Não entram no armazenamento de tarefas, JSON de backup ou Gist. Com o servidor ativado, a autorização de renovação fica criptografada no servidor e permite restaurar o acesso ao reabrir. Sem a ativação, é necessário reconectar após fechar ou recarregar.
+- No modo por sessão, Desconectar limpa a memória local. No modo contínuo, Desconectar aparelhos remove a autorização compartilhada e tenta revogá-la no Google. O resultado da revogação é informado; as permissões na conta Google também permitem removê-la.
+- O ID público e as agendas selecionadas acompanham o pareamento em um arquivo criptografado separado. Ocultar Meu dia continua sendo uma preferência por aparelho. Eventos não são transformados em tarefas.
 - Sem internet, as tarefas continuam disponíveis. Uma consulta já carregada pode continuar visível nesta sessão, identificada pela data da última consulta. Não há promessa de atualização em segundo plano.
 - Horários seguem o fuso escolhido nos lembretes do Retomar. Eventos de dia inteiro respeitam a data final exclusiva; recorrências são expandidas pelo Google para o período solicitado.
 
 ## Voltar ao estado anterior
 
-Para ocultar o recurso neste aparelho, desmarque **Mostrar Meu dia e a integração com Google Agenda** nas opções. Isso não restaura o código antigo, mas desconecta a sessão e retira a aba.
+Para ocultar o recurso neste aparelho, desmarque **Mostrar Meu dia neste aparelho** nas opções. Isso não restaura o código antigo, mas desconecta a sessão e retira a aba.
+
+Se a conexão contínua estiver ativa, desconecte os aparelhos ou revogue a permissão Google antes de restaurar: voltar ao código antigo não remove a autorização do servidor.
 
 Para restaurar o app inteiro, a versão **1.3 anterior à integração** foi preservada:
 

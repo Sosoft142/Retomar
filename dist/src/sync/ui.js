@@ -10,9 +10,9 @@ export function syncHeader(status,{icon,esc}){
   const {kind,message=''}=status;
   return `<button type="button" class="sync-trigger sync-indicator" data-action="sync" data-sync-indicator data-sync-state="${kind}" aria-label="${esc(labels[kind]+'. '+message+' Abrir sincronização.')}" aria-busy="${kind==='syncing'}" aria-haspopup="dialog" aria-controls="retomar-sync-modal">${icon('cloud')}</button>`;
 }
-export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,onExport,isBlocked,storage=browserStorage()}){
+export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,onExport,isBlocked,onPairingChanged=()=>{},storage=browserStorage()}){
   const saved=loadSync(storage);
-  let config=saved.config,credentials=saved.credentials,engine=null,connecting=false,connectionController=null,connectionEpoch=0,localError='';
+  let config=saved.config,credentials=saved.credentials,engine=null,connecting=false,connectionController=null,connectionEpoch=0,localError='',pairingReady=false,pairingPreviousSecret='';
   let status={kind:config.gistId?'pending':'local',message:config.gistId?'Conecte com o mesmo token para conferir seus dados.':'Conecte para usar o mesmo planejamento nos seus aparelhos.'};
   const currentStatus=()=>localError?{kind:'error',message:localError}:status;
   const dateText=()=>config.confirmedAt&&Number.isFinite(Date.parse(config.confirmedAt))?'Última confirmação neste aparelho: '+new Date(config.confirmedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'Ainda sem confirmação neste aparelho';
@@ -25,18 +25,19 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
   }
   function setStatus(next){status=next;refresh();}
   function startEngine(){
-    engine?.stop();if(!credentials||!config.gistId)return;
+    engine?.stop();pairingReady=false;if(!credentials||!config.gistId)return;
     const token=credentials.token;let legacyKey=credentials.secret!==token?credentials.secret:'';
     engine=new SyncEngine({repo,adapter:new GistAdapter(token),secret:token,gistId:config.gistId,rewriteRemote:!!legacyKey,verifyUnseal:unsealState,unseal:async text=>(await openWithKeys(text,token,legacyKey)).state,
       isEditing:()=>!!localError||isBlocked()||document.activeElement?.matches('input,textarea,select')||!!document.querySelector('dialog[open]')||document.documentElement.classList.contains('drag-active'),
       isOnline:()=>navigator.onLine!==false,onState:setStatus,onApply,onConfirmed:({confirmedAt})=>{
-        legacyKey='';config={...config,confirmedAt,mode:'token'};credentials={...credentials,secret:token};
+        if(legacyKey)pairingPreviousSecret=legacyKey;legacyKey='';config={...config,confirmedAt,mode:'token'};credentials={...credentials,secret:token};
         try{saveConnection(storage,{...credentials,...config})}catch{toast('Sincronização conferida. Não foi possível atualizar a preferência de conexão neste aparelho.');}
+        pairingReady=true;onPairingChanged();
       },lock:navigator.locks?fn=>navigator.locks.request('entrelinhas-vida:sync:'+config.gistId,{ifAvailable:true},lock=>fn(!!lock)):null});
     engine.schedule(500);
   }
   function attach({gistId,token,legacySecret,remember}){
-    config={gistId,confirmedAt:'',mode:legacySecret?'password':'token'};credentials={token,secret:legacySecret||token,remember};
+    pairingPreviousSecret='';config={gistId,confirmedAt:'',mode:legacySecret?'password':'token'};credentials={token,secret:legacySecret||token,remember};
     try{saveConnection(storage,{gistId,...credentials})}catch{toast('Conexão ativa nesta sessão. Não foi possível manter o token salvo neste aparelho.');}
     startEngine();
   }
@@ -58,7 +59,7 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
     root.querySelector('#sync-export').onclick=onExport;
     root.querySelector('#sync-cancel')?.addEventListener('click',()=>closeModal(true));
     root.querySelector('#sync-disconnect')?.addEventListener('click',()=>{
-      engine.stop();engine=null;credentials=null;config={};
+      engine.stop();engine=null;credentials=null;config={};pairingReady=false;pairingPreviousSecret='';onPairingChanged();
       try{clearConnection(storage)}catch{toast('Não foi possível remover a configuração salva. Confira o armazenamento do navegador.');}
       closeModal(true);setStatus({kind:'local',message:'Desconectado neste aparelho. Seu planejamento e o backup foram preservados.'});onApply(repo.load());toast('Aparelho desconectado.');
     });
@@ -88,11 +89,12 @@ export function createSyncUI({repo,icon,esc,openModal,closeModal,toast,onApply,o
       if(event.key!==SYNC_CONFIG_KEY&&event.key!==SYNC_CREDENTIAL_KEY)return;
       const next=loadSync(storage);
       if(next.config.gistId!==config.gistId||JSON.stringify(next.credentials)!==JSON.stringify(credentials?.remember?credentials:null)){
-        engine?.stop();engine=null;config=next.config;credentials=next.credentials;setStatus({kind:config.gistId?'pending':'local',message:config.gistId?'Conexão atualizada em outra aba.':'Conecte para sincronizar seus dados.'});startEngine();
+        engine?.stop();engine=null;pairingReady=false;pairingPreviousSecret='';config=next.config;credentials=next.credentials;onPairingChanged();setStatus({kind:config.gistId?'pending':'local',message:config.gistId?'Conexão atualizada em outra aba.':'Conecte para sincronizar seus dados.'});startEngine();
       }
     });setInterval(()=>{if(!document.hidden)engine?.run();},45000);},
     changed(){engine?.changed();},resume(){engine?.schedule(700);},
     cancelConnection(){connectionEpoch++;connectionController?.abort();connecting=false;if(!engine&&status.kind==='syncing')setStatus({kind:'local',message:'Conexão interrompida. Os dados continuam neste aparelho.'});},
+    connection:()=>pairingReady&&engine&&credentials&&config.gistId?{gistId:config.gistId,token:credentials.token,secret:credentials.token,...(pairingPreviousSecret?{previousSecret:pairingPreviousSecret}:{})}:null,
     hasConnection:()=>!!config.gistId
   };
 }
