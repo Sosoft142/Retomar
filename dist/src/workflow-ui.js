@@ -28,7 +28,7 @@ export function createWorkflowUI({storage,getState,getView,getSelectable,getUndo
   }
   function selectionButton(t){return `<button type="button" role="checkbox" aria-checked="${selected.has(t.id)}" class="taskcheck selection-check ${selected.has(t.id)?'chosen':''}" data-action="workflow-select" data-id="${esc(t.id)}" aria-label="Selecionar: ${esc(t.title)}"><span class="checkbox">${selected.has(t.id)?icon('check'):''}</span></button>`;}
   function quickField(t,field,markup){
-    if(selecting)return markup;
+    if(selecting)return field==='status'?`<span class="task-status-label">${markup}</span>`:markup;
     const title=field==='deadline'?'prazo':field==='priority'?'prioridade':'andamento';
     const cls=field==='deadline'?(t.date?'due-date':'no-date'):field==='priority'?'task-priority-label':'task-status-label';
     return `<button type="button" class="quick-edit ${cls}" data-action="workflow-quick" data-id="${esc(t.id)}" data-field="${field}" aria-label="Alterar ${title} de ${esc(t.title)}" title="Alterar ${title}">${markup}</button>`;
@@ -87,7 +87,7 @@ export function createWorkflowUI({storage,getState,getView,getSelectable,getUndo
     if(name==='workflow-mode'){selecting=!selecting;selected.clear();onRefresh();return;}
     if(name==='workflow-select'){const focus=document.activeElement;if(selected.has(data.id))selected.delete(data.id);else selected.add(data.id);onRefresh();restoreUIFocus(focus);return;}
     if(name==='workflow-all'){for(const node of document.querySelectorAll('[data-action="workflow-select"]'))selected.add(node.dataset.id);onRefresh();return;}
-    if(name==='workflow-none'){selected.clear();onRefresh();return;}
+    if(name==='workflow-none'){const focused=document.activeElement?.dataset.action===name;selected.clear();onRefresh();if(focused)document.querySelector('[data-action="workflow-all"]')?.focus({preventScroll:true});return;}
     if(name==='workflow-undo'){await onUndo();return;}
     if(name==='workflow-bulk'){bulkModal();return;}
     if(name==='workflow-views'){savedModal();return;}

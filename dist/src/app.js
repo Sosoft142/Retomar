@@ -12,7 +12,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.4';
+const VERSION='1.4.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,calendarUI,lastUndo=null,undoBusy=false;
@@ -63,6 +63,7 @@ async function undoLast(){
 
 function navButton(p,label,i){return `<button data-action="page" data-page="${p}" class="view-tab ${page===p?'active':''}" ${page===p?'aria-current="page"':''}>${icon(i)}<span>${label}</span></button>`}
 function render(){
+  const focus=document.activeElement,hadAppFocus=!!focus?.closest('#app');
   if(page==='day'&&calendarUI&&!calendarUI.enabled)page='plan';
   beginView();
   document.title=(archiveMode&&['plan','agenda'].includes(page)?'Arquivadas':({plan:'Planejamento',day:'Meu dia',agenda:'Cronograma',areas:'Áreas',settings:'Configurações',reminders:'Lembretes'})[page])+' · Retomar';
@@ -70,12 +71,13 @@ function render(){
   workflowUI?.reconcile();
   const areas=activeAreas(state);if(area!==''&&area!=='all'&&!areas.some(a=>a.id===area))area='all';
   navigation?.record();
-  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${page==='plan'||page==='agenda'?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><nav class="viewnav ${calendarUI?.enabled?'calendar-nav':''}" aria-label="Visualização do planejamento">${navButton('plan','Planejamento','grid')}${calendarUI?.enabled?navButton('day','Meu dia','calendar'):''}</nav><main>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='plan'?renderPlan():page==='day'?calendarUI?.page()||'':page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${(page==='plan'||page==='agenda')&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
+  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${(page==='plan'||page==='agenda')&&!workflowUI?.selecting?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><nav class="viewnav ${calendarUI?.enabled?'calendar-nav':''}" aria-label="Visualização do planejamento">${navButton('plan','Planejamento','grid')}${calendarUI?.enabled?navButton('day','Meu dia','calendar'):''}</nav><main>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='plan'?renderPlan():page==='day'?calendarUI?.page()||'':page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${(page==='plan'||page==='agenda')&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
   bindApp();
   navigation?.record();
   syncVisualMotion();
   syncUI?.refresh();
   planningUI?.syncPush();
+  if(hadAppFocus&&!focus.isConnected&&document.activeElement===document.body&&!document.querySelector('dialog[open]'))restoreUIFocus(focus);
   if(page==='day')calendarUI?.enter();
 }
 function taskAreas(){return [{id:'',name:'Sem área',color:'#64748b'},...activeAreas(state)]}
