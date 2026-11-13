@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CalendarPreferences,CALENDAR_KEY,GOOGLE_SCOPES,GoogleReadSession,CalendarReader,normalizeEvent,safeCalendarLink,calendarRange,eventsOnDay,tasksOnDay} from '../dist/src/calendar.js';
+import {CalendarPreferences,CALENDAR_KEY,GOOGLE_SCOPES,GOOGLE_COLOR_SCOPE,GoogleReadSession,CalendarReader,normalizeEvent,safeCalendarLink,calendarRange,eventsOnDay,tasksOnDay} from '../dist/src/calendar.js';
 import {initialState,activeAreas,updateItem,setArchived} from '../dist/src/domain.js';
 
 const memory=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};};
@@ -15,8 +15,11 @@ test('opções corrompidas ou quota não apagam tarefas nem declaram sucesso',()
  const disk=memory();disk.setItem(CALENDAR_KEY,'{bad');const p=new CalendarPreferences(disk);assert.equal(p.value.enabled,false);assert.ok(p.error);assert.equal(disk.getItem(CALENDAR_KEY),'{bad');
  const fail=new CalendarPreferences({getItem:()=>null,setItem:()=>{throw Error('quota');}});assert.throws(()=>fail.save({enabled:true,clientId:'',calendarIds:null}),/Não foi possível salvar/);
 });
-test('OAuth solicita somente as duas permissões de consulta e apenas após conectar',async()=>{
- const f=authFixture();assert.equal(f.requests(),0);await f.session.prepare();assert.equal(f.requests(),0);const pending=f.session.connect('12345-public.apps.googleusercontent.com');assert.equal(f.requests(),1);assert.equal(f.config().include_granted_scopes,false);assert.deepEqual(f.config().scope.split(' '),GOOGLE_SCOPES);f.authorize();await pending;assert.equal(f.session.accessToken,'token_ficticio');f.advance(3570001);assert.equal(f.session.accessToken,'');
+test('OAuth solicita apenas leitura, incluindo metadados opcionais de cores, após conectar',async()=>{
+ const f=authFixture();assert.equal(f.requests(),0);await f.session.prepare();assert.equal(f.requests(),0);const pending=f.session.connect('12345-public.apps.googleusercontent.com');assert.equal(f.requests(),1);assert.equal(f.config().include_granted_scopes,false);assert.deepEqual(f.config().scope.split(' '),[...GOOGLE_SCOPES,GOOGLE_COLOR_SCOPE]);f.authorize();await pending;assert.equal(f.session.accessToken,'token_ficticio');assert.equal(f.session.colorMetadata,false);f.advance(3570001);assert.equal(f.session.accessToken,'');
+});
+test('autorizar metadados de cores é opcional e a permissão não sobrevive à desconexão',async()=>{
+ const f=authFixture();await f.session.prepare();const pending=f.session.connect('12345-public.apps.googleusercontent.com');f.authorize({scope:[...GOOGLE_SCOPES,GOOGLE_COLOR_SCOPE].join(' ')});await pending;assert.equal(f.session.colorMetadata,true);f.session.clear();assert.equal(f.session.colorMetadata,false);
 });
 test('conexão duplicada compartilha solicitação e negação parcial não guarda autorização',async()=>{
  const f=authFixture();await f.session.prepare();const p=f.session.connect('12345-public.apps.googleusercontent.com');assert.equal(f.session.connect('12345-public.apps.googleusercontent.com'),p);assert.equal(f.requests(),1);f.authorize({scope:GOOGLE_SCOPES[0]});await assert.rejects(p,/não autorizou/);assert.equal(f.session.accessToken,'');
@@ -32,7 +35,7 @@ test('pop-up bloqueado e token malformado viram erro sem credenciais persistidas
 });
 test('adaptador faz apenas GET, pagina agendas e não envia token na URL',async()=>{
  const calls=[],reader=new CalendarReader(async(url,options)=>{calls.push({url,options});const page=new URL(url).searchParams.get('pageToken');return {ok:true,json:async()=>page?{items:[{id:'b',summary:'Outra',backgroundColor:'red'}]}:{items:[{id:'a',summary:'Principal',primary:true,backgroundColor:'#123456'}],nextPageToken:'page2'}};});
- const list=await reader.calendars('unit_token');assert.equal(list.length,2);assert.equal(list[1].color,'#14b8a6');for(const call of calls){assert.equal(call.options.method,'GET');assert.equal(call.options.credentials,'omit');assert.equal(call.options.redirect,'error');assert.equal(call.options.headers.Authorization,'Bearer unit_token');assert.ok(!call.url.includes('unit_token'));assert.equal(call.options.body,undefined);}
+ const list=await reader.calendars('unit_token');assert.equal(list.length,2);assert.equal(list[1].color,'');assert.equal(normalizeEvent(event('safe'),list[1]).color,'#14b8a6');for(const call of calls){assert.equal(call.options.method,'GET');assert.equal(call.options.credentials,'omit');assert.equal(call.options.redirect,'error');assert.equal(call.options.headers.Authorization,'Bearer unit_token');assert.ok(!call.url.includes('unit_token'));assert.equal(call.options.body,undefined);}
 });
 test('página repetida e limite de resultados falham sem anunciar lista completa',async()=>{
  const reader=new CalendarReader(async()=>({ok:true,json:async()=>({items:[],nextPageToken:'repeated'})}));await assert.rejects(reader.calendars('unit_token'),/repetiu/);

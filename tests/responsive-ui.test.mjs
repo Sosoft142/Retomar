@@ -90,6 +90,11 @@ test('paridade de uso entre PC, celular, lista e cartões',async t=>{
       }
       fill('#search-input','Etapa independente');await settle();assert.equal(w.document.querySelectorAll('[data-root-item]').length,1);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);fill('#search-input','');await settle();
       await click('[data-page="day"]');node('#calendar-date').focus();fill('#calendar-date','2200-11-12','change');await settle();fill('#calendar-span','1');await settle();assert.equal(w.document.querySelectorAll('.day-task').length,3);fill('#calendar-span','7');await settle();assert.equal(w.document.querySelectorAll('.day-column').length,7);
+      for(const dayLayout of ['compact','cards']){
+        const unchanged=raw();await click(`[data-action="day-layout"][data-layout="${dayLayout}"]`);assert.equal(raw(),unchanged);assert.equal(!!w.document.querySelector('.day-grid-week'),dayLayout==='cards');assert.equal(w.document.querySelectorAll('.day-task [data-action="toggle"]').length,3);assert.equal(w.document.querySelectorAll('.day-task [data-drag-handle]').length,0);
+        await click('[data-action="calendar-new-task"][data-date="2200-11-12"]');assert.equal(node('#item-date').value,'2200-11-12');assert.equal(node('#item-title').hasAttribute('autofocus'),!coarse);await click('#cancel-item');assert.equal(w.document.activeElement.dataset.date,'2200-11-12');
+        await click('.day-task [data-action="toggle"][data-id="p"]');assert.equal(state().items.p.status,'done');assert.equal(w.document.querySelector('.day-task [data-drag-item="p"]'),null);await click('[data-action="workflow-undo"]');assert.equal(w.document.querySelectorAll('.day-task').length,3);
+      }
       await click('[data-page="plan"]');assert.ok(node('#task-results').classList.contains('layout-'+layout));
     });
   }finally{

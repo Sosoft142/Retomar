@@ -18,7 +18,8 @@ export function createWorkflowUI({storage,getState,getView,getSelectable,getUndo
     });
   }
   function reconcile(){
-    const key=JSON.stringify(cleanView(getView()));
+    const view=getView();if(!['plan','agenda'].includes(view.page)){selected.clear();selecting=false;}
+    const key=JSON.stringify(cleanView(view));
     if(viewKey&&key!==viewKey)selected.clear();viewKey=key;
     const allowed=new Set(getSelectable().map(t=>t.id));
     for(const id of selected)if(!allowed.has(id))selected.delete(id);

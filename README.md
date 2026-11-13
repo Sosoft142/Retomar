@@ -11,6 +11,8 @@ Planejamento de vida em PWA. Produção: https://sosoft142.github.io/Retomar/
 
 Dados locais e sincronização via Gist permanecem como antes. O servidor de notificações push está publicado; inscrição, entrega com o app fechado e vibração foram confirmadas pela titular no S24. O diagnóstico no app distingue agendamento aceito e recebimento real.
 
+1.5: Meu dia integrado ao Planejamento, em Lista/Cartões, com criação, conclusão, ações rápidas, filtros e Desfazer. Eventos respeitam cores individuais e da agenda. [Relatório e limites](docs/reports/2026-11-13-meu-dia-cores-planejamento.md).
+
 1.4.1: correções de consistência na seleção e no foco entre PC/celular e lista/cartões. [Verificação e limites](docs/reports/2026-11-13-paridade-pc-celular.md).
 
 1.4: visão Meu dia com tarefas e consulta opcional do Google Agenda. Requer configuração OAuth e autorização da titular para acessar eventos privados. A versão 1.3 anterior está preservada para retorno. [Configurar e voltar à versão anterior](docs/GOOGLE-AGENDA.md) · [Relatório](docs/reports/2026-11-11-google-agenda.md).

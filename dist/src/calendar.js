@@ -3,6 +3,10 @@ import {dateInZone,addDays,zonedInstant,validZone} from './planning.js';
 
 export const CALENDAR_KEY='entrelinhas-vida:google-calendar:v1';
 export const GOOGLE_SCOPES=['https://www.googleapis.com/auth/calendar.events.readonly','https://www.googleapis.com/auth/calendar.calendarlist.readonly'];
+// Somente para cores de rótulos personalizados; negar esta opção preserva a consulta normal.
+export const GOOGLE_COLOR_SCOPE='https://www.googleapis.com/auth/calendar.calendars.readonly';
+const validColor=value=>typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);
+const paletteColor=(palette,id)=>typeof id==='string'&&Object.hasOwn(palette||{},id)&&validColor(palette[id]?.background)?palette[id].background:'';
 export const validClientId=value=>typeof value==='string'&&/^\d+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(value)&&value.length<=250;
 export const calendarDefaults=()=>({enabled:true,clientId:'',calendarIds:null});
 export function validateCalendarPreferences(value){
@@ -26,14 +30,14 @@ export function loadGoogleIdentity(target=window){
   });
 }
 export class GoogleReadSession{
-  constructor({target=window,load=()=>loadGoogleIdentity(target),now=()=>Date.now()}={}){Object.assign(this,{target,load,now});this.identity=null;this.token='';this.expiresAt=0;this.pending=null;this.epoch=0;this.preparing=null;}
+  constructor({target=window,load=()=>loadGoogleIdentity(target),now=()=>Date.now()}={}){Object.assign(this,{target,load,now});this.identity=null;this.token='';this.expiresAt=0;this.pending=null;this.epoch=0;this.preparing=null;this.colorMetadata=false;}
   prepare(){if(this.identity)return Promise.resolve();if(this.preparing)return this.preparing;return this.preparing=Promise.resolve().then(()=>this.load()).then(identity=>{if(typeof identity?.initTokenClient!=='function')throw Error('A conexão do Google não está disponível.');this.identity=identity;}).finally(()=>{this.preparing=null;});}
   get accessToken(){return this.now()<this.expiresAt?this.token:'';}
   connect(clientId){
     if(!validClientId(clientId))return Promise.reject(Error('Configure primeiro o ID público de cliente do Google.'));
     if(!this.identity)return Promise.reject(Error('Prepare a conexão e toque novamente para autorizar o Google.'));
     if(this.pending)return this.pending.promise;
-    this.token='';this.expiresAt=0;
+    this.token='';this.expiresAt=0;this.colorMetadata=false;
     const epoch=++this.epoch;let resolve,reject,settled=false;
     const promise=new Promise((ok,no)=>{resolve=ok;reject=no;});
     const timer=this.target.setTimeout(()=>finish(Error('A autorização não foi concluída. Toque em Conectar para tentar novamente.')),120000);
@@ -44,13 +48,13 @@ export class GoogleReadSession{
       const scopes=new Set(typeof response?.scope==='string'?response.scope.split(/\s+/):[]),expires=Number(response?.expires_in);
       if(response?.error||!GOOGLE_SCOPES.every(s=>scopes.has(s))){reject(Error('O Google não autorizou a consulta das agendas e dos eventos. Suas tarefas continuam disponíveis.'));return;}
       if(typeof response?.access_token!=='string'||!response.access_token||response.access_token.length>8192||/[\s\x00-\x1f\x7f]/.test(response.access_token)||!Number.isFinite(expires)||expires<=30){reject(Error('O Google retornou uma autorização inválida. Tente conectar novamente.'));return;}
-      this.token=response.access_token;this.expiresAt=this.now()+(Math.min(expires,3600)-30)*1000;resolve();
+      this.token=response.access_token;this.colorMetadata=scopes.has(GOOGLE_COLOR_SCOPE);this.expiresAt=this.now()+(Math.min(expires,3600)-30)*1000;resolve();
     };
     this.pending={promise,reject:()=>{this.target.clearTimeout(timer);reject(Error('Conexão cancelada.'));}};
-    try{this.identity.initTokenClient({client_id:clientId,scope:GOOGLE_SCOPES.join(' '),include_granted_scopes:false,callback:response=>finish(null,response),error_callback:e=>finish(Error(e?.type==='popup_failed_to_open'?'O Google não conseguiu abrir a autorização. Permita o pop-up desta página e tente novamente.':'A janela de autorização foi fechada. Você pode tentar novamente.'))}).requestAccessToken({prompt:'select_account'});}catch{finish(Error('Não foi possível iniciar a autorização do Google.'));}
+    try{this.identity.initTokenClient({client_id:clientId,scope:[...GOOGLE_SCOPES,GOOGLE_COLOR_SCOPE].join(' '),include_granted_scopes:false,callback:response=>finish(null,response),error_callback:e=>finish(Error(e?.type==='popup_failed_to_open'?'O Google não conseguiu abrir a autorização. Permita o pop-up desta página e tente novamente.':'A janela de autorização foi fechada. Você pode tentar novamente.'))}).requestAccessToken({prompt:'select_account'});}catch{finish(Error('Não foi possível iniciar a autorização do Google.'));}
     return promise;
   }
-  clear(){this.epoch++;this.pending?.reject();this.pending=null;this.token='';this.expiresAt=0;}
+  clear(){this.epoch++;this.pending?.reject();this.pending=null;this.token='';this.expiresAt=0;this.colorMetadata=false;}
 }
 const apiError=(message,status)=>Object.assign(Error(message),{status});
 export class CalendarReader{
@@ -80,18 +84,25 @@ export class CalendarReader{
     return items;
   }
   async calendars(token,signal){
-    const items=await this.pages('users/me/calendarList',{maxResults:250,minAccessRole:'reader',showHidden:true,fields:'nextPageToken,items(id,summary,summaryOverride,backgroundColor,primary,selected,deleted,accessRole)'},token,signal,500);
-    const seen=new Set();return items.filter(c=>c&&!c.deleted&&typeof c.id==='string'&&c.id&&c.id.length<=1024&&!seen.has(c.id)&&seen.add(c.id)).map(c=>({id:c.id,name:String(c.summaryOverride||c.summary||'Agenda').slice(0,200),color:/^#[0-9a-f]{6}$/i.test(c.backgroundColor)?c.backgroundColor:'#14b8a6',primary:c.primary===true}));
+    const items=await this.pages('users/me/calendarList',{maxResults:250,minAccessRole:'reader',showHidden:true,fields:'nextPageToken,items(id,summary,summaryOverride,backgroundColor,colorId,primary,selected,deleted,accessRole)'},token,signal,500);
+    const seen=new Set();return items.filter(c=>c&&!c.deleted&&typeof c.id==='string'&&c.id&&c.id.length<=1024&&!seen.has(c.id)&&seen.add(c.id)).map(c=>({id:c.id,name:String(c.summaryOverride||c.summary||'Agenda').slice(0,200),color:validColor(c.backgroundColor)?c.backgroundColor:'',colorId:typeof c.colorId==='string'?c.colorId:'',primary:c.primary===true}));
   }
-  async events(calendars,range,token,signal){
-    const all=[];let ignored=0;
+  async events(calendars,range,token,signal,{includeLabels=false}={}){
+    const all=[];let ignored=0,palette=null,colorWarning='';
+    const optionalFailure=e=>{if(signal?.aborted||e.name==='AbortError'||e.status===401)throw e;colorWarning='Algumas cores do Google não puderam ser consultadas. Os eventos continuam visíveis com a cor da agenda. Tente Atualizar novamente.';};
     // Consultas sequenciais reduzem picos de quota; uma falha não se apresenta como lista completa.
     for(const calendar of calendars){
-      const rows=await this.pages('calendars/'+encodeURIComponent(calendar.id)+'/events',{timeMin:new Date(range.start).toISOString(),timeMax:new Date(range.end).toISOString(),timeZone:range.zone,singleEvents:true,orderBy:'startTime',showDeleted:false,maxResults:1000,fields:'nextPageToken,items(id,status,summary,location,description,htmlLink,start,end)'},token,signal,5000);
-      for(const row of rows){if(row?.status==='cancelled')continue;const event=normalizeEvent(row,calendar);if(event)all.push(event);else ignored++;}
+      const path='calendars/'+encodeURIComponent(calendar.id),rows=await this.pages(path+'/events',{timeMin:new Date(range.start).toISOString(),timeMax:new Date(range.end).toISOString(),timeZone:range.zone,singleEvents:true,orderBy:'startTime',showDeleted:false,maxResults:1000,fields:'nextPageToken,items(id,status,summary,location,description,htmlLink,start,end,colorId,eventLabelId)'},token,signal,5000);
+      if(palette===null&&(rows.some(r=>r?.colorId&&r.colorId!=='0')||!validColor(calendar.color)&&calendar.colorId)){
+        palette={};try{const data=await this.request('colors',{},token,signal);if(!data.event||typeof data.event!=='object'||Array.isArray(data.event)||!data.calendar||typeof data.calendar!=='object'||Array.isArray(data.calendar))throw Error('Paleta inválida.');palette={event:data.event,calendar:data.calendar};}catch(e){optionalFailure(e);}
+      }
+      const labels=Object.create(null),hasLabels=rows.some(r=>r?.eventLabelId);
+      if(hasLabels&&includeLabels){try{const data=await this.request(path,{fields:'labelProperties(eventLabels(id,backgroundColor))'},token,signal),values=data.labelProperties?.eventLabels||[];if(!Array.isArray(values)||values.length>200)throw Error('Rótulos inválidos.');for(const label of values)if(typeof label?.id==='string'&&label.id&&label.id.length<=1024&&validColor(label.backgroundColor))labels[label.id]=label.backgroundColor;}catch(e){optionalFailure(e);}}
+      else if(hasLabels)colorWarning='Para consultar as cores dos rótulos personalizados, reconecte ao Google e autorize também a leitura das configurações das agendas. As cores padrão e os eventos continuam disponíveis.';
+      for(const row of rows){if(row?.status==='cancelled')continue;const event=normalizeEvent(row,calendar,{palette,labels});if(event){all.push(event);if(!colorWarning&&(row.eventLabelId&&!Object.hasOwn(labels,row.eventLabelId)||row.colorId&&row.colorId!=='0'&&!row.eventLabelId&&!paletteColor(palette?.event,row.colorId)))colorWarning='Algumas cores não foram identificadas na resposta do Google. Esses eventos usam a cor da agenda; tente Atualizar novamente.';}else ignored++;}
       if(all.length>5000)throw Error('Há mais de 5.000 eventos. Selecione menos agendas ou um período menor.');
     }
-    return {events:[...new Map(all.map(e=>[e.key,e])).values()].sort((a,b)=>a.start-b.start||a.title.localeCompare(b.title,'pt-BR')),ignored};
+    return {events:[...new Map(all.map(e=>[e.key,e])).values()].sort((a,b)=>a.start-b.start||a.title.localeCompare(b.title,'pt-BR')),ignored,colorWarning};
   }
 }
 export function safeCalendarLink(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&(u.hostname==='calendar.google.com'||u.hostname==='www.google.com'&&u.pathname.startsWith('/calendar/'))&&u.href.length<=8192?u.href:'';}catch{return '';}}
@@ -103,11 +114,12 @@ function instant(part){
   if(!m||!validZone(part.timeZone)||Number(m[3]||0)>59)return NaN;
   try{return zonedInstant(m[1],m[2],part.timeZone)+Number(m[3]||0)*1000;}catch{return NaN;}
 }
-export function normalizeEvent(row,calendar){
+export function normalizeEvent(row,calendar,{palette,labels}={}){
   if(!row||typeof row.id!=='string'||!row.id||row.id.length>1024)return null;
   const allDay=typeof row.start?.date==='string',start=allDay?Date.parse(row.start.date+'T00:00:00Z'):instant(row.start),end=allDay?Date.parse(row.end?.date+'T00:00:00Z'):instant(row.end);
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||allDay&&(!validDate(row.start.date)||!validDate(row.end?.date)))return null;
-  return {key:JSON.stringify([calendar.id,row.id]),id:row.id,calendarId:calendar.id,calendarName:calendar.name,color:calendar.color,title:String(row.summary||'Compromisso sem título').slice(0,1000),location:String(row.location||'').slice(0,2000),description:String(row.description||'').slice(0,5000),link:safeCalendarLink(row.htmlLink),allDay,start,end,startDate:allDay?row.start.date:'',endDate:allDay?row.end.date:''};
+  const label=typeof row.eventLabelId==='string'&&Object.hasOwn(labels||{},row.eventLabelId)?labels[row.eventLabelId]:'',color=validColor(label)?label:paletteColor(palette?.event,row.colorId)||(validColor(calendar.color)?calendar.color:paletteColor(palette?.calendar,calendar.colorId)||'#14b8a6');
+  return {key:JSON.stringify([calendar.id,row.id]),id:row.id,calendarId:calendar.id,calendarName:calendar.name,color,title:String(row.summary||'Compromisso sem título').slice(0,1000),location:String(row.location||'').slice(0,2000),description:String(row.description||'').slice(0,5000),link:safeCalendarLink(row.htmlLink),allDay,start,end,startDate:allDay?row.start.date:'',endDate:allDay?row.end.date:''};
 }
 function dayStart(date,zone){
   for(let day=0;day<3;day++)for(let hour=0;hour<24;hour++){
