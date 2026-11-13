@@ -6,7 +6,7 @@
     "APP_ORIGIN": "https://sosoft142.github.io",
     "VAPID_SUBJECT": "https://sosoft142.github.io/Retomar/"
   },
-  "durable_objects": {"bindings": [{"name": "DEVICES", "class_name": "Device"}]},
-  "migrations": [{"tag": "v1", "new_sqlite_classes": ["Device"]}],
+  "durable_objects": {"bindings": [{"name": "DEVICES", "class_name": "Device"}, {"name": "AGENDA_ACCOUNTS", "class_name": "AgendaAccount"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["Device"]}, {"tag": "v2-agenda", "new_sqlite_classes": ["AgendaAccount"]}],
   "ratelimits": [{"name": "REQUEST_LIMITER", "namespace_id": "1001", "simple": {"limit": 60, "period": 60}}]
 }

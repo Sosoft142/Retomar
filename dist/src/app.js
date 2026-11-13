@@ -12,7 +12,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.5';
+const VERSION='1.6';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,calendarUI,lastUndo=null,undoBusy=false;
@@ -345,7 +345,7 @@ function openModal(title,body,{id='',className=''}={}){returnFocus=document.acti
   if(!dialog.querySelector('[autofocus]'))root.querySelector('#modal-title').setAttribute('autofocus','');
   dialog.showModal();root.querySelector('#modal-home').onclick=()=>action('home');navigation?.modalOpened();root.querySelectorAll('select[data-full-value]').forEach(bindSelectHint);root.querySelector('#close-modal').onclick=()=>closeModal();dialog.addEventListener('cancel',e=>{e.preventDefault();closeModal()});dialog.addEventListener('input',()=>modalDirty=true);dialog.addEventListener('change',()=>modalDirty=true);dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal()}});syncVisualMotion();return root}
 function canCloseModal(){return !modalDirty||confirm('Descartar as alterações deste formulário?')}
-function closeModal(force=false,fromHistory=false){if(!force&&!canCloseModal())return false;const dialog=document.querySelector('dialog');if(!dialog)return true;dialog.close();document.querySelectorAll('.is-editing').forEach(el=>el.classList.remove('is-editing'));document.querySelector('#dialog-root').innerHTML='';modalDirty=false;if(!fromHistory)navigation?.modalClosed();restoreUIFocus(returnFocus);syncVisualMotion();syncUI?.cancelConnection();syncUI?.resume();return true}
+function closeModal(force=false,fromHistory=false){if(!force&&!canCloseModal())return false;const dialog=document.querySelector('dialog');if(!dialog)return true;dialog.close();document.querySelectorAll('.is-editing').forEach(el=>el.classList.remove('is-editing'));document.querySelector('#dialog-root').innerHTML='';modalDirty=false;if(!fromHistory)navigation?.modalClosed();restoreUIFocus(returnFocus);syncVisualMotion();syncUI?.cancelConnection();syncUI?.resume();calendarUI?.resume();return true}
 function itemModal(id,defaultArea,defaultPriority,defaultParent,defaultDate=''){
   const existing=id?state.items[id]:null;if(id&&(!existing||existing.deleted)){toast('Este item não está disponível.');return}
   const parentId=existing?.parentId||defaultParent||'',parent=parentId?state.items[parentId]:null;
@@ -387,7 +387,7 @@ motionPreference.addEventListener?.('change',syncVisualMotion);
 window.addEventListener('resize',()=>{document.querySelectorAll('textarea.short-text').forEach(resizeTextArea);document.querySelectorAll('select[data-full-value]').forEach(refreshSelectHint)});
 window.addEventListener('beforeunload',e=>{if(modalDirty){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js',{scope:'./'}).catch(()=>{});
-syncUI=createSyncUI({repo,icon,esc,openModal,closeModal,toast,onExport:exportBackup,onApply:next=>{state=next;fatal='';render()},isBlocked:()=>!!fatal||modalDirty});
+syncUI=createSyncUI({repo,icon,esc,openModal,closeModal,toast,onExport:exportBackup,onApply:next=>{state=next;fatal='';render()},isBlocked:()=>!!fatal||modalDirty,onPairingChanged:()=>{void calendarUI?.syncPairing();}});
 if(fatal)syncUI.localFailure(fatal);
 planningUI=createPlanningUI({storage,getState:()=>state,icon,esc,openModal,closeModal,toast,
   onOpen:open=>{if(open){page='reminders';window.scrollTo(0,0)}render()},
@@ -414,7 +414,7 @@ function restoreView(view){
   if(Array.isArray(view.windows))for(const entry of view.windows.slice(0,1000))if(Array.isArray(entry)&&typeof entry[0]==='string'&&Number.isSafeInteger(entry[1])&&entry[1]>=0&&entry[1]<=10000)collections.limits.set(entry[0],entry[1]);
   render();enterView();
 }
-calendarUI=createCalendarUI({storage,getState:()=>state,getZone:()=>planningUI.timeZone(),onChange:()=>{if(['day','settings'].includes(page)&&!document.querySelector('dialog[open]'))render()},onDisabled:()=>{if(page==='day')page='plan';render()},openModal,closeModal,getTasks:dayTasks,getQuery:()=>query,getLayout:dayLayout,renderTask:taskView,renderTools:dayTools,onNew:date=>{if(fatal){toast('Recupere os dados antes de editar.');return;}itemModal(null,area==='all'?undefined:area,undefined,undefined,date)},onEdit:id=>{if(fatal){toast('Recupere os dados antes de editar.');return;}itemModal(id)},toast,esc,icon});
+calendarUI=createCalendarUI({storage,deviceId,getPairConnection:()=>syncUI?.connection()||null,getState:()=>state,getZone:()=>planningUI.timeZone(),onChange:()=>{if(['day','settings'].includes(page)&&!document.querySelector('dialog[open]'))render()},onDisabled:()=>{if(page==='day')page='plan';render()},openModal,closeModal,getTasks:dayTasks,getQuery:()=>query,getLayout:dayLayout,renderTask:taskView,renderTools:dayTools,onNew:date=>{if(fatal){toast('Recupere os dados antes de editar.');return;}itemModal(null,area==='all'?undefined:area,undefined,undefined,date)},onEdit:id=>{if(fatal){toast('Recupere os dados antes de editar.');return;}itemModal(id)},toast,esc,icon});
 navigation=createNavigation({capture:captureView,restore:restoreView,hasModal:()=>!!document.querySelector('dialog[open]'),canCloseModal,dismissModal:()=>closeModal(true,true)});
 navigation.start();
 workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>[...new Map([...filtered(),...selectItems(areaItems(),filterOptions())].map(t=>[t.id,t])).values()],getUndo:()=>lastUndo,onUndo:undoLast,
