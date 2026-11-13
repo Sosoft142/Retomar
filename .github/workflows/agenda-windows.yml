@@ -43,7 +43,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Instalar suporte de console para os testes
-        run: python -m pip install --disable-pip-version-check --only-binary=:all: pywinpty==3.1.2
+        run: 'python -m pip install --disable-pip-version-check --only-binary=:all: pywinpty==3.1.2'
       - name: Verificar PowerShell 5.1, entrada e implantação simulada
         shell: powershell
         run: node --test tests/agenda-powershell.test.mjs tests/agenda-input.test.mjs tests/calendar-deployment.test.mjs tests/push-deployment.test.mjs

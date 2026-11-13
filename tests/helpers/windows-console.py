@@ -15,7 +15,8 @@ transcript = ""
 stage = 0
 error = ""
 exit_status = None
-ansi = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07]*(?:\x07|\x1b\\)")
+answered_queries = 0
+ansi = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\].*?(?:\x07|\x1b\\)", re.S)
 try:
     process = PtyProcess.spawn([powershell, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script], cwd=cwd, dimensions=(40, 220))
     events = queue.Queue()
@@ -43,6 +44,10 @@ try:
         if isinstance(chunk, Exception):
             raise chunk
         transcript += chunk
+        queries = transcript.count("\x1b[6n")
+        while answered_queries < queries:
+            process.write("\x1b[1;1R")
+            answered_queries += 1
         visible = ansi.sub("", transcript)
         if stage == 0 and "Cole o ID do cliente Google" in visible:
             process.write(client_id + "\r")
@@ -56,5 +61,5 @@ except Exception as failure:
 finally:
     if process is not None:
         process.close(force=True)
-print(json.dumps({"output": ansi.sub("", transcript), "stage": stage, "exitStatus": exit_status, "error": error}), flush=True)
+print("WINDOWS_CONSOLE_RESULT:" + json.dumps({"output": ansi.sub("", transcript), "stage": stage, "exitStatus": exit_status, "error": error}), flush=True)
 sys.exit(1 if error or exit_status != 0 else 0)

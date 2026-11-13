@@ -22,7 +22,7 @@ test('Windows PowerShell 5.1 baixa o script e passa o ID do Read-Host pelo npm.c
  const result=await new Promise((resolve,reject)=>{
   let output='',settled=false;const child=spawn('python',[join(root,'tests','helpers','windows-console.py'),cwd,powershell,join(cwd,'audit.ps1')],{cwd,env:{...process.env,PYTHONIOENCODING:'utf-8'},stdio:['ignore','pipe','pipe'],windowsHide:true});
   const timer=setTimeout(()=>{child.kill();finish(Error('Tempo limite na verificação PowerShell: '+output));},110000);
-  function finish(error){if(settled)return;settled=true;clearTimeout(timer);error?reject(error):resolve(JSON.parse(output.trim()));}
+  function finish(error){if(settled)return;settled=true;clearTimeout(timer);if(error){reject(error);return;}const result=output.match(/^WINDOWS_CONSOLE_RESULT:(.+)$/m);if(!result){reject(Error('Resultado de console ausente: '+output));return;}try{resolve(JSON.parse(result[1]));}catch(e){reject(e);}}
   child.stdout.on('data',chunk=>output+=chunk.toString());child.stderr.on('data',chunk=>output+=chunk.toString());child.on('error',finish);child.on('close',code=>finish(code===0?null:Error('Console Windows encerrou com código '+code+': '+output)));
  });
  assert.equal(result.stage,2);assert.equal(result.exitStatus,0);assert.equal(result.error,'');const marker=result.output.match(/AUDIT_RESULT:(\{[^\r\n]+\})/);assert.ok(marker,'Resultado ausente: '+result.output);assert.deepEqual(JSON.parse(marker[1]),{argumentsOK:true,secretOK:true,tty:true});assert.ok(!/ParserError|UnexpectedToken/.test(result.output));assert.ok(!result.output.includes('fictitious_terminal_secret'),'O segredo fictício não deve aparecer no console');
