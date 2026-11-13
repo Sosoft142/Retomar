@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.4.1 — consistência entre PC e celular
+
+Seleção oculta Adicionar no cabeçalho do PC, como já ocorria no celular; o andamento conserva seu rótulo e posicionamento ao selecionar. Renderizações mantêm foco no controle equivalente; limpar seleção retorna a Selecionar exibidas. A identificação de foco distingue abas, arquivo e listas com Mostrar mais. Meu dia conserva o foco na data, período e navegação.
+
+Verificação funcional em Node para oito larguras e lista/cartões, incluindo toque, teclado, edição, descarte, subitens, arquivo e lote. Arraste exercitado por eventos simulados. Sem acesso ao navegador; medidas e aparência reais continuam pendentes. [Relatório](docs/reports/2026-11-13-paridade-pc-celular.md).
+
 ## 1.4 — Meu dia e Google Agenda opcional
 
 Consulta de compromissos em um dia ou sete dias, junto às tarefas, com seleção de agendas. Acesso somente de leitura, token e eventos em memória, conexão iniciada pela titular e falhas isoladas do planejamento. A configuração OAuth do Google precisa ser feita pela titular; o recurso pode ser usado apenas com tarefas ou desativado.

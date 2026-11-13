@@ -10,6 +10,12 @@ test('cancelar formulário sem renderização devolve o foco ao mesmo controle',
 test('exclusão usa alternativa visível e ignora botões ocultos ou desativados',()=>{const old=button(),hidden=button({action:'page',visible:false}),disabled=button({action:'page',disabled:true}),visible=button({action:'page'});assert.equal(restoreUIFocus(old,root([hidden,disabled,visible])),visible);assert.deepEqual(visible.focused,{preventScroll:true})});
 test('foco equivalente de outro item não é confundido com o item editado',()=>{const old=button({id:'a'}),wrong=button({id:'b'}),correct=button({id:'a'});assert.equal(restoreUIFocus(old,root([wrong,correct])),correct)});
 test('fechar edição rápida retorna ao mesmo campo da mesma tarefa',()=>{const old=button(),wrong=button(),correct=button();old.dataset.field='priority';wrong.dataset.field='deadline';correct.dataset.field='priority';assert.equal(restoreUIFocus(old,root([wrong,correct])),correct)});
+test('foco distingue Ativas/Arquivadas e abas com a mesma ação',()=>{
+  for(const [action,key,value,other] of [['archive-view','mode','archived','active'],['page','page','day','plan'],['show-more','collection','subitems-a','all']]){
+    const old=button({action}),wrong=button({action}),correct=button({action});old.dataset[key]=value;wrong.dataset[key]=other;correct.dataset[key]=value;
+    assert.equal(restoreUIFocus(old,root([wrong,correct])),correct);
+  }
+});
 
 test('mudança de status retorna ao seletor da mesma tarefa sem rolar',()=>{const old=button();old.dataset={itemStatus:'task'};const recreated=button();recreated.dataset={itemStatus:'task'};assert.equal(restoreUIFocus(old,root([recreated])),recreated);assert.deepEqual(recreated.focused,{preventScroll:true})});
 
