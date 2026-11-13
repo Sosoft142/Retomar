@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {APP_ORIGIN,hasCloudflareAuth,secretNames,ensureKeys,deploymentURL,verifyServer,deployPush} from '../server/deployment.mjs';
+import {APP_ORIGIN,hasCloudflareAuth,secretNames,ensureKeys,deploymentURL,verifyServer,deployPush,wrangler} from '../server/deployment.mjs';
 const endpoint='https://retomar-push.example.workers.dev';
 async function configuration(){const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);return {publicKey:Buffer.from(await crypto.subtle.exportKey('raw',pair.publicKey)).toString('base64url')}}
 const response=body=>Response.json(body,{headers:{'Access-Control-Allow-Origin':APP_ORIGIN}});
@@ -34,4 +34,22 @@ test('implantação validada preserva chaves e grava somente o endpoint público
 });
 test('falha do servidor depois da implantação não habilita a integração no app',async()=>{
  let wrote=false;await assert.rejects(deployPush({authenticated:true,run:async args=>args[0]==='deploy'?endpoint:'[{"name":"VAPID_PRIVATE_JWK"},{"name":"VAPID_PUBLIC_KEY"}]',fetcher:async()=>new Response('',{status:503}),write:()=>wrote=true}));assert.equal(wrote,false);
+});
+
+test('Windows executa npm pelo Node com caminho contendo espaços e mantém segredos no stdin',async t=>{
+ const {mkdtemp,mkdir,writeFile,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const folder=await mkdtemp(join(tmpdir(),'retomar-windows-'));t.after(()=>rm(folder,{recursive:true,force:true}));const path=join(folder,'Sof & configuração (teste)');await mkdir(path);const cli=join(path,'npm-cli.js');
+ await writeFile(cli,`let body='';process.stdin.setEncoding('utf8');process.stdin.on('data',chunk=>body+=chunk);process.stdin.on('end',()=>console.log(JSON.stringify({args:process.argv.slice(2),body,ci:process.env.CI,metrics:process.env.WRANGLER_SEND_METRICS})));`);
+ const input=JSON.stringify({GOOGLE_CLIENT_SECRET:'fictitious_terminal_secret'}),result=JSON.parse(await wrangler(['secret','bulk'],{input,platform:'win32',env:{...process.env,npm_execpath:cli}}));
+ assert.deepEqual(result.args,['exec','--yes','--','wrangler@4','secret','bulk','--config','server/wrangler.jsonc']);assert.equal(result.body,input);assert.ok(!result.args.join(' ').includes('fictitious_terminal_secret'));assert.equal(result.ci,'true');assert.equal(result.metrics,'false');
+});
+test('Windows sem contexto npm orienta a execução antes de iniciar processos',async()=>{
+ for(const npm_execpath of [undefined,'missing/npm-cli.js','other.cmd'])await assert.rejects(wrangler(['deploy'],{platform:'win32',env:{npm_execpath}}),/npm\.cmd run agenda:deploy/);
+});
+
+test('login salvo no AppData do Windows ou no cofre é reconhecido sem ler credenciais',async t=>{
+ const {mkdtemp,mkdir,writeFile,rm}=await import('node:fs/promises'),{existsSync}=await import('node:fs'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const folder=await mkdtemp(join(tmpdir(),'retomar-login-'));t.after(()=>rm(folder,{recursive:true,force:true}));const config=join(folder,'AppData','xdg.config','.wrangler','config');await mkdir(config,{recursive:true});
+ for(const file of ['default.toml','default.enc']){await writeFile(join(config,file),'fictitious_login');assert.equal(hasCloudflareAuth({APPDATA:join(folder,'AppData')},existsSync,join(folder,'home')),true);await rm(join(config,file));}
+ assert.equal(hasCloudflareAuth({APPDATA:join(folder,'AppData')},existsSync,join(folder,'home')),false);
 });
