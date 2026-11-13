@@ -24,6 +24,16 @@ Use o mesmo cliente OAuth do tipo **Aplicativo da Web** já configurado para o R
    npm run agenda:deploy
    ```
 
+   No Windows/PowerShell, use os executáveis `.cmd` para executar os mesmos passos:
+
+   ```powershell
+   npm.cmd ci --ignore-scripts
+   npx.cmd --yes wrangler@4 login
+   npm.cmd run agenda:deploy
+   ```
+
+   Para obter uma cópia atual sem Git, abra o [repositório Retomar](https://github.com/Sosoft142/Retomar), use **Code → Download ZIP**, extraia o arquivo e abra a pasta `Retomar-main` que contém `package.json`. No Explorador de Arquivos, clique na barra do caminho da pasta, digite `powershell` e pressione Enter para abrir o terminal nesse local.
+
    O login Cloudflare é realizado por você na sua própria conta. O comando de implantação pede o ID público e o segredo do mesmo cliente Google; o segredo é digitado com entrada oculta. Ele é enviado ao cofre do Worker por entrada padrão, sem aparecer nos argumentos do comando ou no app. O comando verifica a conta/endereço, preserva as chaves VAPID e a chave de criptografia existente e confirma a configuração pública antes de declarar a ativação.
 5. No Retomar, mantenha a sincronização conectada com o mesmo token nos aparelhos. Aguarde a conferência do backup. Em **Configurar agenda**, use o mesmo ID público do cliente do servidor.
 6. Em **Meu dia**, prepare a conexão, se necessário, e escolha **Conectar aparelhos ao Google**. Autorize a consulta uma vez. Nos demais aparelhos, abra o app, aguarde a sincronização e entre em Meu dia. A conexão será restaurada sem novo consentimento, enquanto a autorização Google permanecer válida.

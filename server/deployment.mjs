@@ -8,11 +8,18 @@ const config='server/wrangler.jsonc';
 const required=['VAPID_PRIVATE_JWK','VAPID_PUBLIC_KEY'];
 export const APP_ORIGIN='https://sosoft142.github.io';
 export function hasCloudflareAuth(env=process.env,exists=existsSync,home=homedir()){
-  return !!(env.CLOUDFLARE_API_TOKEN&&env.CLOUDFLARE_ACCOUNT_ID)||[resolve(env.XDG_CONFIG_HOME||resolve(home,'.config'),'.wrangler/config/default.toml'),resolve(home,'.wrangler/config/default.toml')].some(exists);
+  const folders=[resolve(env.XDG_CONFIG_HOME||resolve(home,'.config'),'.wrangler'),resolve(home,'.wrangler')];
+  if(env.APPDATA)folders.push(resolve(env.APPDATA,'xdg.config','.wrangler'));
+  return !!(env.CLOUDFLARE_API_TOKEN&&env.CLOUDFLARE_ACCOUNT_ID)||folders.some(folder=>['default.toml','default.enc'].some(file=>exists(resolve(folder,'config',file))));
 }
-export function wrangler(args,{input}={}){
+export function wrangler(args,{input,platform=process.platform,env=process.env}={}){
   return new Promise((resolveResult,reject)=>{
-    const child=spawn(process.platform==='win32'?'npx.cmd':'npx',['--yes','wrangler@4',...args,'--config',config],{cwd:root,env:{...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'},stdio:['pipe','pipe','pipe'],shell:false});
+    // Windows não executa .cmd sem shell. O npm fornecido por npm run é JavaScript:
+    // invoque-o pelo Node para preservar caminhos com espaços e segredos por stdin.
+    const windows=platform==='win32',npmCLI=env.npm_execpath;
+    if(windows&&(typeof npmCLI!=='string'||!/(?:^|[\\/])npm-cli\.js$/i.test(npmCLI)||!existsSync(npmCLI)))throw Error('No Windows, execute pela pasta do projeto: npm.cmd run agenda:deploy ou npm.cmd run push:deploy.');
+    const command=windows?process.execPath:'npx',parameters=windows?[npmCLI,'exec','--yes','--','wrangler@4',...args,'--config',config]:['--yes','wrangler@4',...args,'--config',config];
+    const child=spawn(command,parameters,{cwd:root,env:{...env,CI:'true',WRANGLER_SEND_METRICS:'false'},stdio:['pipe','pipe','pipe'],shell:false});
     let stdout='',stderr='',settled=false;
     const timer=setTimeout(()=>{child.kill();finish(Error('O comando Cloudflare excedeu o tempo limite. Confira a implantação antes de repetir.'))},120000);
     function finish(error,value){if(settled)return;settled=true;clearTimeout(timer);error?reject(error):resolveResult(value)}
