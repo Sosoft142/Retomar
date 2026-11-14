@@ -28,7 +28,8 @@ export async function handleAgenda(request,env){
       const key=request.headers.get('Authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];if(!key)return wrap(json({error:'Unauthorized'},401));account=await hash(key);if(request.method==='POST')body=await limited(request);
     }
     const headers=new Headers(request.headers);headers.delete('Content-Length');headers.delete('Authorization');headers.set('X-Retomar-Agenda-Account',account);if(body!==undefined)headers.set('Content-Type','application/json');
-    const forwarded=new Request(request.url,{method:request.method,headers,...(body!==undefined?{body}:{})});
+    // O redirect OAuth e o cookie precisam chegar ao navegador, sem serem seguidos pelo stub.
+    const forwarded=new Request(request.url,{method:request.method,headers,redirect:'manual',...(body!==undefined?{body}:{})});
     const response=await env.AGENDA_ACCOUNTS.get(env.AGENDA_ACCOUNTS.idFromName(account)).fetch(forwarded);return callback?response:wrap(response);
   }catch(e){return callback?page('Não foi possível concluir a conexão. Tente novamente pelo Retomar.',e.status||503):wrap(json({error:e.status===413?'Request too large':'Agenda service unavailable'},e.status||503));}
 }
@@ -38,7 +39,7 @@ export class AgendaAccount{
   async seal(value){const iv=crypto.getRandomValues(new Uint8Array(12)),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:encoder.encode('retomar-agenda-v1:'+String(this.ctx.id))},await this.encryptionKey(),encoder.encode(JSON.stringify(value)));return {iv:b64(iv),cipher:b64(new Uint8Array(cipher))};}
   async load(){const value=await this.ctx.storage.get('account');if(!value)return null;try{const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(value.iv),additionalData:encoder.encode('retomar-agenda-v1:'+String(this.ctx.id))},await this.encryptionKey(),unb64(value.cipher));return JSON.parse(new TextDecoder().decode(plain));}catch{throw error('Encrypted account unavailable',503);}}
   async tokens(values){
-    const r=await this.fetcher('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:this.env.GOOGLE_CLIENT_ID,client_secret:this.env.GOOGLE_CLIENT_SECRET,...values}),redirect:'error',signal:AbortSignal.timeout(15000)});
+    const r=await this.fetcher('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:this.env.GOOGLE_CLIENT_ID,client_secret:this.env.GOOGLE_CLIENT_SECRET,...values}),redirect:'manual',signal:AbortSignal.timeout(15000)});
     const text=await r.text();if(text.length>65536)throw error('Invalid Google reply',502);let value;try{value=JSON.parse(text);}catch{throw error('Invalid Google reply',502);}
     if(!r.ok){if(value.error==='invalid_grant')throw error('Authorization expired',401);throw error('Google authorization unavailable',502);}
     if(typeof value.access_token!=='string'||!value.access_token||value.access_token.length>8192||/[\s\x00-\x1f\x7f]/.test(value.access_token)||!Number.isFinite(Number(value.expires_in))||Number(value.expires_in)<=60)throw error('Invalid Google authorization',502);return value;
@@ -65,7 +66,7 @@ export class AgendaAccount{
       }
       if(url.pathname==='/agenda/status'&&request.method==='GET'){const account=await this.load();return json({connected:!!account,authorizationId:account?.authorizationId||'',failedAuthorizationId:await storage.get('failedAuthorizationId')||''});}
       if(url.pathname==='/agenda/account'&&request.method==='DELETE'){
-        const account=await this.load();await storage.delete(['account','pending','failedAuthorizationId']);let revoked=true;if(account)try{const r=await this.fetcher('https://oauth2.googleapis.com/revoke',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({token:account.refreshToken}),redirect:'error',signal:AbortSignal.timeout(10000)});revoked=r.ok;}catch{revoked=false;}return json({ok:true,revoked});
+        const account=await this.load();await storage.delete(['account','pending','failedAuthorizationId']);let revoked=true;if(account)try{const r=await this.fetcher('https://oauth2.googleapis.com/revoke',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({token:account.refreshToken}),redirect:'manual',signal:AbortSignal.timeout(10000)});revoked=r.ok;}catch{revoked=false;}return json({ok:true,revoked});
       }
       if(url.pathname==='/agenda/token'&&request.method==='POST'){
         const input=JSON.parse(await limited(request)||'{}');if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>k!=='force')||input.force!==undefined&&typeof input.force!=='boolean')return json({error:'Invalid request'},400);

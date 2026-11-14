@@ -2,7 +2,7 @@
 
 A versão 1.6 compartilha o ID público do cliente Google e as agendas selecionadas pelo mesmo Gist criptografado usado no pareamento. Ocultar Meu dia, formato e filtros de visualização continuam como preferências de cada aparelho. Eventos e credenciais Google não entram no backup de tarefas.
 
-**Situação desta entrega:** o app está preparado para restaurar a conexão e renovar o acesso em todos os aparelhos pareados. A ativação do servidor Cloudflare e a configuração do cliente Google precisam ser realizadas pela titular. Enquanto `/agenda/config` não confirmar `ready: true`, a conexão antiga por sessão continua disponível. Publicar o app no GitHub Pages não publica o Worker.
+**Situação atual:** a titular ativou o servidor e `/agenda/config` confirmou `ready: true`. A autorização encontrou `405 Method not allowed` no início; a correção descrita abaixo ainda precisa ser republicada no Worker. A conexão Google real e a restauração entre aparelhos permanecem pendentes de confirmação. Enquanto `/agenda/config` não confirmar `ready: true`, a conexão antiga por sessão continua disponível. Publicar o app no GitHub Pages não publica o Worker.
 
 ## Ativar uma vez
 
@@ -54,6 +54,21 @@ Use o mesmo cliente OAuth do tipo **Aplicativo da Web** já configurado para o R
 
 O comando usa `server/wrangler.jsonc`, publica o Worker existente e acrescenta o armazenamento `AgendaAccount`, mantendo o armazenamento `Device` das notificações. Ele não republica o GitHub Pages. Se a implantação indicar outro endereço ou um cliente Google diferente, interrompe a substituição de segredos Google; confira a conta e conserve o cliente atual. Trocar de cliente exige migração administrativa.
 
+## Se a janela mostrar `Method not allowed`
+
+Esse erro foi reproduzido no servidor e em Miniflare/workerd, com credenciais fictícias. O encaminhamento interno seguia o redirect OAuth, consumindo a resposta 303 antes de o cookie e o destino Google chegarem ao navegador. O servidor agora devolve esse redirect intacto. As requisições de troca, renovação e revogação também usam o modo `manual`, compatível com Workers, e rejeitam respostas 3xx.
+
+Na cópia já usada para ativar o servidor, abra PowerShell na pasta `Retomar-main` e execute um comando por vez:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Sosoft142/Retomar/main/server/calendar-auth.js" -OutFile ".\server\calendar-auth.js"
+npx.cmd --yes wrangler@4 deploy --config server/wrangler.jsonc
+```
+
+Esses comandos atualizam o código do Worker e preservam os segredos cadastrados, incluindo `AGENDA_DATA_KEY` e as chaves push. Não é necessário executar `agenda:deploy` nem digitar o ID/segredo novamente. Após a publicação, feche a janela de erro e inicie uma nova conexão por **Meu dia → Conectar aparelhos ao Google**. Não abra `/agenda/auth/start` diretamente na barra de endereços: o fluxo começa por POST no aplicativo.
+
+O teste em Miniflare reproduz o comportamento do runtime com chamadas Google simuladas; não equivale a consentimento na conta real. Referências: [Request e modos de redirect](https://developers.cloudflare.com/workers/runtime-apis/request/) e [fetch em Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/).
+
 ## Como funciona
 
 | Informação | Local |
@@ -88,7 +103,7 @@ Antes de retornar, use **Desconectar aparelhos** ou revogue o acesso na conta Go
 
 ## Verificação e limites
 
-Testes em Node cobrem dois aparelhos, reabertura, renovação, concorrência, cancelamento, revogação, isolamento de credenciais, migração de chave e implantação simulada. Simulação de DOM não equivale a revisão visual ou login real. Nenhum navegador da titular foi acessado. Não houve autenticação real no Google nem implantação Cloudflare pelo agente; a ativação e a validação final em PC/S24 estão pendentes.
+Testes em Node cobrem dois aparelhos, reabertura, renovação, concorrência, cancelamento, revogação, isolamento de credenciais, migração de chave e implantação simulada. A correção do redirecionamento foi conferida também em Miniflare/workerd. Simulação de DOM e chamadas Google fictícias não equivalem a revisão visual ou login real. Nenhum navegador da titular foi acessado. A titular ativou o servidor; o agente não tem autenticação Cloudflare para republicar a correção. Consentimento real e validação final em PC/S24 estão pendentes.
 
 ## Referências oficiais
 

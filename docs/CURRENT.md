@@ -2,6 +2,8 @@
 
 A titular confirmou entrega no horário com o S24 fechado e vibração. A apresentação de pop-up permanece pendente de verificação no aparelho.
 
+Agenda: `/agenda/config` de produção confirmou `ready: true` após a implantação pela titular. Um POST de diagnóstico com credencial fictícia reproduziu `405 Method not allowed`, sem acessar conta Google; o registro temporário foi removido. O mesmo erro foi reproduzido em Miniflare/workerd: o stub seguia o redirect OAuth em vez de devolver 303/cookie à janela. Correção usa `redirect: manual` no encaminhamento e nas chamadas Google; `redirect: error` não é suportado por Workers. Troca, renovação e revogação são verificadas com credenciais fictícias. **A correção ainda exige republicar o Worker pela titular; consentimento Google real e restauração PC/S24 permanecem pendentes.** Nenhuma mudança em `dist/`, versão, chaves ou dados.
+
 O S24 confirmou a inscrição. O log de /test identificou redirect inválido no Worker. O envio agora usa o modo manual compatível com a Cloudflare e trata respostas 3xx como falha. A titular confirmou o recebimento do teste no S24 após a correção.
 
 - Verificação da ativação no Windows: novo CI em Windows com Node 24 e teste do comando em Windows PowerShell 5.1. Exercita Invoke-WebRequest, Read-Host, npm.cmd e segredo oculto em console interativo Windows e pasta com espaços; dados fictícios, sem autenticação Google/Cloudflare. O teste confere os argumentos e o conteúdo baixado; a entrada secreta é coberta pela suíte de terminal executada no mesmo Windows.

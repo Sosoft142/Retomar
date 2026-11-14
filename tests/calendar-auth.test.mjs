@@ -2,6 +2,34 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {service,cap,authId,clientId,clientSecret,origin,endpoint,scope} from './helpers/calendar-paired.mjs';
 import {handleAgenda} from '../server/calendar-auth.js';
+test('gateway preserva o redirecionamento OAuth e o cookie para a janela do navegador',async()=>{
+ const f=service(),binding=f.env.AGENDA_ACCOUNTS,get=binding.get;let forwarded;
+ binding.get=id=>({fetch:request=>{forwarded=request;return get(id).fetch(request);}});
+ const r=await f.start();
+ assert.equal(forwarded.redirect,'manual');
+ assert.equal(forwarded.method,'POST');
+ assert.equal(forwarded.headers.has('Authorization'),false);
+ assert.equal(r.status,303);
+ assert.equal(new URL(r.headers.get('Location')).origin,'https://accounts.google.com');
+ assert.match(r.headers.get('Set-Cookie'),/^__Host-retomar-agenda-.*; Secure; HttpOnly; SameSite=Lax/);
+ assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);
+});
+test('troca, renovação e revogação usam modo de redirect compatível com Workers',async()=>{
+ const f=service(),fetcher=f.env.fetcher,redirects=[];
+ f.env.fetcher=(url,options)=>{redirects.push(options.redirect);assert.equal(options.redirect,'manual');return fetcher(url,options);};
+ assert.equal((await f.grant()).status,200);
+ assert.equal((await f.call('/agenda/token',{method:'POST',body:{force:true}})).status,200);
+ assert.equal((await (await f.call('/agenda/account',{method:'DELETE'})).json()).revoked,true);
+ assert.deepEqual(redirects,['manual','manual','manual']);
+});
+test('redirecionamento do Google não é seguido e não substitui a autorização salva',async()=>{
+ const f=service();await f.grant();
+ const stored=JSON.stringify([...f.stores.values()].map(v=>[...v]));
+ f.env.fetcher=async(url,options)=>{assert.equal(options.redirect,'manual');return Response.json({access_token:'unexpected',expires_in:3600,scope},{status:302,headers:{Location:'https://other.example'}});};f.reopen();
+ assert.equal((await f.call('/agenda/token',{method:'POST',body:{force:true}})).status,502);
+ assert.equal(JSON.stringify([...f.stores.values()].map(v=>[...v])),stored);
+ assert.equal((await (await f.call('/agenda/account',{method:'DELETE'})).json()).revoked,false);
+});
 test('configuração expõe somente ID público; exige origem e credencial próprias',async()=>{const f=service(),r=await f.call('/agenda/config');assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);assert.deepEqual(await r.json(),{version:1,ready:true,clientId,callbackURL:endpoint+'/agenda/oauth/callback'});assert.equal((await handleAgenda(new Request(endpoint+'/agenda/config',{headers:{Origin:'https://evil.example'}}),f.env)).status,403);assert.equal((await f.call('/agenda/token',{key:null,method:'POST'})).status,401);delete f.env.GOOGLE_CLIENT_SECRET;assert.equal((await (await f.call('/agenda/config')).json()).ready,false);});
 test('OAuth solicita leitura offline com PKCE, cookie de sessão e recibo; segredos ficam criptografados',async()=>{const f=service(),r=await f.start(),auth=new URL(r.headers.get('Location'));assert.equal(r.status,303);assert.equal(auth.searchParams.get('access_type'),'offline');assert.equal(auth.searchParams.get('code_challenge_method'),'S256');assert.equal(auth.searchParams.get('scope'),scope);for(const value of [cap,authId,clientSecret])assert.ok(!auth.href.includes(value));assert.match(r.headers.get('Set-Cookie'),/Secure; HttpOnly; SameSite=Lax/);const state=auth.searchParams.get('state'),cookie=r.headers.get('Set-Cookie').split(';')[0];const callback=await f.call('/agenda/oauth/callback?state='+state+'&code=test',{key:null,cookie});assert.equal(callback.status,200);assert.equal(f.grants(),1);const input=new URLSearchParams(f.calls[0].options.body);assert.ok(input.get('code_verifier'));assert.equal(input.get('client_secret'),clientSecret);const stored=JSON.stringify([...f.stores.values()].map(v=>[...v]));assert.ok(!stored.includes('refresh_fictitious'));assert.ok(!stored.includes('access_fictitious'));assert.match(callback.headers.get('Content-Security-Policy'),/default-src 'none'/);});
 test('callback rejeita outra sessão e repetição sem consumir a solicitação legítima',async()=>{const f=service(),r=await f.start(),auth=new URL(r.headers.get('Location')),path='/agenda/oauth/callback?state='+auth.searchParams.get('state')+'&code=test',cookie=r.headers.get('Set-Cookie').split(';')[0];assert.equal((await f.call(path,{key:null})).status,400);assert.equal((await f.call(path,{key:null,cookie:cookie.slice(0,-1)+(cookie.endsWith('0')?'1':'0')})).status,400);assert.equal((await f.call(path,{key:null,cookie})).status,200);assert.equal((await f.call(path,{key:null,cookie})).status,400);assert.equal(f.grants(),1);});
