@@ -8,6 +8,17 @@ import {CalendarPreferences} from '../dist/src/calendar.js';
 import {service,memory,clientId,clientSecret,endpoint,origin} from './helpers/calendar-paired.mjs';
 const connection={gistId:'abcde',token:'fictitious_pairing_token',secret:'fictitious_pairing_token'};
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
+test('erro detalhado fica no status de Meu dia e libera nova tentativa no PC e no celular',async t=>{
+ const detail='O Google recusou as credenciais do servidor. Confira se o ID e o segredo cadastrados na Cloudflare pertencem ao mesmo cliente OAuth.';
+ for(const width of [320,390,768,1280]){
+  const dom=new JSDOM('<body></body>',{url:origin});t.after(()=>dom.window.close());Object.defineProperty(dom.window,'innerWidth',{value:width});
+  const disk=memory(),toasts=[];new CalendarPreferences(disk).save({enabled:true,clientId,calendarIds:null});
+  const session={identity:{shared:true},shared:true,accessToken:'',connect:async()=>{throw Error(detail);},clear(){}};
+  const ui=createCalendarUI({storage:disk,deviceId:'error-'+width,getState:()=>({items:{}}),getTasks:()=>[],getZone:()=>'UTC',onChange(){},toast:text=>toasts.push(text),esc:String,icon:()=>'',target:dom.window,session,reader:{calendars(){throw Error('Não consultar eventos após falha');}}});
+  await ui.action('calendar-connect');dom.window.document.body.innerHTML=ui.page();
+  assert.equal(dom.window.document.querySelector('.day-connection [role="status"]').textContent,detail);assert.equal(dom.window.document.querySelector('[data-action="calendar-connect"]').disabled,false);assert.deepEqual(toasts,[detail]);
+ }
+});
 test('PC e celular adotam agendas, restauram ao reabrir, renovam e desconectam sem alterar tarefas',async t=>{
  const f=service(),gist={public:false,files:{'retomar.enc.json':{content:'TASKS_UNCHANGED'}}},prior=globalThis.fetch,doms=[],toasts=[];t.after(()=>{globalThis.fetch=prior;for(const d of doms)d.window.close();});
  globalThis.fetch=async(url,options={})=>{assert.match(url,/^https:\/\/api.github.com\/gists\/abcde$/);assert.equal(options.headers.Authorization,'Bearer '+connection.token);if(options.method==='PATCH')Object.assign(gist.files,JSON.parse(options.body).files);return Response.json(gist);};

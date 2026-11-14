@@ -2,7 +2,7 @@
 
 A versão 1.6 compartilha o ID público do cliente Google e as agendas selecionadas pelo mesmo Gist criptografado usado no pareamento. Ocultar Meu dia, formato e filtros de visualização continuam como preferências de cada aparelho. Eventos e credenciais Google não entram no backup de tarefas.
 
-**Situação atual:** a titular ativou o servidor e aplicou a correção do 405; `/agenda/config` confirma `ready: true` e o início encaminha para o Google. Após consentir, outra falha do servidor foi reproduzida no callback: fetch nativo chamado com receptor incorreto. A correção dessa chamada ainda precisa ser republicada no Worker, pelos mesmos dois comandos abaixo. Conexão Google real e restauração entre aparelhos permanecem pendentes de confirmação. Enquanto `/agenda/config` não confirmar `ready: true`, a conexão antiga por sessão continua disponível. Publicar o app no GitHub Pages não publica o Worker.
+**Situação atual:** a titular ativou o servidor e aplicou as correções do redirect e do fetch nativo. Produção encaminha para o Google, mas o callback ainda falha; o diagnóstico passou de 503 para 502. Isso não determina sozinho a causa. A versão 1.6.1 preserva a janela de erro e recebe um motivo específico do Worker, que precisa ser atualizado pelos dois comandos abaixo. Conexão Google real e restauração entre aparelhos permanecem pendentes de confirmação. Publicar o app no GitHub Pages não publica o Worker.
 
 ## Ativar uma vez
 
@@ -60,6 +60,8 @@ Esse erro foi reproduzido no servidor e em Miniflare/workerd, com credenciais fi
 
 Após corrigir o 405, o callback ainda podia falhar com mensagem genérica e a janela era fechada pelo app. O fetch nativo da Cloudflare exige o receptor global; guardar a função diretamente como propriedade de `AgendaAccount` provocava `Illegal invocation` antes da chamada ao Google. A função agora usa `bind(globalThis)`. O teste `calendar-worker` executa o Worker real com rede externa interceptada e mantém o fetch nativo, incluindo suas regras de receptor e redirect.
 
+Na versão 1.6.1, a janela permanece aberta em caso de falha. O app mostra a mesma mensagem fixa e segura do servidor: credenciais recusadas, código recusado, permissões insuficientes, autorização contínua ausente, tempo excedido, falha de comunicação ou resposta inesperada. O motivo só é aceito para o identificador da tentativa atual. Uma falha de rede transitória na consulta de status não cancela imediatamente o consentimento; a espera dura até os dez minutos previstos pelo servidor. Cancelamento explícito e sucesso continuam fechando a janela.
+
 Na cópia já usada para ativar o servidor, abra PowerShell na pasta `Retomar-main` e execute um comando por vez:
 
 ```powershell
@@ -68,6 +70,8 @@ npx.cmd --yes wrangler@4 deploy --config server/wrangler.jsonc
 ```
 
 Esses comandos atualizam o código do Worker e preservam os segredos cadastrados, incluindo `AGENDA_DATA_KEY` e as chaves push. Não é necessário executar `agenda:deploy` nem digitar o ID/segredo novamente. Após a publicação, feche a janela de erro e inicie uma nova conexão por **Meu dia → Conectar aparelhos ao Google**. Não abra `/agenda/auth/start` diretamente na barra de endereços: o fluxo começa por POST no aplicativo.
+
+O diagnóstico público `/agenda/config` deve indicar `build: "2026-11-14.1"`. Confirme também **Versão 1.6.1** nas Configurações do app; feche e reabra o aplicativo para carregar a atualização. Se falhar novamente, registre somente o texto da mensagem, sem copiar o endereço completo do callback. Não substitua credenciais com base apenas no HTTP 502: a mensagem detalhada é que distingue a causa.
 
 O teste em Miniflare reproduz o comportamento do runtime com respostas Google simuladas fora do Worker; não equivale a consentimento na conta real. Referências: [Request e modos de redirect](https://developers.cloudflare.com/workers/runtime-apis/request/), [fetch em Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/) e [Illegal invocation](https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors).
 

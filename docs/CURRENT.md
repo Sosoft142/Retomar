@@ -2,7 +2,9 @@
 
 A titular confirmou entrega no horário com o S24 fechado e vibração. A apresentação de pop-up permanece pendente de verificação no aparelho.
 
-Agenda: a titular republicou a correção de redirect; produção confirmou `ready: true` e 303/cookie para o Google. Depois de escolher a conta e autorizar, a conexão falhou. Diagnóstico com sessão fictícia reproduziu callback 503; Miniflare/workerd identificou `Illegal invocation` ao chamar fetch nativo como propriedade de `AgendaAccount`. A função agora é vinculada a `globalThis`. Novo teste permanente usa o Worker de entrada real, Durable Objects e fetch nativo, interceptando apenas a rede externa com respostas fictícias; cobre início, PKCE, callback, renovação e revogação. **A correção do fetch ainda exige republicar o Worker pela titular; conexão real e restauração PC/S24 permanecem pendentes.** Sem alteração em `dist/`, versão, chaves ou dados.
+1.6.1: falhas de autorização mantêm a janela aberta e mostram no app um motivo específico do servidor. Sucesso e cancelamento explícito continuam fechando a janela. Consulta de status tolera falhas transitórias de rede/5xx/429; espera acompanha os dez minutos da sessão no servidor. Respostas Google são classificadas por lista fixa, sem retornar descrição original, códigos OAuth, tokens ou segredos. `/agenda/config` identifica o Worker pelo build público `2026-11-14.1`; atualização do Worker pela titular ainda necessária. Cache v46; tarefas, esquema, Gist e chaves preservados. Sem navegador: regressões em DOM Node e Miniflare/workerd com rede interceptada; revisão visual real e conexão PC/S24 pendentes.
+
+Produção avançou do callback 503 para 502 após a republicação pela titular. O diagnóstico usou sessão aleatória e código deliberadamente inválido, removidos ao terminar. O 502 atual não permite distinguir credenciais recusadas de resposta inesperada ou indisponibilidade; não afirmar causa antes de obter o motivo detalhado. A falha `Illegal invocation` anterior foi corrigida vinculando fetch a `globalThis`; o teste permanente preserva fetch nativo e executa o Worker real, Durable Objects, PKCE, renovação, revogação e agora também rejeição de credenciais.
 
 O 405 anterior vinha do stub seguindo o redirect OAuth internamente. A correção já aplicada usa `redirect: manual` no encaminhamento e nas chamadas Google; `redirect: error` não é suportado por Workers. O ensaio anterior em workerd substituía a função de rede dentro do Worker, portanto não cobria a exigência de receptor do fetch nativo. O teste `calendar-worker` mantém essa função intacta e passa a integrar a verificação completa e o CI.
 
@@ -21,7 +23,7 @@ O S24 confirmou a inscrição. O log de /test identificou redirect inválido no 
 - 1.0.2: fundos dos itens e lembretes voltam a usar gradientes claros e translúcidos, derivados da área ou da cor personalizada. Bordas iluminadas, sombras e botões de gerenciamento seguem a estética suave do app. Conferência no navegador em 360, 390 e 1200 px, incluindo cores próprias escuras e saturadas.
 - 1.0.1: lembretes usam as mesmas cores e prioridade visual do planejamento. Busca, botão Áreas, recuos e formulário corrigidos após revisão responsiva. [Relatório visual](reports/2026-11-09-alinhamento-lembretes.md).
 - Produto: PWA Android/Chrome, prioritariamente celular Samsung S24.
-- Versão do app: **1.6**. URL: https://sosoft142.github.io/Retomar/
+- Versão do app: **1.6.1**. URL: https://sosoft142.github.io/Retomar/
 - Repositório: `Sosoft142/Retomar`; produção na branch `main`; arquivos públicos em `dist/`.
 - Sem framework/bundler de produção; módulos JavaScript e CSS estático.
 - Dados locais e Gist criptografado preservam os identificadores históricos `entrelinhas-vida`.
