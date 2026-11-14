@@ -13,6 +13,7 @@
     "agenda:deploy": "node server/calendar-deployment.mjs"
   },
   "devDependencies": {
-    "jsdom": "26.1.0"
+    "jsdom": "26.1.0",
+    "miniflare": "4.20260730.0"
   }
 }
