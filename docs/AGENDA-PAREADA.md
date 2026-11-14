@@ -2,7 +2,7 @@
 
 A versão 1.6 compartilha o ID público do cliente Google e as agendas selecionadas pelo mesmo Gist criptografado usado no pareamento. Ocultar Meu dia, formato e filtros de visualização continuam como preferências de cada aparelho. Eventos e credenciais Google não entram no backup de tarefas.
 
-**Situação atual:** a titular ativou o servidor e aplicou as correções do redirect e do fetch nativo. Produção encaminha para o Google, mas o callback ainda falha; o diagnóstico passou de 503 para 502. Isso não determina sozinho a causa. A versão 1.6.1 preserva a janela de erro e recebe um motivo específico do Worker, que precisa ser atualizado pelos dois comandos abaixo. Conexão Google real e restauração entre aparelhos permanecem pendentes de confirmação. Publicar o app no GitHub Pages não publica o Worker.
+**Situação atual:** a titular ativou o servidor, aplicou as correções do redirect/fetch e recebeu o motivo de credenciais recusadas pelo Google. Depois de atualizar o segredo, produção passou a responder `ready: false`, embora a lista contenha os cinco nomes esperados. O build `2026-11-14.2` acrescenta quatro verificações de presença/formato para identificar qual requisito falhou; ainda precisa ser publicado pela titular pelos comandos abaixo. Conexão Google real e restauração entre aparelhos permanecem pendentes de confirmação. Publicar o app no GitHub Pages não publica o Worker.
 
 ## Ativar uma vez
 
@@ -71,9 +71,15 @@ npx.cmd --yes wrangler@4 deploy --config server/wrangler.jsonc
 
 Esses comandos atualizam o código do Worker e preservam os segredos cadastrados, incluindo `AGENDA_DATA_KEY` e as chaves push. Não é necessário executar `agenda:deploy` nem digitar o ID/segredo novamente. Após a publicação, feche a janela de erro e inicie uma nova conexão por **Meu dia → Conectar aparelhos ao Google**. Não abra `/agenda/auth/start` diretamente na barra de endereços: o fluxo começa por POST no aplicativo.
 
-O diagnóstico público `/agenda/config` deve indicar `build: "2026-11-14.1"`. Confirme também **Versão 1.6.1** nas Configurações do app; feche e reabra o aplicativo para carregar a atualização. Se falhar novamente, registre somente o texto da mensagem, sem copiar o endereço completo do callback. Não substitua credenciais com base apenas no HTTP 502: a mensagem detalhada é que distingue a causa.
+O diagnóstico público `/agenda/config` deve indicar `build: "2026-11-14.2"`. Confirme também **Versão 1.6.1** nas Configurações do app; feche e reabra o aplicativo para carregar a atualização. Se falhar novamente, registre somente o texto da mensagem, sem copiar o endereço completo do callback. Não substitua credenciais com base apenas no HTTP 502: a mensagem detalhada é que distingue a causa.
 
 O teste em Miniflare reproduz o comportamento do runtime com respostas Google simuladas fora do Worker; não equivale a consentimento na conta real. Referências: [Request e modos de redirect](https://developers.cloudflare.com/workers/runtime-apis/request/), [fetch em Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/) e [Illegal invocation](https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors).
+
+## Quando a configuração permanece incompleta
+
+O sucesso de `wrangler secret put` confirma a gravação, e `secret list` confirma somente os nomes. `/agenda/config`, no build `2026-11-14.2`, retorna `checks` com booleanos de presença/formato: `AGENDA_ACCOUNTS` confere o vínculo de armazenamento; `GOOGLE_CLIENT_ID`, o formato do ID; `GOOGLE_CLIENT_SECRET`, a presença e o comprimento mínimo; `AGENDA_DATA_KEY`, os 64 caracteres hexadecimais. Todos precisam ser verdadeiros para `ready: true`. Isso não valida o consentimento ou as credenciais no Google.
+
+O diagnóstico não retorna valores privados nem deve motivar regeneração automática da chave criptográfica. Primeiro identifique qual campo falhou; preserve `AGENDA_DATA_KEY` e as chaves VAPID existentes. O novo build requer atualizar somente `server/calendar-auth.js` e republicar com o comando já indicado acima; não exige alterar as credenciais para consultar os booleanos.
 
 ## Como funciona
 

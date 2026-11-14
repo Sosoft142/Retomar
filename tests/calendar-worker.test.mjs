@@ -47,5 +47,5 @@ test('Worker real conclui OAuth, renova e revoga usando fetch nativo',async t=>{
  const rejected=await call('/agenda/oauth/callback?'+new URLSearchParams({state:failedAuth.searchParams.get('state'),code:'fictitious-code'}),{headers:{Cookie:again.headers.get('Set-Cookie').split(';')[0]}});
  assert.equal(rejected.status,502);const html=await rejected.text();assert.match(html,/recusou as credenciais/);assert.ok(!html.includes('DO_NOT_EXPOSE_PROVIDER_DESCRIPTION'));assert.ok(!html.includes(clientSecret));
  const failure=await (await call('/agenda/status')).json();assert.equal(failure.failedAuthorizationCode,'google_client');assert.equal(failure.failedAuthorizationId,authorizationId);assert.ok(html.includes(failure.failedAuthorizationMessage));
- const config=await (await call('/agenda/config')).json();assert.equal(config.build,'2026-11-14.1');
+ const config=await (await call('/agenda/config')).json();assert.equal(config.build,'2026-11-14.2');assert.deepEqual(config.checks,{AGENDA_ACCOUNTS:true,GOOGLE_CLIENT_ID:true,GOOGLE_CLIENT_SECRET:true,AGENDA_DATA_KEY:true});
 });
