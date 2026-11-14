@@ -22,7 +22,8 @@ const messages={
 };
 const issueCode=code=>Object.hasOwn(messages,code)?code:'service_unavailable',message=code=>messages[issueCode(code)];
 const problem=(code,status)=>Object.assign(error(message(code),status),{code:issueCode(code)});
-const ready=env=>!!env.AGENDA_ACCOUNTS&&/^\d+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(env.GOOGLE_CLIENT_ID||'')&&typeof env.GOOGLE_CLIENT_SECRET==='string'&&env.GOOGLE_CLIENT_SECRET.length>=12&&/^[a-f0-9]{64}$/i.test(env.AGENDA_DATA_KEY||'');
+const configuration=env=>({AGENDA_ACCOUNTS:!!env.AGENDA_ACCOUNTS,GOOGLE_CLIENT_ID:/^\d+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(env.GOOGLE_CLIENT_ID||''),GOOGLE_CLIENT_SECRET:typeof env.GOOGLE_CLIENT_SECRET==='string'&&env.GOOGLE_CLIENT_SECRET.length>=12,AGENDA_DATA_KEY:/^[a-f0-9]{64}$/i.test(env.AGENDA_DATA_KEY||'')});
+const ready=env=>Object.values(configuration(env)).every(Boolean);
 async function limited(request){const reader=request.body?.getReader();if(!reader)return '';let raw='',size=0;const decoder=new TextDecoder('utf-8',{fatal:true});try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8192){await reader.cancel();throw error('Request too large',413);}raw+=decoder.decode(value,{stream:true});}return raw+decoder.decode();}finally{reader.releaseLock();}}
 function page(text,status=200,cookie){return new Response('<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Retomar · Google Agenda</title><h1>Retomar</h1><p>'+text+'</p><p>Volte ao aplicativo para continuar.</p></html>',{status,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",...(cookie?{'Set-Cookie':cookie}:{})}});}
 export async function handleAgenda(request,env){
@@ -31,7 +32,7 @@ export async function handleAgenda(request,env){
   const wrap=r=>{const next=new Response(r.body,r);for(const [key,value] of Object.entries(cors))next.headers.set(key,value);return next;};
   if(!callback&&request.headers.get('Origin')!==env.APP_ORIGIN)return json({error:'Origin not allowed'},403);
   if(!callback&&request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
-  if(url.pathname==='/agenda/config'&&request.method==='GET')return wrap(json({version:1,build:'2026-11-14.1',ready:ready(env),clientId:ready(env)?env.GOOGLE_CLIENT_ID:'',callbackURL:url.origin+'/agenda/oauth/callback'}));
+  if(url.pathname==='/agenda/config'&&request.method==='GET'){const checks=configuration(env),active=Object.values(checks).every(Boolean);return wrap(json({version:1,build:'2026-11-14.2',ready:active,checks,clientId:active?env.GOOGLE_CLIENT_ID:'',callbackURL:url.origin+'/agenda/oauth/callback'}));}
   if(!ready(env))return callback?page('A conexão compartilhada ainda não foi ativada no servidor.',503):wrap(json({error:'Agenda service not configured'},503));
   if(env.REQUEST_LIMITER){const result=await env.REQUEST_LIMITER.limit({key:'agenda:'+String(request.headers.get('CF-Connecting-IP')||'unknown')});if(!result.success)return callback?page('Aguarde um pouco e tente conectar novamente.',429):wrap(json({error:'Rate limit'},429));}
   try{
