@@ -2,6 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {service,cap,authId,clientId,clientSecret,origin,endpoint,scope} from './helpers/calendar-paired.mjs';
 import {handleAgenda} from '../server/calendar-auth.js';
+test('callback distingue falhas sem expor a resposta Google nem substituir autorização anterior',async t=>{
+ const secret='DO_NOT_EXPOSE_SECRET_OR_GOOGLE_DESCRIPTION';
+ const cases=[
+  ['invalid_client',401,'google_client',502],['unauthorized_client',400,'google_client',502],
+  ['invalid_grant',400,'google_code',401],['invalid_scope',400,'google_permissions',502],
+  ['access_denied',403,'google_denied',403],['server_error',503,'google_unavailable',502],
+  ['malformed',200,'google_reply',502],['permissions',200,'google_permissions',400],
+  ['refresh',200,'google_refresh',400],['timeout',0,'google_timeout',503],['network',0,'google_network',503]
+ ];
+ for(const [kind,http,reason,status] of cases)await t.test(kind,async()=>{
+  const f=service();await f.grant();const fetcher=f.env.fetcher,id='d'.repeat(64);
+  f.env.fetcher=async()=>{
+   if(kind==='timeout')throw new DOMException(secret,'TimeoutError');if(kind==='network')throw TypeError(secret);
+   if(kind==='malformed')return new Response(secret,{status:http});
+   if(['permissions','refresh'].includes(kind))return Response.json({access_token:'temporary',expires_in:3600,scope:kind==='permissions'?scope.split(' ')[0]:scope,...(kind==='permissions'?{refresh_token:'temporary-refresh'}:{})});
+   return Response.json({error:kind,error_description:secret},{status:http});
+  };f.reopen();
+  const r=await f.start(cap,id),auth=new URL(r.headers.get('Location'));
+  const callback=await f.call('/agenda/oauth/callback?'+new URLSearchParams({state:auth.searchParams.get('state'),code:secret}),{key:null,cookie:r.headers.get('Set-Cookie').split(';')[0]});
+  assert.equal(callback.status,status);const html=await callback.text(),info=await (await f.call('/agenda/status')).json();
+  assert.equal(info.connected,true);assert.equal(info.authorizationId,authId);assert.equal(info.failedAuthorizationId,id);assert.equal(info.failedAuthorizationCode,reason);assert.ok(info.failedAuthorizationMessage.length>20);assert.ok(html.includes(info.failedAuthorizationMessage));
+  for(const content of [html,JSON.stringify(info),JSON.stringify([...f.stores.values()].map(v=>[...v]))]){assert.ok(!content.includes(secret));assert.ok(!content.includes(clientSecret));}
+  f.env.fetcher=fetcher;f.reopen();assert.equal((await f.grant()).status,200);const success=await (await f.call('/agenda/status')).json();assert.equal(success.failedAuthorizationCode,'');assert.equal(success.failedAuthorizationId,'');assert.equal(success.failedAuthorizationMessage,'');
+ });
+});
 test('gateway preserva o redirecionamento OAuth e o cookie para a janela do navegador',async()=>{
  const f=service(),binding=f.env.AGENDA_ACCOUNTS,get=binding.get;let forwarded;
  binding.get=id=>({fetch:request=>{forwarded=request;return get(id).fetch(request);}});
@@ -30,7 +55,7 @@ test('redirecionamento do Google não é seguido e não substitui a autorizaçã
  assert.equal(JSON.stringify([...f.stores.values()].map(v=>[...v])),stored);
  assert.equal((await (await f.call('/agenda/account',{method:'DELETE'})).json()).revoked,false);
 });
-test('configuração expõe somente ID público; exige origem e credencial próprias',async()=>{const f=service(),r=await f.call('/agenda/config');assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);assert.deepEqual(await r.json(),{version:1,ready:true,clientId,callbackURL:endpoint+'/agenda/oauth/callback'});assert.equal((await handleAgenda(new Request(endpoint+'/agenda/config',{headers:{Origin:'https://evil.example'}}),f.env)).status,403);assert.equal((await f.call('/agenda/token',{key:null,method:'POST'})).status,401);delete f.env.GOOGLE_CLIENT_SECRET;assert.equal((await (await f.call('/agenda/config')).json()).ready,false);});
+test('configuração expõe somente ID público; exige origem e credencial próprias',async()=>{const f=service(),r=await f.call('/agenda/config');assert.equal(r.headers.get('Access-Control-Allow-Origin'),origin);assert.deepEqual(await r.json(),{version:1,build:'2026-11-14.1',ready:true,clientId,callbackURL:endpoint+'/agenda/oauth/callback'});assert.equal((await handleAgenda(new Request(endpoint+'/agenda/config',{headers:{Origin:'https://evil.example'}}),f.env)).status,403);assert.equal((await f.call('/agenda/token',{key:null,method:'POST'})).status,401);delete f.env.GOOGLE_CLIENT_SECRET;assert.equal((await (await f.call('/agenda/config')).json()).ready,false);});
 test('OAuth solicita leitura offline com PKCE, cookie de sessão e recibo; segredos ficam criptografados',async()=>{const f=service(),r=await f.start(),auth=new URL(r.headers.get('Location'));assert.equal(r.status,303);assert.equal(auth.searchParams.get('access_type'),'offline');assert.equal(auth.searchParams.get('code_challenge_method'),'S256');assert.equal(auth.searchParams.get('scope'),scope);for(const value of [cap,authId,clientSecret])assert.ok(!auth.href.includes(value));assert.match(r.headers.get('Set-Cookie'),/Secure; HttpOnly; SameSite=Lax/);const state=auth.searchParams.get('state'),cookie=r.headers.get('Set-Cookie').split(';')[0];const callback=await f.call('/agenda/oauth/callback?state='+state+'&code=test',{key:null,cookie});assert.equal(callback.status,200);assert.equal(f.grants(),1);const input=new URLSearchParams(f.calls[0].options.body);assert.ok(input.get('code_verifier'));assert.equal(input.get('client_secret'),clientSecret);const stored=JSON.stringify([...f.stores.values()].map(v=>[...v]));assert.ok(!stored.includes('refresh_fictitious'));assert.ok(!stored.includes('access_fictitious'));assert.match(callback.headers.get('Content-Security-Policy'),/default-src 'none'/);});
 test('callback rejeita outra sessão e repetição sem consumir a solicitação legítima',async()=>{const f=service(),r=await f.start(),auth=new URL(r.headers.get('Location')),path='/agenda/oauth/callback?state='+auth.searchParams.get('state')+'&code=test',cookie=r.headers.get('Set-Cookie').split(';')[0];assert.equal((await f.call(path,{key:null})).status,400);assert.equal((await f.call(path,{key:null,cookie:cookie.slice(0,-1)+(cookie.endsWith('0')?'1':'0')})).status,400);assert.equal((await f.call(path,{key:null,cookie})).status,200);assert.equal((await f.call(path,{key:null,cookie})).status,400);assert.equal(f.grants(),1);});
 test('duas sessões restauram e renovam em série; reiniciar o objeto preserva a autorização',async()=>{const f=service();await f.grant();const first=await (await f.call('/agenda/token',{method:'POST',body:{force:false}})).json();assert.ok(first.access_token);assert.equal(first.refresh_token,undefined);f.advance(3600000);const results=await Promise.all([f.call('/agenda/token',{method:'POST',body:{force:false}}),f.call('/agenda/token',{method:'POST',body:{force:false}})]);assert.equal(f.refreshes(),1);assert.deepEqual(await results[0].json(),await results[1].json());f.reopen();assert.equal((await f.call('/agenda/status')).status,200);assert.equal((await (await f.call('/agenda/status')).json()).authorizationId,authId);});

@@ -12,7 +12,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.6';
+const VERSION='1.6.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,calendarUI,lastUndo=null,undoBusy=false;
