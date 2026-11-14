@@ -34,7 +34,7 @@ export async function handleAgenda(request,env){
   }catch(e){return callback?page('Não foi possível concluir a conexão. Tente novamente pelo Retomar.',e.status||503):wrap(json({error:e.status===413?'Request too large':'Agenda service unavailable'},e.status||503));}
 }
 export class AgendaAccount{
-  constructor(ctx,env){this.ctx=ctx;this.env=env;this.fetcher=env.fetcher||fetch;this.now=env.now||Date.now;}
+  constructor(ctx,env){this.ctx=ctx;this.env=env;this.fetcher=env.fetcher||fetch.bind(globalThis);this.now=env.now||Date.now;}
   async encryptionKey(){return crypto.subtle.importKey('raw',Uint8Array.from(this.env.AGENDA_DATA_KEY.match(/../g),s=>parseInt(s,16)),'AES-GCM',false,['encrypt','decrypt']);}
   async seal(value){const iv=crypto.getRandomValues(new Uint8Array(12)),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:encoder.encode('retomar-agenda-v1:'+String(this.ctx.id))},await this.encryptionKey(),encoder.encode(JSON.stringify(value)));return {iv:b64(iv),cipher:b64(new Uint8Array(cipher))};}
   async load(){const value=await this.ctx.storage.get('account');if(!value)return null;try{const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(value.iv),additionalData:encoder.encode('retomar-agenda-v1:'+String(this.ctx.id))},await this.encryptionKey(),unb64(value.cipher));return JSON.parse(new TextDecoder().decode(plain));}catch{throw error('Encrypted account unavailable',503);}}

@@ -2,7 +2,7 @@
 
 A versão 1.6 compartilha o ID público do cliente Google e as agendas selecionadas pelo mesmo Gist criptografado usado no pareamento. Ocultar Meu dia, formato e filtros de visualização continuam como preferências de cada aparelho. Eventos e credenciais Google não entram no backup de tarefas.
 
-**Situação atual:** a titular ativou o servidor e `/agenda/config` confirmou `ready: true`. A autorização encontrou `405 Method not allowed` no início; a correção descrita abaixo ainda precisa ser republicada no Worker. A conexão Google real e a restauração entre aparelhos permanecem pendentes de confirmação. Enquanto `/agenda/config` não confirmar `ready: true`, a conexão antiga por sessão continua disponível. Publicar o app no GitHub Pages não publica o Worker.
+**Situação atual:** a titular ativou o servidor e aplicou a correção do 405; `/agenda/config` confirma `ready: true` e o início encaminha para o Google. Após consentir, outra falha do servidor foi reproduzida no callback: fetch nativo chamado com receptor incorreto. A correção dessa chamada ainda precisa ser republicada no Worker, pelos mesmos dois comandos abaixo. Conexão Google real e restauração entre aparelhos permanecem pendentes de confirmação. Enquanto `/agenda/config` não confirmar `ready: true`, a conexão antiga por sessão continua disponível. Publicar o app no GitHub Pages não publica o Worker.
 
 ## Ativar uma vez
 
@@ -54,9 +54,11 @@ Use o mesmo cliente OAuth do tipo **Aplicativo da Web** já configurado para o R
 
 O comando usa `server/wrangler.jsonc`, publica o Worker existente e acrescenta o armazenamento `AgendaAccount`, mantendo o armazenamento `Device` das notificações. Ele não republica o GitHub Pages. Se a implantação indicar outro endereço ou um cliente Google diferente, interrompe a substituição de segredos Google; confira a conta e conserve o cliente atual. Trocar de cliente exige migração administrativa.
 
-## Se a janela mostrar `Method not allowed`
+## Se a janela mostrar erro no início ou após autorizar
 
 Esse erro foi reproduzido no servidor e em Miniflare/workerd, com credenciais fictícias. O encaminhamento interno seguia o redirect OAuth, consumindo a resposta 303 antes de o cookie e o destino Google chegarem ao navegador. O servidor agora devolve esse redirect intacto. As requisições de troca, renovação e revogação também usam o modo `manual`, compatível com Workers, e rejeitam respostas 3xx.
+
+Após corrigir o 405, o callback ainda podia falhar com mensagem genérica e a janela era fechada pelo app. O fetch nativo da Cloudflare exige o receptor global; guardar a função diretamente como propriedade de `AgendaAccount` provocava `Illegal invocation` antes da chamada ao Google. A função agora usa `bind(globalThis)`. O teste `calendar-worker` executa o Worker real com rede externa interceptada e mantém o fetch nativo, incluindo suas regras de receptor e redirect.
 
 Na cópia já usada para ativar o servidor, abra PowerShell na pasta `Retomar-main` e execute um comando por vez:
 
@@ -67,7 +69,7 @@ npx.cmd --yes wrangler@4 deploy --config server/wrangler.jsonc
 
 Esses comandos atualizam o código do Worker e preservam os segredos cadastrados, incluindo `AGENDA_DATA_KEY` e as chaves push. Não é necessário executar `agenda:deploy` nem digitar o ID/segredo novamente. Após a publicação, feche a janela de erro e inicie uma nova conexão por **Meu dia → Conectar aparelhos ao Google**. Não abra `/agenda/auth/start` diretamente na barra de endereços: o fluxo começa por POST no aplicativo.
 
-O teste em Miniflare reproduz o comportamento do runtime com chamadas Google simuladas; não equivale a consentimento na conta real. Referências: [Request e modos de redirect](https://developers.cloudflare.com/workers/runtime-apis/request/) e [fetch em Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/).
+O teste em Miniflare reproduz o comportamento do runtime com respostas Google simuladas fora do Worker; não equivale a consentimento na conta real. Referências: [Request e modos de redirect](https://developers.cloudflare.com/workers/runtime-apis/request/), [fetch em Durable Objects](https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/) e [Illegal invocation](https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors).
 
 ## Como funciona
 
