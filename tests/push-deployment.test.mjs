@@ -40,11 +40,11 @@ test('Windows executa npm pelo Node com caminho contendo espaços e mantém segr
  const {mkdtemp,mkdir,writeFile,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
  const folder=await mkdtemp(join(tmpdir(),'retomar-windows-'));t.after(()=>rm(folder,{recursive:true,force:true}));const path=join(folder,'Sof & configuração (teste)');await mkdir(path);const cli=join(path,'npm-cli.js');
  await writeFile(cli,`let body='';process.stdin.setEncoding('utf8');process.stdin.on('data',chunk=>body+=chunk);process.stdin.on('end',()=>console.log(JSON.stringify({args:process.argv.slice(2),body,ci:process.env.CI,metrics:process.env.WRANGLER_SEND_METRICS})));`);
- const input=JSON.stringify({GOOGLE_CLIENT_SECRET:'fictitious_terminal_secret'}),result=JSON.parse(await wrangler(['secret','bulk'],{input,platform:'win32',env:{...process.env,npm_execpath:cli}}));
+ const input=JSON.stringify({VAPID_PRIVATE_JWK:'fictitious_terminal_secret'}),result=JSON.parse(await wrangler(['secret','bulk'],{input,platform:'win32',env:{...process.env,npm_execpath:cli}}));
  assert.deepEqual(result.args,['exec','--yes','--','wrangler@4','secret','bulk','--config','server/wrangler.jsonc']);assert.equal(result.body,input);assert.ok(!result.args.join(' ').includes('fictitious_terminal_secret'));assert.equal(result.ci,'true');assert.equal(result.metrics,'false');
 });
 test('Windows sem contexto npm orienta a execução antes de iniciar processos',async()=>{
- for(const npm_execpath of [undefined,'missing/npm-cli.js','other.cmd'])await assert.rejects(wrangler(['deploy'],{platform:'win32',env:{npm_execpath}}),/npm\.cmd run agenda:deploy/);
+ for(const npm_execpath of [undefined,'missing/npm-cli.js','other.cmd'])await assert.rejects(wrangler(['deploy'],{platform:'win32',env:{npm_execpath}}),/npm\.cmd run push:deploy/);
 });
 
 test('login salvo no AppData do Windows ou no cofre é reconhecido sem ler credenciais',async t=>{

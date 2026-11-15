@@ -17,7 +17,7 @@ export function wrangler(args,{input,platform=process.platform,env=process.env}=
     // Windows não executa .cmd sem shell. O npm fornecido por npm run é JavaScript:
     // invoque-o pelo Node para preservar caminhos com espaços e segredos por stdin.
     const windows=platform==='win32',npmCLI=env.npm_execpath;
-    if(windows&&(typeof npmCLI!=='string'||!/(?:^|[\\/])npm-cli\.js$/i.test(npmCLI)||!existsSync(npmCLI)))throw Error('No Windows, execute pela pasta do projeto: npm.cmd run agenda:deploy ou npm.cmd run push:deploy.');
+    if(windows&&(typeof npmCLI!=='string'||!/(?:^|[\\/])npm-cli\.js$/i.test(npmCLI)||!existsSync(npmCLI)))throw Error('No Windows, execute pela pasta do projeto: npm.cmd run push:deploy.');
     const command=windows?process.execPath:'npx',parameters=windows?[npmCLI,'exec','--yes','--','wrangler@4',...args,'--config',config]:['--yes','wrangler@4',...args,'--config',config];
     const child=spawn(command,parameters,{cwd:root,env:{...env,CI:'true',WRANGLER_SEND_METRICS:'false'},stdio:['pipe','pipe','pipe'],shell:false});
     let stdout='',stderr='',settled=false;

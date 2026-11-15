@@ -1,0 +1,28 @@
+name: Verificar publicação push no Windows
+
+on:
+  pull_request:
+    branches: [main]
+    paths: [server/**, tests/push-deployment.test.mjs, .github/workflows/push-windows.yml]
+  push:
+    branches: [main]
+    paths: [server/**, tests/push-deployment.test.mjs, .github/workflows/push-windows.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-cli:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v6
+      - name: Preparar Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verificar implantação push e caminhos Windows
+        shell: powershell
+        run: node --test tests/push-deployment.test.mjs
