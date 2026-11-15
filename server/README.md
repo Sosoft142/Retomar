@@ -34,3 +34,7 @@ As alterações e os adiamentos são enviados quando o app está aberto e conect
 Alarmes persistentes acionam o envio; respostas transitórias recebem até cinco novas tentativas, com espera crescente. Respostas 404/410 eliminam a assinatura expirada. Mensagens com atraso superior a uma hora são descartadas para evitar uma enxurrada tardia. Tags estáveis deduplicam entregas confirmadas e agrupam notificações no navegador; timeouts de rede ainda podem ocasionar reenvio. O sistema operacional e o provedor podem atrasar ou suprimir avisos; não há garantia de entrega exata.
 
 Origem permitida, credencial por aparelho, tamanho, estrutura, endpoints dos provedores e limite por IP são verificados. CORS não substitui controle de acesso: em uma implantação pública de grande escala, acrescente autenticação de conta ou convite para controlar novos registros e custos. Não use registros contendo títulos, credenciais ou assinaturas em logs.
+
+## Remoção da integração descontinuada
+
+O Worker atende somente às notificações. A configuração inclui `v3-remove-agenda` para excluir a antiga classe AgendaAccount e seus dados quando a titular publicar esta versão. Device, DEVICES e as chaves VAPID são preservados. Os três segredos da integração e as autorizações externas devem ser removidos conforme o [guia de limpeza](../docs/REMOVER-GOOGLE-AGENDA.md).

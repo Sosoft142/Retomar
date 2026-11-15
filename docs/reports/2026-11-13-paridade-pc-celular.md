@@ -17,7 +17,7 @@ Os fluxos foram exercitados por DOM em Node, sem recursos externos. As larguras 
 | Comandos que compartilham a mesma ação | Arquivadas, abas e Mostrar mais podiam ser confundidos com outro controle | A correspondência considera modo, página, coleção e demais identificadores da ação |
 | Meu dia | Trocar data/período ou navegar descartava o foco | O campo ou comando equivalente conserva o foco após a atualização |
 
-Os primeiros testes reproduziram as falhas de seleção e foco na versão anterior e passaram após as correções. Dados, esquema, sincronização, cores, dependências de produção e comportamento dos eventos do Google não foram modificados.
+Os primeiros testes reproduziram as falhas de seleção e foco na versão anterior e passaram após as correções. Dados, esquema, sincronização, cores, dependências de produção não foram modificados.
 
 ## Fluxos conferidos
 
@@ -25,7 +25,7 @@ Em cada combinação: alternância lista/cartões sem gravar tarefas; títulos l
 
 Testes de eventos de arraste cobrem mouse, espera de 300 ms no toque, cancelamento por deslocamento antes da espera, proteção contra clique acidental, Escape, perda de foco da janela e alternativa pelas setas. Não substituem a sensação ou a rolagem efetivas em um aparelho.
 
-A suíte existente também cobre concorrência, favoritos, histórico, persistência, backups, sincronização, integração Google simulada e retorno à versão 1.3. A folha CSS foi analisada sem erros de sintaxe; foram revisadas as regras de lista desktop, grade de cartões, subitens, formulários, ações fixas e limites de 650/1024 px. O CSS não precisou ser alterado nesta correção.
+A suíte existente também cobre concorrência, favoritos, histórico, persistência, backups, sincronização. A folha CSS foi analisada sem erros de sintaxe; foram revisadas as regras de lista desktop, grade de cartões, subitens, formulários, ações fixas e limites de 650/1024 px. O CSS não precisou ser alterado nesta correção.
 
 ## Diferenças intencionais
 
@@ -45,6 +45,4 @@ As tarefas são locais até a sincronização configurada pelo Gist; não há si
 
 ## Limites e retorno
 
-Continuam pendentes a inspeção visual real, cortes/sobreposições medidos, zoom, teclado virtual, gestos/voltar e seletores de data no Samsung S24, além da autenticação real do Google. Não é possível afirmar equivalência visual completa com os testes em Node. A configuração OAuth do Google continua necessária para consultar eventos privados.
-
-O ponto anterior à agenda permanece intacto na branch `backup/retomar-1.3-antes-agenda-2026-11-11`, commit `c3897a5c61b954c0f62ba4be0d77748af939932a`. O mecanismo de retorno preserva o esquema das tarefas e cria um cache offline posterior ao instalado. Esta revisão atualiza o cache para v43 para distribuir as correções.
+Continuam pendentes a inspeção visual real, cortes/sobreposições medidos, zoom, teclado virtual, gestos/voltar e seletores de data no Samsung S24. Não é possível afirmar equivalência visual completa com os testes em Node.

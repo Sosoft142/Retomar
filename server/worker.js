@@ -1,6 +1,4 @@
 import {sendPush,validSubscription} from './webpush.js';
-import {handleAgenda} from './calendar-auth.js';
-export {AgendaAccount} from './calendar-auth.js';
 export function validateEntries(entries,now=Date.now()){
   if(!Array.isArray(entries)||entries.length>5000)throw Error('Too many deadlines');
   const tags=new Set();
@@ -14,7 +12,6 @@ export async function readLimitedBody(request,limit=1500000){
 }
 const json=(body,status=200)=>Response.json(body,{status});
 export default {async fetch(request,env){
-  if(new URL(request.url).pathname.startsWith('/agenda/'))return handleAgenda(request,env);
   const origin=request.headers.get('Origin');
   if(origin!==env.APP_ORIGIN)return json({error:'Origin not allowed'},403);
   const cors={'Access-Control-Allow-Origin':env.APP_ORIGIN,'Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Vary':'Origin','Cache-Control':'no-store'};

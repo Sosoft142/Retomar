@@ -1,32 +1,20 @@
 # Histórico
 
-## 1.6 — agenda e pareamento entre aparelhos
+## 1.7 — remoção da integração externa da agenda
 
-ID público Google e seleção de agendas são sincronizados em arquivo criptografado próprio no mesmo Gist; formulário aberto adia alterações remotas. Ocultar Meu dia continua por aparelho. Tarefas e esquema de dados preservados.
+Meu dia passa a usar somente tarefas do Retomar, mantendo seus formatos, filtros, ações e navegação. Removidos SDK, OAuth, leitura de eventos, compartilhamento de configuração, serviço e ferramentas da integração. Preferências antigas são limpas sem alterar tarefas ou o pareamento do GitHub. Cache v47. O Worker inclui migração para excluir apenas o armazenamento da integração, preservando notificações e suas chaves.
 
-Preparados OAuth por código no servidor, renovação compartilhada, credencial derivada do pareamento, armazenamento criptografado, proteção por estado/PKCE/cookie e desconexão global com resultado de revogação. Configuração de implantação conserva VAPID e chave de dados. **Ativação Cloudflare e cadastro do cliente Google pendentes pela titular**: publicar o app não ativa o Worker. Conexão por sessão mantida como alternativa até a ativação. Cache offline v45.
+[Limpeza manual das contas externas](docs/REMOVER-GOOGLE-AGENDA.md). As versões descontinuadas permanecem no histórico Git.
 
-[Guia de ativação](docs/AGENDA-PAREADA.md) · [Relatório e limites](docs/reports/2026-11-13-agenda-pareada.md).
-
-## 1.5 — Meu dia integrado e cores do Google Agenda
+## 1.5 — Meu dia integrado ao Planejamento
 
 Lista/Cartões em um ou sete dias, com criação na data escolhida, conclusão, gerenciamento, ações rápidas e Desfazer sobre as mesmas tarefas do Planejamento. Busca, área e prioridade compartilhadas; andamento de Meu dia e formato independentes, salvos no aparelho. Subitens usam seus próprios prazos e não são duplicados; sair da seleção para outra tela restaura controles normais. Busca preserva foco e cursor.
-
-Eventos consultam a paleta do Google e usam cor individual, rótulo personalizado quando autorizado e cor padrão da agenda. Atualizar relê a lista de agendas e suas cores. O acesso de metadados para rótulos é opcional e somente de leitura. Fundos, bordas e indicadores de cor reforçados, com legendas mais escuras. Conteúdo por dia tem Mostrar mais, mantendo contagens completas.
-
-Dados, Gist, identidade PWA e retorno 1.3 preservados; cache offline v44. Sem navegador na validação. [Relatório](docs/reports/2026-11-13-meu-dia-cores-planejamento.md).
 
 ## 1.4.1 — consistência entre PC e celular
 
 Seleção oculta Adicionar no cabeçalho do PC, como já ocorria no celular; o andamento conserva seu rótulo e posicionamento ao selecionar. Renderizações mantêm foco no controle equivalente; limpar seleção retorna a Selecionar exibidas. A identificação de foco distingue abas, arquivo e listas com Mostrar mais. Meu dia conserva o foco na data, período e navegação.
 
 Verificação funcional em Node para oito larguras e lista/cartões, incluindo toque, teclado, edição, descarte, subitens, arquivo e lote. Arraste exercitado por eventos simulados. Sem acesso ao navegador; medidas e aparência reais continuam pendentes. [Relatório](docs/reports/2026-11-13-paridade-pc-celular.md).
-
-## 1.4 — Meu dia e Google Agenda opcional
-
-Consulta de compromissos em um dia ou sete dias, junto às tarefas, com seleção de agendas. Acesso somente de leitura, token e eventos em memória, conexão iniciada pela titular e falhas isoladas do planejamento. A configuração OAuth do Google precisa ser feita pela titular; o recurso pode ser usado apenas com tarefas ou desativado.
-
-Versão 1.3 preservada antes da integração em branch própria, com preparação e teste de restauração. [Configuração e retorno](docs/GOOGLE-AGENDA.md) · [Relatório e limites](docs/reports/2026-11-11-google-agenda.md).
 
 ## 1.3 — ações rápidas, seleção e visualizações favoritas
 
