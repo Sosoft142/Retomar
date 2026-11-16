@@ -1,12 +1,12 @@
-const CACHE='entrelinhas-vida-shell-v48';
+const CACHE='entrelinhas-vida-shell-v49';
 const SHELL=['./','./index.html','./retomar.css','./fonts/inter-latin.woff','./fonts/manrope-latin.woff','./fonts/space-grotesk-latin.woff','./icon.svg','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./manifest.webmanifest','./src/app.js','./src/retired-preferences.js','./src/workflows.js','./src/workflow-ui.js','./src/rendering.js','./src/navigation.js','./src/domain.js','./src/repository.js','./src/drag.js','./src/forms.js','./src/collections.js','./src/pwa.js','./src/planning.js','./src/planning-ui.js','./src/push.js','./src/push-ui.js','./src/push-config.js','./src/sync/connect.js','./src/sync/merge.js','./src/sync/crypto.js','./src/sync/gist.js','./src/sync/engine.js','./src/sync/preferences.js','./src/sync/ui.js'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)));self.skipWaiting()});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL.map(path=>new Request(new URL(path,self.registration.scope).href,{cache:'reload'})))));self.skipWaiting()});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('entrelinhas-vida-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 const shellURLs=new Set(SHELL.map(path=>new URL(path,self.registration.scope).href));
 self.addEventListener('fetch',e=>{
   const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||e.request.headers.has('authorization'))return;
   const key=new URL(u);key.search='';key.hash='';const shell=shellURLs.has(key.href);
-  e.respondWith(fetch(e.request).then(r=>{
+  e.respondWith(fetch(e.request,shell?{cache:'no-cache'}:undefined).then(r=>{
     if(shell&&r.ok&&r.type==='basic'){const clone=r.clone();e.waitUntil(caches.open(CACHE).then(c=>c.put(key.href,clone)).catch(()=>{}))}
     return r;
   }).catch(async()=>{

@@ -4,12 +4,12 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const source=readFileSync(new URL('../dist/service-worker.js',import.meta.url),'utf8'),scope='https://example.test/Retomar/';
 function fixture({offline=false,quota=false,entries=new Map(),showNotification=async()=>{}}={}){
- const handlers={},writes=[],waits=[],response={ok:true,type:'basic',clone(){return this}};
- const cache={put:async(key,value)=>{if(quota)throw Error('quota');writes.push(key);entries.set(key,value)},addAll:async()=>{}};
+ const handlers={},writes=[],waits=[],requests=[],installs=[],response={ok:true,type:'basic',clone(){return this}};
+ const cache={put:async(key,value)=>{if(quota)throw Error('quota');writes.push(key);entries.set(key,value)},addAll:async values=>{installs.push(...values)}};
  const caches={open:async()=>cache,match:async request=>entries.get(typeof request==='string'?request:request.url),keys:async()=>[],delete:async()=>true};
- vm.runInNewContext(source,{URL,Response,caches,fetch:async()=>{if(offline)throw Error('offline');return response},self:{registration:{scope,showNotification},location:{origin:new URL(scope).origin},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting(){}}});
+ vm.runInNewContext(source,{URL,Request,Response,caches,fetch:async(request,options)=>{requests.push({url:request.url,cache:options?.cache});if(offline)throw Error('offline');return response},self:{registration:{scope,showNotification},location:{origin:new URL(scope).origin},addEventListener:(name,fn)=>handlers[name]=fn,skipWaiting(){}}});
  async function get(path,extra={}){let result;const event={request:{url:new URL(path,scope).href,method:'GET',mode:'cors',headers:{has:()=>false},...extra},respondWith:p=>result=p,waitUntil:p=>waits.push(p)};handlers.fetch(event);const value=await result;await Promise.all(waits);return value}
- return {get,writes,response,handlers};
+ return {get,writes,response,handlers,requests,installs};
 }
 test('offline recupera recurso conhecido mesmo com parâmetro de versão',async()=>{
  const cached={body:'css salvo'},f=fixture({offline:true,entries:new Map([[scope+'retomar.css',cached]])});assert.equal(await f.get('retomar.css?v=2'),cached);
@@ -41,4 +41,17 @@ test('push sem janela aberta solicita vibração apenas para avisos com alerta',
  }
  assert.equal(notifications[2].silent,true);
  assert.equal(notifications[2].vibrate,undefined);
+});
+
+test('instalação busca o shell atual sem reutilizar respostas HTTP antigas',async()=>{
+ const f=fixture();let completion;f.handlers.install({waitUntil:p=>{completion=p}});await completion;
+ assert.ok(f.installs.length>20);for(const request of f.installs){assert.ok(request.url.startsWith(scope));assert.equal(request.cache,'reload');}
+});
+test('arquivos do app revalidam o cache HTTP e outros recursos mantêm seu comportamento',async()=>{
+ const f=fixture();await f.get('src/app.js?v=1.8.1');await f.get('arquivo-fora-do-app.json');
+ assert.equal(f.requests[0].cache,'no-cache');assert.equal(f.requests[1].cache,undefined);
+});
+test('entrada HTML aponta para a versão atual e preserva o caminho offline',()=>{
+ const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+ const entry=html.match(/src="\.\/src\/app\.js\?v=([^"]+)"/);assert.ok(entry);assert.equal(entry[1],pkg.version);assert.ok(source.includes("'./src/app.js'"));
 });

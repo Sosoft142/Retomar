@@ -12,7 +12,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.8';
+const VERSION='1.8.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,lastUndo=null,undoBusy=false;
@@ -86,7 +86,8 @@ function indexChildren(){const archived=archiveMode&&['plan','agenda'].includes(
 const childrenOf=id=>childIndex.get(id)||[];
 function persistSubitems(){delete ui.expandedItems;delete ui.dayLayout;delete ui.dayStatus;ui.collapsedItems=[...collapsedItems].filter(id=>state.items[id]&&!state.items[id].deleted&&!state.items[id].parentId).slice(-500);saveUI()}
 function filterOptions(){return {status,scope,query,priority:priorityFilter,order:sortOrder,today:today(),isOverdue:isTaskOverdue}}
-function isExpanded(t){return !collapsedItems.has(t.id)||(filtersActive()&&!collapsedMatches.has(t.id)&&selectItems(childrenOf(t.id),filterOptions()).length>0)}
+function isExpanded(t){return !collapsedItems.has(t.id)||(filtersActive()&&!collapsedMatches.has(t.id))}
+function matchingSubitems(t){const children=childrenOf(t.id),options=filterOptions();return (!filtersActive()||selectItems([t],options).length>0)?children:selectItems(children,options)}
 function areaItems(){return viewItems??=(archiveMode?archivedItems(state):visibleItems(state)).filter(t=>area==='all'||t.areaId===area)}
 const viewChoices={
   layout:[['compact','Lista compacta'],['cards','Cartões']],
@@ -157,7 +158,7 @@ function archiveButton(t){return isArchived(state,t)?`<button class="textbtn tas
 function pageHeading(title,subtitle){return `<div class="page-heading"><h1>${title}</h1>${subtitle?`<p>${subtitle}</p>`:''}</div>`}
 function priorityView(){return !archiveMode&&page==='plan'&&groupBy==='priority'}
 
-function orderToolbar(){const active=filtersActive();return `<div id="results-summary" class="results-caption" ${active?'':'hidden'}>${active?`<span>${filtered().length} ${filtered().length===1?'resultado':'resultados'}</span><button class="textbtn" data-action="clear">Limpar filtros</button>`:''}</div>`}
+function orderToolbar(){const active=filtersActive(),hidden=filtered().some(t=>childrenOf(t.id).length&&!isExpanded(t));return `<div id="results-summary" class="results-caption" ${active||hidden?'':'hidden'}>${active?`<span>${filtered().length} ${filtered().length===1?'resultado':'resultados'}</span><button class="textbtn" data-action="clear">Limpar filtros</button>`:''}${hidden?`<button type="button" class="textbtn" data-action="expand-subitems">${icon('down')} Mostrar subitens</button>`:''}</div>`}
 function openSummary(list){const main=list.filter(t=>!t.parentId&&openItem(t)).length,sub=list.filter(t=>t.parentId&&openItem(t)).length;return sub?`${main} ${main===1?'item':'itens'} e ${sub} ${sub===1?'subitem':'subitens'} em aberto`:`${main} ${main===1?'item em aberto':'itens em aberto'}`}
 function renderPlan(){return `<div class="planning-overview ${archiveMode?'is-archive':''}">${pageHeading(archiveMode?'Arquivadas':'Planejamento',archiveMode?'Preservadas para consultar ou restaurar.':openSummary(areaItems()))}${planningUI?.summary()||''}</div>${areaTabs()}${controls()}${archiveToolbar()}${workflowUI?.toolbar()||''}${orderToolbar()}<div id="task-results" class="results layout-${layout} group-${groupBy} ${priorityView()?'priority-board':''}" aria-live="polite">${planningResults()}</div>`}
 function planningResults(){collections.begin();if(groupBy==='date')return renderTimeline();return archiveMode?(filtered().length?itemCollection(filtered(),'archive'):empty('Nenhuma tarefa arquivada nestes filtros.','As tarefas arquivadas aparecerão aqui e poderão ser restauradas.','Ver tarefas ativas','active-view')):priorityView()?renderPriorityResults():renderResults()}
@@ -185,8 +186,8 @@ function subitemFooter(t){
 
   if(page!=='plan')return bar;
   if(!open)return bar+`<div id="${esc(panelId)}" hidden></div>`;
-  const matching=filtersActive()?selectItems(children,filterOptions()):children,ordered=selectItems(matching,{order:subitemOrder}),{visible,remaining,step}=collections.take('subitems-'+t.id,ordered);
-  return bar+`<section id="${esc(panelId)}" class="subitems-panel" data-drop-parent="${esc(t.id)}" aria-label="Subitens de ${esc(t.title)}"><div class="subitems-heading"><span>${filtersActive()?matching.length+' de '+children.length+' '+(children.length===1?'subitem':'subitens')+' nos filtros':'Subitens deste item'}</span><div class="subitems-order-field"><label class="sr-only" for="suborder-${esc(t.id)}">Ordenar subitens de ${esc(t.title)}</label><select id="suborder-${esc(t.id)}" class="subitem-order"><option value="manual" ${subitemOrder==='manual'?'selected':''}>Minha ordem</option><option value="priority" ${subitemOrder==='priority'?'selected':''}>Prioridade</option><option value="date" ${subitemOrder==='date'?'selected':''}>Data</option></select></div></div>${visible.length?`<div class="subitems-list">${visible.map(compactTask).join('')}</div>`:`<p class="subitems-empty">${children.length?'Nenhum subitem corresponde aos filtros.':'Adicione etapas para acompanhar este item.'}</p>`}${remaining?`<div class="collection-more"><p>${visible.length} de ${matching.length} subitens nesta lista</p><button class="btn secondary" data-action="show-more" data-collection="subitems-${esc(t.id)}">Mostrar mais ${step}</button></div>`:''}</section>`;
+  const matching=matchingSubitems(t),ordered=selectItems(matching,{order:subitemOrder}),{visible,remaining,step}=collections.take('subitems-'+t.id,ordered);
+  return bar+`<section id="${esc(panelId)}" class="subitems-panel" data-drop-parent="${esc(t.id)}" aria-label="Subitens de ${esc(t.title)}"><div class="subitems-heading"><span>${filtersActive()?matching.length+' de '+children.length+' '+(children.length===1?'subitem':'subitens')+' nesta visualização':'Subitens deste item'}</span><div class="subitems-order-field"><label class="sr-only" for="suborder-${esc(t.id)}">Ordenar subitens de ${esc(t.title)}</label><select id="suborder-${esc(t.id)}" class="subitem-order"><option value="manual" ${subitemOrder==='manual'?'selected':''}>Minha ordem</option><option value="priority" ${subitemOrder==='priority'?'selected':''}>Prioridade</option><option value="date" ${subitemOrder==='date'?'selected':''}>Data</option></select></div></div>${visible.length?`<div class="subitems-list">${visible.map(compactTask).join('')}</div>`:`<p class="subitems-empty">${children.length?'Nenhum subitem corresponde aos filtros.':'Adicione etapas para acompanhar este item.'}</p>`}${remaining?`<div class="collection-more"><p>${visible.length} de ${matching.length} subitens nesta lista</p><button class="btn secondary" data-action="show-more" data-collection="subitems-${esc(t.id)}">Mostrar mais ${step}</button></div>`:''}</section>`;
 }
 function taskView(t,detailed=false){const a=state.areas[t.areaId];return `<article class="${detailed?'task':'compact-task'} task-content priority-${t.priority} ${t.parentId?'subitem-row':''} ${!openItem(t)?'closed':''} ${workflowUI?.isSelected(t.id)?'is-selected':''}" ${itemAttributes(t)}>${parentContext(t)}<div class="task-head">${completion(t)}<h3 class="task-title">${esc(t.title)}</h3>${manageButton(t)}</div><div class="task-information">${workflowUI?.quickField(t,'deadline',compactDue(t))||compactDue(t)}${areaIndicator(a,esc)}</div>${detailed&&t.notes?`<p class="task-note">${esc(t.notes)}</p>`:''}<div class="task-tags">${workflowUI?.quickField(t,'priority',priorityIndicator(t.priority))||priorityIndicator(t.priority)}${workflowUI?.quickField(t,'status',`<span>${esc(statusLabel[t.status])}</span>`)||`<span class="task-status-label">${esc(statusLabel[t.status])}</span>`}${archiveButton(t)}${dragHandle(t)}</div>${subitemFooter(t)}</article>`}
 function compactTask(t){return taskView(t)}
@@ -238,6 +239,7 @@ async function action(name,d={}){
   if(name==='archive-item'||name==='restore-item'){await archiveTask(d.id,name==='archive-item');return}
   if(name==='archive-completed'){await archiveCompleted();return}
   if(name==='show-more'){const before=[...document.querySelectorAll('[data-drag-item]')].map(el=>el.dataset.dragItem);collections.more(d.collection);refreshResults();[...document.querySelectorAll('[data-drag-item]')].find(el=>!before.includes(el.dataset.dragItem))?.querySelector('.manage-task')?.focus();return}
+  if(name==='expand-subitems'){for(const t of filtered()){collapsedItems.delete(t.id);collapsedMatches.delete(t.id)}persistSubitems();refreshResults();document.querySelector('[data-action="expand-item"]')?.focus();return}
   if(name==='expand-item'){const t=state.items[d.id];if(!t||t.deleted||t.parentId)return;if(isExpanded(t)){collapsedItems.add(d.id);collapsedMatches.add(d.id)}else{collapsedItems.delete(d.id);collapsedMatches.delete(d.id)}persistSubitems();refreshResults();document.querySelector(`[data-action="expand-item"][data-id="${CSS.escape(d.id)}"]`)?.focus();return}
   if(name==='reveal-parent'){const t=state.items[d.id];if(!t||t.deleted)return;page='plan';archiveMode=isArchived(state,t);area=t.areaId;query='';scope='all';status='all';priorityFilter='all';collections.reset();collapsedItems.delete(t.id);persistSubitems();render();document.querySelector(`[data-action="expand-item"][data-id="${CSS.escape(t.id)}"]`)?.focus();return}
   if(name==='new-subitem'){if(fatal){toast('Recupere os dados em Configurações antes de editar.');return}itemModal(null,null,null,d.parentId);return}
@@ -396,7 +398,7 @@ function restoreView(view){
 }
 navigation=createNavigation({capture:captureView,restore:restoreView,hasModal:()=>!!document.querySelector('dialog[open]'),canCloseModal,dismissModal:()=>closeModal(true,true)});
 navigation.start();
-workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>[...new Map([...filtered().filter(t=>!archiveMode||isArchived(state,t)),...selectItems(areaItems(),filterOptions())].map(t=>[t.id,t])).values()],getUndo:()=>lastUndo,onUndo:undoLast,
+workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>filtered().flatMap(t=>[...(!archiveMode||isArchived(state,t)?[t]:[]),...matchingSubitems(t)]),getUndo:()=>lastUndo,onUndo:undoLast,
   onApplyView:view=>{ui.layout=view.layout;ui.groupBy=view.groupBy;ui.order=view.sortOrder;ui.subitemOrder=view.subitemOrder;saveUI();restoreView(view)},onRefresh:render,mutate,deviceId,openModal,closeModal,toast,esc,icon});
 
 render();

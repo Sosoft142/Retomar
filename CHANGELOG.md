@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.8.1 — Subitens na tela inicial e atualização do app
+
+Busca pelo item principal passa a manter suas etapas, mesmo com títulos diferentes. Quando apenas uma etapa corresponde aos filtros, seu principal continua como contexto. Filtros revelam famílias recolhidas, respeitando novo recolhimento na sessão; Mostrar subitens reabre etapas ocultas sem alterar tarefas. Entrada versionada e revalidação dos arquivos do app evitam reutilizar código HTTP antigo após a publicação; offline e notificações preservados. Cache v49.
+
 ## 1.8 — Planejamento com itens e subitens reunidos
 
 Removidos Meu dia, suas opções, módulos e preferências. O Planejamento mostra subitens abaixo do principal, abertos por padrão, em Lista compacta, Cartões e todos os agrupamentos. Prazo e prioridade organizam famílias pela tarefa principal; os subitens conservam suas informações próprias. Arquivadas reúne famílias e mostra o principal ativo como contexto quando somente um subitem está arquivado. Busca, filtros, recolhimento, paginação, ações rápidas, seleção, Desfazer e sincronização preservados. Cache v48.

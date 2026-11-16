@@ -86,6 +86,8 @@ test('paridade de uso entre PC, celular, lista e cartões',async t=>{
         assert.equal(w.document.querySelectorAll('[data-root-item]').length,2);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);assert.ok(node('#subitems-p [data-drag-item="c"]'));
       }
       fill('#search-input','Etapa independente');await settle();assert.equal(w.document.querySelectorAll('[data-root-item]').length,1);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);fill('#search-input','');await settle();
+      fill('#search-input',state().items.p.title);await settle();assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);fill('#search-input','');await settle();
+      await click('[data-action="expand-item"][data-id="p"]');assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.activeElement.dataset.action,'expand-item');
       assert.equal(w.document.querySelector('[data-page="day"]'),null);
       const beforeChild=state().items.c;await click('[data-action="workflow-quick"][data-id="c"][data-field="deadline"]');fill('#quick-date','2200-11-14');await submit();
       await format(layout,'date');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);assert.equal(state().items.p.date,'2200-11-12');
