@@ -114,9 +114,9 @@ export function selectMovePeers(s,id,{area='all',groupBy='none',priorityBoard=fa
   const matches=(current.parentId?selectItems:selectPlanningItems)(source,{...options,order:'manual'});
   return matches.filter(t=>t.parentId===current.parentId&&(current.parentId?true:priorityBoard?t.priority===current.priority:groupBy==='area'?t.areaId===current.areaId:true));
 }
-export function selectPlanningItems(items,options={}){
+export function selectPlanningItems(items,options={},parents=items){
   const matched=selectItems(items,options),ids=new Set(matched.map(t=>t.parentId||t.id));
-  return selectItems(items.filter(t=>!t.parentId&&ids.has(t.id)),{order:options.order||'date'});
+  return selectItems(parents.filter(t=>!t.parentId&&ids.has(t.id)),{order:options.order||'date'});
 }
 export function groupItems(items,today,isOverdue=t=>t.date<today){const out={overdue:[],today:[],upcoming:[],undated:[],closed:[]};for(const t of items){const key=!openItem(t)?'closed':!t.date?'undated':isOverdue(t)?'overdue':t.date===today?'today':'upcoming';out[key].push(t)}for(const key in out)out[key]=selectItems(out[key],{order:'date'});return out}
 // Reutiliza o texto pesquisável de registros curtos; notas extensas não ganham

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.8 — Planejamento com itens e subitens reunidos
+
+Removidos Meu dia, suas opções, módulos e preferências. O Planejamento mostra subitens abaixo do principal, abertos por padrão, em Lista compacta, Cartões e todos os agrupamentos. Prazo e prioridade organizam famílias pela tarefa principal; os subitens conservam suas informações próprias. Arquivadas reúne famílias e mostra o principal ativo como contexto quando somente um subitem está arquivado. Busca, filtros, recolhimento, paginação, ações rápidas, seleção, Desfazer e sincronização preservados. Cache v48.
+
 ## 1.7 — remoção da integração externa da agenda
 
 Meu dia passa a usar somente tarefas do Retomar, mantendo seus formatos, filtros, ações e navegação. Removidos SDK, OAuth, leitura de eventos, compartilhamento de configuração, serviço e ferramentas da integração. Preferências antigas são limpas sem alterar tarefas ou o pareamento do GitHub. Cache v47. O Worker inclui migração para excluir apenas o armazenamento da integração, preservando notificações e suas chaves.

@@ -1,10 +1,11 @@
 # Estado atual — Retomar
 
-- Versão **1.7**, cache offline **v47**. Produção: https://sosoft142.github.io/Retomar/
+- Versão **1.8**, cache offline **v48**. Produção: https://sosoft142.github.io/Retomar/
 - Repositório `Sosoft142/Retomar`, branch `main`, app estático em `dist/`, sem framework ou dependências de execução.
 - Em 15/11/2026, a titular pediu a remoção integral da integração Google Agenda. SDK, consultas, OAuth, compartilhamento da agenda, opções de conexão, serviço e comando de implantação foram removidos do código atual.
-- **Meu dia permanece para tarefas do Retomar**: um/sete dias, Lista/Cartões, busca, área, prioridade, andamento, criação na data escolhida, gerenciamento, ações rápidas, seleção do Planejamento e Desfazer preservados. A preferência Mostrar/Ocultar Meu dia é local e independente de autorização externa.
-- A atualização migra somente a preferência de visibilidade e apaga as duas antigas chaves locais da integração. Dados das tarefas, esquema 4, chaves históricas `entrelinhas-vida`, Gist, credenciais de sincronização e preferências push preservados.
+- **Meu dia foi removido**, incluindo navegação, ajustes, módulos e preferências. Links e histórico antigos voltam ao Planejamento.
+- **Itens e subitens reunidos**: etapas aparecem sob o principal, abertas por padrão e recolhíveis, em Lista compacta, Cartões, todos os agrupamentos e Arquivadas. Agrupamento por prazo/prioridade usa o principal; os prazos, prioridades e estados individuais permanecem intactos. Subitem arquivado sozinho mantém seu principal ativo como contexto, fora da seleção em lote.
+- Busca e filtros mantêm o principal das etapas correspondentes; paginação conserva a hierarquia em listas extensas. Ações rápidas, seleção, Desfazer, esquema 4, chaves históricas `entrelinhas-vida`, Gist e preferências push preservados. A atualização limpa somente preferências dos recursos retirados.
 - O servidor preparado remove as rotas e a classe da agenda. A migração `v3-remove-agenda` exclui somente `AgendaAccount`; preserva `Device`, `DEVICES` e VAPID. A migração anterior permanece declarada por compatibilidade com o Worker já publicado.
 - **Limpeza nas contas externas ainda manual**: publicar o Worker atualizado, excluir os três segredos da agenda, retirar a permissão na conta Google, excluir o cliente OAuth e, se existir, o arquivo remoto de preferências da agenda. [Guia completo](REMOVER-GOOGLE-AGENDA.md). A atualização do GitHub Pages não publica o Worker.
 - Notificações: inscrição, entrega com o S24 fechado e vibração foram confirmadas pela titular; apresentação de pop-up no aparelho segue dependente do Android. Preservar o Worker `retomar-push`, as chaves VAPID e os dados Device.

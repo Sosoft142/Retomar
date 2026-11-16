@@ -1,6 +1,6 @@
 # Limpeza externa após a remoção do Google Agenda
 
-O Retomar 1.7 usa Meu dia somente para tarefas do próprio app. Não carrega o SDK Google, consulta eventos, abre autorização ou compartilha credenciais da agenda. A sincronização de tarefas pelo GitHub e as notificações push permanecem.
+O Retomar 1.8 concentra as tarefas no Planejamento; Meu dia também foi removido. Não carrega o SDK Google, consulta eventos, abre autorização ou compartilha credenciais da agenda. A sincronização de tarefas pelo GitHub e as notificações push permanecem.
 
 O código e o GitHub Pages são atualizados pelo fluxo do repositório. As operações abaixo dependem das suas contas Google e Cloudflare e devem ser realizadas manualmente. A atualização do app limpa as antigas preferências locais da integração em cada aparelho quando ele for aberto.
 
@@ -64,7 +64,7 @@ O app atualizado deixa de ler e gravar o arquivo antigo da agenda. O repositóri
 
 ## 5. Conferir o app
 
-Reabra o Retomar em cada aparelho e confira **Versão 1.7** nas Configurações. No PC, `Ctrl + Shift + R` força a atualização. Meu dia deve mostrar somente tarefas e suas opções locais; não deve haver conexão, configuração ou aviso do Google Agenda.
+Reabra o Retomar em cada aparelho e confira **Versão 1.8** nas Configurações. No PC, `Ctrl + Shift + R` força a atualização. O Planejamento deve reunir itens e seus subitens; não deve haver Meu dia, conexão, configuração ou aviso do Google Agenda.
 
 ## Referências oficiais
 
