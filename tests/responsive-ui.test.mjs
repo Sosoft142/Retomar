@@ -53,13 +53,11 @@ test('paridade de uso entre PC, celular, lista e cartões',async t=>{
         await click('[data-action="workflow-none"]');assert.equal(w.document.activeElement.dataset.action,'workflow-all');
       }finally{await click('[data-action="workflow-mode"]');}
     });
-    await t.test('Meu dia mantém foco ao mudar data, período e avançar',async()=>{
-      const before=raw();await click('[data-page="day"]');
-      try{
-        node('#day-date').focus();fill('#day-date','2200-11-12','change');await settle();assert.equal(w.document.activeElement.id,'day-date');
-        node('#day-span').focus();fill('#day-span','7');await settle();assert.equal(w.document.activeElement.id,'day-span');
-        await click('[data-action="day-next"]');assert.equal(w.document.activeElement.dataset.action,'day-next');assert.equal(raw(),before);
-      }finally{await click('[data-page="plan"]');}
+    await t.test('recolher e expandir subitens mantém foco e tarefas',async()=>{
+      const before=raw(),selector='[data-action="expand-item"][data-id="p"]';
+      assert.equal(node(selector).getAttribute('aria-expanded'),'true');
+      await click(selector);assert.equal(w.document.activeElement.dataset.action,'expand-item');assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);
+      await click(selector);assert.equal(w.document.activeElement.dataset.action,'expand-item');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(raw(),before);
     });
     for(const profile of [{width:320,coarse:true},{width:360,coarse:true},{width:390,coarse:true},{width:650,coarse:true},{width:651,coarse:false},{width:768,coarse:true},{width:1024,coarse:false},{width:1280,coarse:false}])for(const layout of ['compact','cards'])await t.test(`${profile.width}px, ${profile.coarse?'toque':'mouse/teclado'}, ${layout}`,async()=>{
       width=profile.width;coarse=profile.coarse;Object.defineProperty(w,'innerWidth',{value:width,configurable:true});w.dispatchEvent(new w.Event('resize'));
@@ -85,17 +83,14 @@ test('paridade de uso entre PC, celular, lista e cartões',async t=>{
       const originalOrder=order();const handle=node('[data-drag-item="b"] > .task-tags [data-drag-handle]');handle.focus();handle.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowUp',bubbles:true,cancelable:true}));await settle();assert.deepEqual(order(),[...originalOrder].reverse());assert.equal(w.document.activeElement.closest('[data-drag-item]').dataset.dragItem,'b');await click('[data-action="workflow-undo"]');assert.deepEqual(order(),originalOrder);
       for(const group of ['area','priority','date','none']){
         const unchanged=raw();await format(layout,group);assert.equal(raw(),unchanged);
-        if(group==='date'){assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);assert.match(node('[data-drag-item="c"] > .parent-link').textContent,/Subitem de/);}
-        else{assert.equal(w.document.querySelectorAll('[data-root-item]').length,2);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);}
+        assert.equal(w.document.querySelectorAll('[data-root-item]').length,2);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);assert.ok(node('#subitems-p [data-drag-item="c"]'));
       }
       fill('#search-input','Etapa independente');await settle();assert.equal(w.document.querySelectorAll('[data-root-item]').length,1);assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);fill('#search-input','');await settle();
-      await click('[data-page="day"]');node('#day-date').focus();fill('#day-date','2200-11-12','change');await settle();fill('#day-span','1');await settle();assert.equal(w.document.querySelectorAll('.day-task').length,3);fill('#day-span','7');await settle();assert.equal(w.document.querySelectorAll('.day-column').length,7);
-      for(const dayLayout of ['compact','cards']){
-        const unchanged=raw();await click(`[data-action="day-layout"][data-layout="${dayLayout}"]`);assert.equal(raw(),unchanged);assert.equal(!!w.document.querySelector('.day-grid-week'),dayLayout==='cards');assert.equal(w.document.querySelectorAll('.day-task [data-action="toggle"]').length,3);assert.equal(w.document.querySelectorAll('.day-task [data-drag-handle]').length,0);
-        await click('[data-action="day-new-task"][data-date="2200-11-12"]');assert.equal(node('#item-date').value,'2200-11-12');assert.equal(node('#item-title').hasAttribute('autofocus'),!coarse);await click('#cancel-item');assert.equal(w.document.activeElement.dataset.date,'2200-11-12');
-        await click('.day-task [data-action="toggle"][data-id="p"]');assert.equal(state().items.p.status,'done');assert.equal(w.document.querySelector('.day-task [data-drag-item="p"]'),null);await click('[data-action="workflow-undo"]');assert.equal(w.document.querySelectorAll('.day-task').length,3);
-      }
-      await click('[data-page="plan"]');assert.ok(node('#task-results').classList.contains('layout-'+layout));
+      assert.equal(w.document.querySelector('[data-page="day"]'),null);
+      const beforeChild=state().items.c;await click('[data-action="workflow-quick"][data-id="c"][data-field="deadline"]');fill('#quick-date','2200-11-14');await submit();
+      await format(layout,'date');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);assert.equal(state().items.p.date,'2200-11-12');
+      await click('[data-action="workflow-undo"]');assert.equal(state().items.c.date,beforeChild.date);assert.equal(state().items.c.time,'00:00');await format(layout);
+
     });
   }finally{
     dom.window.close();for(const h of timers)clearTimeout(h);for(const h of intervals)clearInterval(h);globalThis.setTimeout=nativeTimeout;globalThis.setInterval=nativeInterval;

@@ -4,7 +4,8 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
-| Meu dia somente com tarefas locais | `dist/src/day.js`, `day-ui.js`, integração em `app.js` | `day-planning`, `workflow-ui`, `responsive-ui`, `integration-removal` |
+| Itens e subitens reunidos, filtros, arquivo e paginação | `dist/src/app.js`, `domain.js`, `collections.js`, `retomar.css` | `subitems`, `workflow-ui`, `responsive-ui` |
+| Limpeza local de recursos retirados | `dist/src/retired-preferences.js` | `integration-removal`, `workflow-ui` |
 | Limpeza das contas da integração removida | `docs/REMOVER-GOOGLE-AGENDA.md`, migração de exclusão em `server/wrangler.jsonc` | `integration-removal`, `push`, `push-deployment` |
 | Paridade PC/celular, lista/cartões e mouse/toque/teclado | `app.js`, `workflow-ui.js`, `forms.js`, `drag.js`, `retomar.css` | `responsive-ui`, `drag`, `fluency`; DOM Node, sem revisão visual real |
 | Ações rápidas, seleção/lote, reversão e visualizações locais | `dist/src/workflows.js`, `workflow-ui.js`, integração em `app.js` | `workflows`, `workflow-ui`, `fluency`; revisão visual pendente em 1.3 |
