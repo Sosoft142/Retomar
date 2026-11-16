@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,validateState,migrateState,activeAreas,activeItems,rootItems,subitemsOf,updateItem,deleteItem,undoDelete,moveItem,removeArea,restoreSnapshot,selectItems,selectPlanningItems,groupItems,stamp,SCHEMA_VERSION} from '../dist/src/domain.js';
+import {initialState,validateState,migrateState,activeAreas,activeItems,rootItems,subitemsOf,updateItem,deleteItem,undoDelete,moveItem,removeArea,restoreSnapshot,selectItems,selectPlanningItems,selectMovePeers,groupItems,stamp,SCHEMA_VERSION} from '../dist/src/domain.js';
 import {Repository,DATA_KEY} from '../dist/src/repository.js';
 import {mergeStates,comparable} from '../dist/src/sync/merge.js';
 import {sealState,unsealState} from '../dist/src/sync/crypto.js';
@@ -106,4 +106,11 @@ test('400 operações reproduzíveis com hierarquia conservam referências, pers
     if(i%40===0){const a=clone(state),b=clone(state),root=rootItems(state)[0];if(root){add(a,'offline-a-'+i,{parentId:root.id},'A');add(b,'offline-b-'+i,{parentId:root.id},'B');assert.equal(comparable(mergeStates(a,b)),comparable(mergeStates(b,a)))}}
   }
   assert.ok(seq>50);
+});
+
+test('reordenação por teclado inclui etapas da família encontrada pelo nome do principal',()=>{
+ const s=fixture(),before=JSON.stringify(s),query=s.items.parent.title;
+ assert.deepEqual(selectMovePeers(s,'child-a',{query}).map(t=>t.id),['child-a','child-b']);
+ assert.deepEqual(selectMovePeers(s,'child-a',{query:s.items['child-a'].title}).map(t=>t.id),['child-a']);
+ assert.equal(JSON.stringify(s),before);
 });

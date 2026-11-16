@@ -111,7 +111,8 @@ export function moveItem(s,id,{beforeId=null,areaId,priority,parentId,expectedRe
 export function selectMovePeers(s,id,{area='all',groupBy='none',priorityBoard=false,...options}={}){
   const current=s.items[id];if(!current||current.deleted||isArchived(s,current))return [];
   const source=visibleItems(s).filter(t=>area==='all'||t.areaId===area);
-  const matches=(current.parentId?selectItems:selectPlanningItems)(source,{...options,order:'manual'});
+  const familyMatches=current.parentId&&selectItems(source.filter(t=>t.id===current.parentId),options).length>0;
+  const matches=(current.parentId?selectItems:selectPlanningItems)(source,familyMatches?{order:'manual'}:{...options,order:'manual'});
   return matches.filter(t=>t.parentId===current.parentId&&(current.parentId?true:priorityBoard?t.priority===current.priority:groupBy==='area'?t.areaId===current.areaId:true));
 }
 export function selectPlanningItems(items,options={},parents=items){

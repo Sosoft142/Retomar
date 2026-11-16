@@ -104,6 +104,11 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
       const raw=w.localStorage.getItem(DATA_KEY);await click('[data-action="expand-item"][data-id="p"]');assert.ok(node('[data-action="expand-subitems"]'));await click('[data-action="page"][data-page="settings"]');await click('[data-action="home"]');
       assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelector('[data-action="expand-subitems"]'),null);assert.equal(w.localStorage.getItem(DATA_KEY),raw);
     });
+    await t.test('selecionar exibidas inclui etapas mostradas pela correspondência do principal',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);fill('#search-input','Teste p');await settle();await click('[data-action="workflow-mode"]');await click('[data-action="workflow-all"]');
+      assert.equal(w.document.querySelectorAll('[data-action="workflow-select"][aria-checked="true"]').length,2);assert.equal(w.document.querySelector('[data-action="workflow-select"][data-id="b"]'),null);
+      await click('[data-action="workflow-mode"]');await click('[data-action="clear"]');assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+    });
     await t.test('prazo independente do subitem não separa a família no agrupamento por prazo',async()=>{
       await click('[data-action="workflow-quick"][data-id="c"][data-field="deadline"]');fill('#quick-date','2200-11-14');await submit();await click('[data-action="ordering"]');fill('#group-by','date');await submit();assert.equal(state().items.p.date,'2200-11-12');assert.equal(state().items.c.date,'2200-11-14');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);await click('[data-action="workflow-undo"]');assert.equal(state().items.c.time,'00:00');
     });

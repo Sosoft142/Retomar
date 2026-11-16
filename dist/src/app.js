@@ -398,7 +398,7 @@ function restoreView(view){
 }
 navigation=createNavigation({capture:captureView,restore:restoreView,hasModal:()=>!!document.querySelector('dialog[open]'),canCloseModal,dismissModal:()=>closeModal(true,true)});
 navigation.start();
-workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>[...new Map([...filtered().filter(t=>!archiveMode||isArchived(state,t)),...selectItems(areaItems(),filterOptions())].map(t=>[t.id,t])).values()],getUndo:()=>lastUndo,onUndo:undoLast,
+workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>filtered().flatMap(t=>[...(!archiveMode||isArchived(state,t)?[t]:[]),...matchingSubitems(t)]),getUndo:()=>lastUndo,onUndo:undoLast,
   onApplyView:view=>{ui.layout=view.layout;ui.groupBy=view.groupBy;ui.order=view.sortOrder;ui.subitemOrder=view.subitemOrder;saveUI();restoreView(view)},onRefresh:render,mutate,deviceId,openModal,closeModal,toast,esc,icon});
 
 render();
