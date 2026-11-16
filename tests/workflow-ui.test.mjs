@@ -92,6 +92,18 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
     await t.test('busca por subitem mantém o principal e abre as etapas correspondentes',async()=>{
       await click('[data-action="expand-item"][data-id="p"]');const input=node('#search-input');input.focus();fill('#search-input','Teste c');await settle();assert.equal(w.document.activeElement.id,'search-input');assert.equal(w.document.querySelectorAll('[data-root-item]').length,1);assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);await click('[data-action="clear"]');await click('[data-action="expand-item"][data-id="p"]');
     });
+    await t.test('buscar o principal revela seus subitens com títulos diferentes em todos os formatos',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY),selector='[data-action="expand-item"][data-id="p"]';
+      if(node(selector).getAttribute('aria-expanded')==='true')await click(selector);
+      fill('#search-input','Teste p');await settle();assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);
+      await click(selector);assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));
+      for(const layout of ['compact','cards'])for(const group of ['none','area','priority','date']){await click('[data-action="ordering"]');fill('#view-layout',layout);fill('#group-by',group);await submit();assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);}
+      assert.equal(w.localStorage.getItem(DATA_KEY),raw);await click('[data-action="clear"]');
+    });
+    await t.test('tela inicial permite revelar subitens recolhidos sem editar as tarefas',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);await click('[data-action="expand-item"][data-id="p"]');assert.ok(node('[data-action="expand-subitems"]'));await click('[data-action="page"][data-page="settings"]');await click('[data-action="home"]');
+      assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelector('[data-action="expand-subitems"]'),null);assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+    });
     await t.test('prazo independente do subitem não separa a família no agrupamento por prazo',async()=>{
       await click('[data-action="workflow-quick"][data-id="c"][data-field="deadline"]');fill('#quick-date','2200-11-14');await submit();await click('[data-action="ordering"]');fill('#group-by','date');await submit();assert.equal(state().items.p.date,'2200-11-12');assert.equal(state().items.c.date,'2200-11-14');assert.ok(node('#subitems-p [data-drag-item="c"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="c"]').length,1);await click('[data-action="workflow-undo"]');assert.equal(state().items.c.time,'00:00');
     });
