@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.9.0 — Subitens diretos e organização
+
+Botão + no cartão para criar etapas; expandir/recolher todos alterna na visualização atual. Organização separa formato, agrupamento e ordem de itens/subitens, com título, mais recentes e restauração do padrão. Filtros ativos podem ser removidos individualmente. Criação, filtros, arquivo, favoritas, seleção e Desfazer verificados em lista, cartões e quatro agrupamentos. Revisão visual em PC e 360 px. Cache v50.
+
 ## 1.8.1 — Subitens na tela inicial e atualização do app
 
 Busca pelo item principal passa a manter suas etapas, mesmo com títulos diferentes. Quando apenas uma etapa corresponde aos filtros, seu principal continua como contexto. Filtros revelam famílias recolhidas, respeitando novo recolhimento na sessão; Mostrar subitens reabre etapas ocultas sem alterar tarefas. Entrada versionada e revalidação dos arquivos do app evitam reutilizar código HTTP antigo após a publicação; offline e notificações preservados. Cache v49.

@@ -34,6 +34,50 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
   const state=()=>JSON.parse(w.localStorage.getItem(DATA_KEY));
   try{
     await import('../dist/src/app.js');await settle();
+    await t.test('criar subitens pelo mais funciona em lista, cartões e cada agrupamento',async()=>{
+      for(const layout of ['compact','cards'])for(const group of ['none','area','priority','date']){
+        await click('[data-action="ordering"]');fill('#view-layout',layout);fill('#group-by',group);await submit();
+        const parent=structuredClone(state().items.b);
+        assert.equal(w.document.querySelector('[data-drag-item="c"] [data-action="new-subitem"]'),null);
+        await click('[data-action="new-subitem"][data-parent-id="b"]');
+        assert.equal(node('#modal-title').textContent,'Adicionar subitem');assert.equal(node('#item-area').disabled,true);
+        fill('#item-title','Nova etapa '+layout+' '+group);await submit();
+        const child=Object.values(state().items).find(x=>!x.deleted&&x.parentId==='b');assert.ok(child);assert.equal(child.areaId,parent.areaId);
+        assert.deepEqual(state().items.b,parent);assert.ok(node(`#subitems-b [data-drag-item="${child.id}"]`));
+        await click('[data-action="workflow-undo"]');assert.equal(state().items[child.id].deleted,true);
+      }
+      await click('[data-action="ordering"]');fill('#view-layout','compact');fill('#group-by','none');await submit();
+    });
+    await t.test('controle global recolhe e expande, inclusive com busca, sem editar dados',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);
+      await click('[data-action="collapse-subitems"]');assert.equal(w.document.querySelector('#subitems-p [data-drag-item="c"]'),null);
+      assert.ok(node('[data-action="expand-subitems"]'));await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));
+      fill('#search-input','Teste p');await settle();await click('[data-action="collapse-subitems"]');assert.equal(w.document.querySelector('[data-drag-item="c"]'),null);
+      await click('[data-action="expand-subitems"]');assert.ok(node('#subitems-p [data-drag-item="c"]'));await click('[data-action="clear"]');assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+    });
+    await t.test('remover um filtro conserva os demais e cancelar não aplica um rascunho',async()=>{
+      await click('[data-action="filters"]');fill('#status-filter','pending');fill('#priority-filter','normal');await submit();
+      assert.equal(w.document.querySelectorAll('.filter-chip').length,2);
+      await click('[data-action="remove-filter"][data-filter="status"]');assert.equal(w.document.querySelectorAll('.filter-chip').length,1);
+      await click('[data-action="filters"]');assert.equal(node('#status-filter').value,'all');assert.equal(node('#priority-filter').value,'normal');
+      fill('#status-filter','done');await click('#cancel-view-options');await click('[data-action="filters"]');assert.equal(node('#status-filter').value,'all');await click('#cancel-view-options');await click('[data-action="clear"]');
+    });
+    await t.test('ordenação global de subitens persiste, favorita conserva e padrão restaura',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);
+      for(const order of ['title','newest','priority','date']){
+        await click('[data-action="ordering"]');fill('#subitem-sort-filter',order);await submit();
+        assert.equal(node('.subitem-order').value,order);assert.equal(JSON.parse(w.localStorage.getItem(UI_KEY)).subitemOrder,order);
+      }
+      await click('[data-action="workflow-views"]');fill('#view-name','Etapas por data');await submit();
+      assert.equal(JSON.parse(w.localStorage.getItem(VIEWS_KEY))[0].view.subitemOrder,'date');
+      await click('[data-action="workflow-views"]');await click('[data-view-remove]');await click('[data-workflow-cancel]');
+      await click('[data-action="ordering"]');await click('#reset-view-order');await submit();assert.equal(node('.subitem-order').value,'manual');assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+    });
+    await t.test('nova etapa fica visível mesmo quando a busca só correspondia à etapa anterior',async()=>{
+      fill('#search-input','Teste c');await settle();await click('[data-action="new-subitem"][data-parent-id="p"]');fill('#item-title','Outra etapa');await submit();
+      const child=Object.values(state().items).find(x=>!x.deleted&&x.title==='Outra etapa');assert.ok(node(`#subitems-p [data-drag-item="${child.id}"]`));assert.equal(node('#search-input').value,'');
+      await click('[data-action="workflow-undo"]');assert.equal(state().items[child.id].deleted,true);
+    });
     await t.test('abertura monta controles novos e não cria botões aninhados',()=>{
       assert.equal(w.document.querySelectorAll('[data-action="workflow-quick"]').length,9);
       assert.equal(w.document.querySelectorAll('button button').length,0);assert.ok(node('[data-action="workflow-views"]'));
