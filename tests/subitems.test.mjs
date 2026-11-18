@@ -42,6 +42,12 @@ test('posição de outro grupo é rejeitada sem gravar alterações parciais',as
 test('subitens ordenam por prioridade ou data sem mudar sua ordem manual',()=>{
   const s=fixture(),before=subitemsOf(s,'parent').map(t=>[t.id,t.order]);assert.equal(selectItems(subitemsOf(s,'parent'),{order:'priority'})[0].id,'child-b');assert.equal(selectItems(subitemsOf(s,'parent'),{order:'date'})[0].id,'child-b');assert.deepEqual(subitemsOf(s,'parent').map(t=>[t.id,t.order]),before);
 });
+test('subitens por título e mais recentes preservam hierarquia e ordem manual',()=>{
+  const s=fixture();s.items['child-a'].title='Zebra';s.items['child-b'].title='Árvore';s.items['child-a'].createdAt='2026-11-01T00:00:00.000Z';s.items['child-b'].createdAt='2026-11-02T00:00:00.000Z';
+  const before=clone(s),children=subitemsOf(s,'parent');
+  for(const order of ['title','newest'])assert.deepEqual(selectItems(children,{order}).map(t=>t.id),['child-b','child-a']);
+  assert.deepEqual(s,before);validateState(s);
+});
 test('mover para outro item ou promover conserva ID, conteúdo e prioridade',()=>{
   const s=fixture(),before=clone(s.items['child-a']);moveItem(s,'child-a',{parentId:'other'},'B');assert.equal(s.items['child-a'].areaId,s.items.other.areaId);assert.equal(s.items['child-a'].parentId,'other');
   moveItem(s,'child-a',{parentId:'',areaId:s.items.parent.areaId},'B');assert.equal(s.items['child-a'].parentId,'');for(const key of ['id','title','notes','status','priority','createdAt'])assert.equal(s.items['child-a'][key],before[key]);validateState(s);

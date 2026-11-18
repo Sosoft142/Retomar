@@ -55,7 +55,7 @@ export function cleanView(view={}){
     status:oneOf(view.status,['all','open','pending','doing','done','canceled'],'all'),scope:oneOf(view.scope,['all','overdue','today','upcoming','undated'],'all'),
     query:typeof view.query==='string'?view.query.slice(0,200):'',priorityFilter:oneOf(view.priorityFilter,['all','urgent','high','normal','low'],'all'),
     layout:oneOf(view.layout,['compact','cards'],'compact'),groupBy:oneOf(view.groupBy,['none','area','priority','date'],'none'),
-    sortOrder:oneOf(view.sortOrder,['manual','priority','date','title','newest'],'manual'),subitemOrder:oneOf(view.subitemOrder,['manual','priority','date'],'manual')};
+    sortOrder:oneOf(view.sortOrder,['manual','priority','date','title','newest'],'manual'),subitemOrder:oneOf(view.subitemOrder,['manual','priority','date','title','newest'],'manual')};
 }
 export const VIEWS_KEY='entrelinhas-vida:views:v1';
 export class SavedViews{

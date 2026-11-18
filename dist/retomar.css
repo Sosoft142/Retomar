@@ -1423,3 +1423,27 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
  .subitems-heading{grid-template-columns:minmax(0,1fr);gap:4px}
  .subitems-order-field{justify-self:start}
 }
+
+/* Acesso direto às etapas e organização da visualização. */
+.subitems-bar .add-subitem{flex:none;width:40px;min-width:40px;height:40px;padding:8px;border:1px solid color-mix(in srgb,var(--accent),transparent 72%);background:var(--soft);border-radius:10px;color:var(--accent);margin-left:auto}
+.add-subitem .ui-icon{width:20px;height:20px}
+.subitems-label{font-size:14px;color:var(--muted)}
+.results-caption{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.results-caption>.textbtn{min-height:40px;font-size:14px}
+.view-selection{margin-top:8px}
+.active-filters{display:flex;flex-wrap:wrap;gap:6px}
+.active-filters[hidden]{display:none}
+.filter-chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;min-height:36px;padding:6px 10px;border-radius:9px;background:var(--soft);border:1px solid color-mix(in srgb,var(--accent),transparent 75%);font-size:14px;color:var(--accent);text-align:left;overflow-wrap:anywhere}
+.filter-chip .ui-icon{flex:none;width:16px;height:16px}
+.organization-summary{margin:7px 0 0;font-size:14px;line-height:1.5;color:var(--muted)}
+.filter-toggle span{font-size:14px}
+.view-options-dialog .options-group{min-width:0;border:0;padding:0;margin:0 0 12px}
+.view-options-dialog .options-group legend{font-size:14px;font-weight:700;color:var(--ink);padding:0;margin:0 0 10px}
+.view-options-dialog .options-group+.options-group{border-top:1px solid var(--line);padding-top:14px}
+.view-options-dialog .options-group .field:last-child{margin-bottom:0}
+.view-options-dialog .field label{font-size:14px}
+.view-options-dialog .options-intro{margin:0 0 14px;font-size:14px;line-height:1.5}
+.view-options-dialog #reset-view-order{font-size:14px;min-height:40px;text-align:left;margin-bottom:6px}
+.view-options-dialog .dialogactions{position:sticky;bottom:0;z-index:1;background:var(--glass-strong);margin-bottom:0;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+@media(pointer:coarse){.subitems-bar .add-subitem{width:44px;min-width:44px;height:44px}.filter-chip{min-height:44px}}
+@media(min-width:1024px){.results.layout-compact .compact-task>.subitems-bar{grid-column:2/-1}}
