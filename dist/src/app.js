@@ -1,3 +1,4 @@
+import {createGymUI} from './gym-ui.js';
 import {clearRetiredPreferences} from './retired-preferences.js';
 import {captureChange,undoChange,cleanView} from './workflows.js';
 import {createWorkflowUI} from './workflow-ui.js';
@@ -12,11 +13,12 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.9.0';
+const VERSION='1.10.0';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
-let syncUI,planningUI,navigation,workflowUI,lastUndo=null,undoBusy=false;
+let syncUI,planningUI,navigation,workflowUI,gymUI,lastUndo=null,undoBusy=false;
 const ICONS={archive:'<rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v13h14V8M10 12h4"/>',bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',gear:'<path d="m9 3-.5 2.5-1.4.8-2.4-.8-2.4 4.2 1.9 1.7v1.6l-1.9 1.7 2.4 4.2 2.4-.8 1.4.8L9 21h6l.5-2.5 1.4-.8 2.4.8 2.4-4.2-1.9-1.7v-1.6l1.9-1.7-2.4-4.2-2.4.8-1.4-.8L15 3Z"/><circle cx="12" cy="12" r="3"/>',cloud:'<path d="M7 18h10a4 4 0 0 0 .3-8A5.5 5.5 0 0 0 6.6 9a4.5 4.5 0 0 0 .4 9Z"/>',grip:'<circle cx="8" cy="5" r="1"/><circle cx="16" cy="5" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="8" cy="19" r="1"/><circle cx="16" cy="19" r="1"/>',resume:'<path d="M4 9a8 8 0 1 1 .6 7M4 4v5h5"/>',appearance:'<path d="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1.4-3.4 1.5 1.5 0 0 1 1.1-2.6H17a4 4 0 0 0 4-4 9 9 0 0 0-9-8Z"/><circle cx="7.5" cy="11" r=".7"/><circle cx="10" cy="7.5" r=".7"/><circle cx="14.5" cy="7.5" r=".7"/><circle cx="17" cy="11" r=".7"/>',list:'<path d="M9 6h12M9 12h12M9 18h12M3 6h.01M3 12h.01M3 18h.01"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 11h18"/>',settings:'<path d="M3 7h3m6 0h9M3 17h9m6 0h3"/><circle cx="9" cy="7" r="3"/><circle cx="15" cy="17" r="3"/>',plus:'<path d="M12 5v14M5 12h14"/>',check:'<path d="m5 12 4 4L19 6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',edit:'<path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15z"/>',leaf:'<path d="M20 4C8 3 3 8 6 15c7 4 14-1 14-11Z"/><path d="M4 21 15 10"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',box:'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 9h8M8 13h5"/>',download:'<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>',upload:'<path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/>',device:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/>',trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',left:'<path d="m14 6-6 6 6 6"/>',right:'<path d="m10 6 6 6-6 6"/>',up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>',flag:'<path d="M5 21V4c5-3 9 3 14 0v10c-5 3-9-3-14 0"/>',grid:'<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>'};
+ICONS.gym='<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>';ICONS.play='<path d="m9 5 11 7-11 7Z"/>';
 ICONS.star='<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9Z"/>';
 ICONS.filter='<path d="M3 5h18l-7 8v6l-4 2v-8Z"/>';ICONS.sort='<path d="M8 3v18m-4-4 4 4 4-4M16 21V3m-4 4 4-4 4 4"/>';
 const icon=n=>`<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||ICONS.box}</svg>`;
@@ -66,13 +68,13 @@ async function undoLast(){
 function render(){
   const focus=document.activeElement,hadAppFocus=!!focus?.closest('#app'),caret=typeof focus?.selectionStart==='number'?[focus.selectionStart,focus.selectionEnd]:null;
   beginView();
-  document.title=(archiveMode&&['plan','agenda'].includes(page)?'Arquivadas':({plan:'Planejamento',agenda:'Cronograma',areas:'Áreas',settings:'Configurações',reminders:'Lembretes'})[page])+' · Retomar';
+  document.title=(archiveMode&&['plan','agenda'].includes(page)?'Arquivadas':({gym:'Academia',plan:'Planejamento',agenda:'Cronograma',areas:'Áreas',settings:'Configurações',reminders:'Lembretes'})[page])+' · Retomar';
   indexChildren();
   workflowUI?.reconcile();
   const areas=activeAreas(state);if(area!==''&&area!=='all'&&!areas.some(a=>a.id===area))area='all';
   navigation?.record();
-  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><main>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='plan'?renderPlan():page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
-  bindApp();
+  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><nav class="retomar-sections" aria-label="Seções do Retomar">${[['plan','Planejamento','list'],['gym','Academia','gym']].map(([id,label,glyph])=>`<button class="retomar-section ${page===id?'active':''}" data-action="page" data-page="${id}" ${page===id?'aria-current="page"':''}>${icon(glyph)} ${label}</button>`).join('')}</nav><main>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='gym'?gymUI.page():page==='plan'?renderPlan():page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
+  bindApp();gymUI?.bind();
   navigation?.record();
   syncVisualMotion();
   syncUI?.refresh();
@@ -240,6 +242,7 @@ function bindApp(){
 }
 function refreshResults(){beginView();workflowUI?.reconcile();const workflowTools=document.querySelector('#workflow-toolbar');if(workflowTools)workflowTools.outerHTML=workflowUI.toolbar();updateFilterIndicator(document.querySelector('.filter-toggle'),[status!=='all',scope!=='all',priorityFilter!=='all'].filter(Boolean).length);navigation?.record();indexChildren();const summary=document.querySelector('#results-summary');if(summary)summary.outerHTML=orderToolbar();const selection=document.querySelector('#view-selection');if(selection)selection.outerHTML=viewSelection();const archiveTools=document.querySelector('#archive-toolbar');if(archiveTools)archiveTools.outerHTML=archiveToolbar();const results=document.querySelector('#task-results');const changed=updateMarkup(results,page==='agenda'?renderTimeline():planningResults());if(changed)bindApp();navigation?.record();syncVisualMotion()}
 async function action(name,d={}){
+  if(name.startsWith('gym-')){await gymUI.action(name,d);return;}
   if(name.startsWith('workflow-')){if(fatal&&name!=='workflow-views'){toast('Recupere os dados antes de editar.');return;}try{await workflowUI.action(name,d)}catch(e){toast(e.message)}return;}
   if(name==='home'){
     if(document.querySelector('dialog[open]')&&!closeModal())return;
@@ -260,7 +263,7 @@ async function action(name,d={}){
   if(name==='sync')syncUI.open();
   else if(name==='move-item')moveModal(d.id);
   else if(name==='priority-filter'){priorityFilter=priorityFilter===d.priority?'all':d.priority;render()}
-  else if(name==='page'){page=['plan','areas','settings','reminders'].includes(d.page)?d.page:'plan';render();window.scrollTo(0,0)}
+  else if(name==='page'){page=['plan','gym','areas','settings','reminders'].includes(d.page)?d.page:'plan';render();window.scrollTo(0,0)}
   else if(name==='area'){area=d.id;if(!['plan','agenda'].includes(page))page='plan';render()}
   else if(name==='areas'){page='areas';render();window.scrollTo(0,0)}
   else if(name==='status'){status=d.status;render()}
@@ -400,7 +403,7 @@ function restoreView(view){
   const saved=cleanView(view);for(const key of ['layout','groupBy','sortOrder','subitemOrder'])if(!Object.hasOwn(view,key))delete saved[key];
   if(saved.layout)layout=saved.layout;if(saved.groupBy)groupBy=saved.groupBy;if(saved.sortOrder)sortOrder=saved.sortOrder;if(saved.subitemOrder)subitemOrder=saved.subitemOrder;
   archiveMode=view.archiveMode===true;
-  page=view.page==='agenda'?'plan':['plan','areas','settings','reminders'].includes(view.page)?view.page:'plan';
+  page=view.page==='agenda'?'plan':['plan','gym','areas','settings','reminders'].includes(view.page)?view.page:'plan';
   area=view.area===''||view.area==='all'||activeAreas(state).some(a=>a.id===view.area)?view.area:'all';
   status=['all','open',...Object.keys(statusLabel)].includes(view.status)?view.status:'all';
   scope=['all','overdue','today','upcoming','undated'].includes(view.scope)?view.scope:'all';
@@ -410,6 +413,7 @@ function restoreView(view){
   if(Array.isArray(view.windows))for(const entry of view.windows.slice(0,1000))if(Array.isArray(entry)&&typeof entry[0]==='string'&&Number.isSafeInteger(entry[1])&&entry[1]>=0&&entry[1]<=10000)collections.limits.set(entry[0],entry[1]);
   render();enterView();
 }
+gymUI=createGymUI({storage,esc,icon,openModal,closeModal,toast,render,download});
 navigation=createNavigation({capture:captureView,restore:restoreView,hasModal:()=>!!document.querySelector('dialog[open]'),canCloseModal,dismissModal:()=>closeModal(true,true)});
 navigation.start();
 workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>filtered().flatMap(t=>[...(!archiveMode||isArchived(state,t)?[t]:[]),...matchingSubitems(t)]),getUndo:()=>lastUndo,onUndo:undoLast,

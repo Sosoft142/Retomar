@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.10.0 — 21/11/2026
+
+- Academia integrada ao Retomar com quatro treinos do roteiro original e edição de exercícios, séries, repetições, descanso, carga, caminhada e orientações.
+- Ordem personalizável e marcações de exercícios por dia.
+- Miniaturas automáticas a partir de links de YouTube e Vimeo na descrição, prévia e imagem opcional.
+- Backup próprio da Academia; planejamento e sincronização existentes preservados. Cache offline v51.
+
 ## 1.9.0 — Subitens diretos e organização
 
 Botão + no cartão para criar etapas; expandir/recolher todos alterna na visualização atual. Organização separa formato, agrupamento e ordem de itens/subitens, com título, mais recentes e restauração do padrão. Filtros ativos podem ser removidos individualmente. Criação, filtros, arquivo, favoritas, seleção e Desfazer verificados em lista, cartões e quatro agrupamentos. Revisão visual em PC e 360 px. Cache v50.

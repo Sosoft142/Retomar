@@ -178,6 +178,21 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
       fill('#search-input','Etapa paginada 144');await settle();assert.equal(w.document.querySelectorAll('[data-root-item]').length,1);assert.ok(node('#subitems-p [data-drag-item="step-144"]'));assert.equal(w.document.querySelectorAll('[data-drag-item="step-144"]').length,1);assert.equal(w.localStorage.getItem(DATA_KEY),raw);
     });
 
+
+    await t.test('Academia edita roteiro, miniaturas, ordem e marcações sem alterar tarefas',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY),gymKey='entrelinhas-vida:gym:v1';w.confirm=()=>true;
+      await click('[data-action="page"][data-page="gym"]');assert.equal(w.document.title,'Academia · Retomar');assert.equal(w.document.querySelectorAll('.gym-tab').length,4);assert.equal(w.document.querySelectorAll('[data-gym-exercise]').length,4);
+      await click('[data-action="gym-edit-exercise"][data-id="segunda-hip"]');fill('#gym-name','Elevação editada');fill('#gym-sets','3');fill('#gym-load','25 kg');fill('#gym-description','Orientação editada https://youtu.be/lltSvOW-wfI');await submit();
+      assert.equal(JSON.parse(w.localStorage.getItem(gymKey)).workouts[0].exercises[0].name,'Elevação editada');assert.match(node('[data-gym-exercise="segunda-hip"]').textContent,/25 kg/);assert.ok(node('[data-gym-exercise="segunda-hip"] [data-gym-video]'));
+      await click('[data-action="gym-order"]');await click('[data-action="gym-move-exercise"][data-id="segunda-hip"][data-delta="1"]');assert.equal(w.document.querySelector('[data-gym-exercise]').dataset.gymExercise,'segunda-abd');
+      const check=node('[data-gym-check="segunda-hip"]');check.checked=true;check.dispatchEvent(new w.Event('change',{bubbles:true}));await settle();assert.match(node('.gym-progress-head').textContent,/1 de 4/);
+      await click('[data-action="gym-new-exercise"][data-workout="segunda"]');fill('#gym-name','Exercício novo');fill('#gym-thumbnail','javascript:alert(1)');await submit();assert.ok(node('dialog[open]'));assert.match(node('.formerror').textContent,/https/);fill('#gym-thumbnail','');await submit();assert.equal(w.document.querySelectorAll('[data-gym-exercise]').length,5);
+      const added=JSON.parse(w.localStorage.getItem(gymKey)).workouts[0].exercises.find(e=>e.name==='Exercício novo');await click('[data-action="gym-edit-exercise"][data-id="'+added.id+'"]');await click('#gym-delete');assert.equal(w.document.querySelectorAll('[data-gym-exercise]').length,4);
+      await click('[data-action="gym-edit-workout"][data-id="segunda"]');fill('#gym-day','Dia livre');fill('#gym-position','2');await submit();assert.equal(JSON.parse(w.localStorage.getItem(gymKey)).workouts[2].day,'Dia livre');
+      await click('[data-action="page"][data-page="plan"]');await click('[data-action="page"][data-page="gym"]');assert.ok(node('[data-gym-exercise="segunda-hip"]'));assert.equal(node('[data-gym-check="segunda-hip"]').checked,true);
+      assert.equal(w.localStorage.getItem(DATA_KEY),raw);assert.equal(w.document.querySelectorAll('button button').length,0);await click('[data-action="page"][data-page="plan"]');
+    });
+
   }finally{
     dom.window.close();for(const h of intervals)clearInterval(h);for(const h of timeouts)clearTimeout(h);globalThis.setInterval=nativeInterval;globalThis.setTimeout=nativeTimeout;
     for(const [key,descriptor] of originals){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}
