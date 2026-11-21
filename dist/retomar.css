@@ -1447,3 +1447,94 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
 .view-options-dialog .dialogactions{position:sticky;bottom:0;z-index:1;background:var(--glass-strong);margin-bottom:0;padding-bottom:max(4px,env(safe-area-inset-bottom))}
 @media(pointer:coarse){.subitems-bar .add-subitem{width:44px;min-width:44px;height:44px}.filter-chip{min-height:44px}}
 @media(min-width:1024px){.results.layout-compact .compact-task>.subitems-bar{grid-column:2/-1}}
+
+/* Academia: usa a mesma paleta, superfícies e controles do Planejamento. */
+.retomar-sections{display:flex;gap:6px;margin:0 0 28px;padding:6px;background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow);width:max-content;max-width:100%}
+.retomar-section{display:flex;align-items:center;gap:9px;padding:12px 20px;min-height:46px;border-radius:11px;font-size:14px;font-weight:600;color:var(--muted)}
+.retomar-section.active{background:var(--glass-strong);color:var(--accent);box-shadow:var(--shadow)}
+.gym-page{font-size:16px;padding-bottom:32px}
+.gym-page .btn,.gym-page .textbtn{font-size:14px}
+.gym-page .page-heading{margin-bottom:18px}
+.gym-top-actions,.gym-workout-heading,.gym-section-heading,.gym-progress-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gym-caption{font-size:14px;color:var(--muted)}
+.gym-top-actions{margin-bottom:18px}
+.gym-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:24px}
+.gym-tab{text-align:left;border:1px solid var(--glass-border);background:var(--glass);padding:16px 18px;border-radius:14px;box-shadow:var(--shadow);min-width:0;overflow-wrap:anywhere}
+.gym-tab strong,.gym-tab span{display:block}
+.gym-tab strong{font-family:var(--heading);font-size:16px;margin-bottom:4px}
+.gym-tab span{font-size:14px;color:var(--muted)}
+.gym-tab.active{background:var(--soft);border-color:var(--accent);color:var(--accent)}
+.gym-overview{background:var(--glass-strong);border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--shadow);padding:25px;margin-bottom:28px}
+.gym-workout-heading h2{font-size:26px;margin-top:4px}
+.gym-intro{margin:14px 0 20px;color:var(--muted);line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.gym-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:20px 0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.gym-stages>div{display:flex;gap:12px;align-items:center;min-width:0;color:var(--accent)}
+.gym-stages span{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.gym-stages strong{display:block;font-size:16px;font-weight:600;color:var(--ink);margin-top:4px}
+.gym-progress-head{font-size:14px;color:var(--muted);margin-bottom:10px}
+.gym-progress{display:block;width:100%;height:7px;border:0;border-radius:8px;overflow:hidden;appearance:none;background:var(--line)}
+.gym-progress::-webkit-progress-bar{background:var(--line);border-radius:8px}
+.gym-progress::-webkit-progress-value{background:var(--accent);border-radius:8px}
+.gym-progress::-moz-progress-bar{background:var(--accent);border-radius:8px}
+.gym-section-heading{margin-bottom:18px}
+.gym-section-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gym-exercises{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:24px;align-items:start}
+.gym-exercise{border:1px solid var(--glass-border);border-radius:16px;background:var(--glass-strong);box-shadow:var(--shadow);min-width:0;overflow:hidden}
+.gym-exercise-main{padding:20px}
+.gym-exercise-head{display:flex;align-items:flex-start;gap:12px}
+.gym-exercise-title{flex:1;min-width:0}
+.gym-exercise-title h3{font-size:18px;overflow-wrap:anywhere;line-height:1.4}
+.gym-prescription{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:10px}
+.gym-prescription span{overflow-wrap:anywhere}
+.gym-prescription b{font-weight:650;color:var(--ink)}
+.gym-check{display:flex;align-items:center;justify-content:center;min-height:44px;min-width:32px;cursor:pointer}
+.gym-check input{width:23px;height:23px;min-height:23px;margin:0;padding:0;accent-color:var(--accent);cursor:pointer}
+.gym-done{border-color:var(--accent);background:color-mix(in srgb,var(--soft) 60%,white)}
+.gym-done h3{color:var(--accent)}
+.gym-videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px;margin:18px 0 12px}
+.gym-video{display:block;position:relative;aspect-ratio:16/9;background:var(--soft);border:1px solid var(--line);border-radius:12px;overflow:hidden;color:var(--accent);isolation:isolate}
+.gym-video img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.gym-video-placeholder{position:absolute;inset:0;display:grid;place-items:center}
+.gym-video-placeholder svg{width:38px;height:38px}
+.gym-video-label{position:absolute;inset:auto 0 0;display:flex;align-items:center;gap:8px;background:rgba(15,30,40,.8);color:#fff;padding:9px 12px;font-size:14px;z-index:2}
+.gym-video-label svg{width:15px;height:15px}
+.gym-description{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.gym-description summary,.gym-backup summary{cursor:pointer;font-size:14px;font-weight:600;min-height:34px;color:var(--accent)}
+.gym-description p{margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
+.gym-order{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:var(--soft);font-size:14px;border-top:1px solid var(--line)}
+.gym-order>div{display:flex;gap:6px}
+.gym-order button:disabled{cursor:default}
+.gym-order-help{color:var(--muted);margin:0 0 18px;font-size:14px}
+.gym-note{padding:20px 22px;border:1px solid var(--glass-border);background:var(--glass);border-radius:14px;margin-top:16px}
+.gym-note h3{font-size:17px;margin-bottom:8px}
+.gym-note p{color:var(--muted);line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.gym-guidance{border-left:3px solid var(--accent)}
+.gym-backup{padding:20px 0;border-top:1px solid var(--line);margin-top:28px}
+.gym-backup p{font-size:14px;color:var(--muted);line-height:1.7;max-width:800px;margin:6px 0 16px}
+.gym-empty{padding:28px;background:var(--glass);border-radius:14px;color:var(--muted)}
+.gym-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.gym-media-preview .gym-videos{max-width:400px}
+#gym-exercise-form textarea{min-height:160px}
+@media(max-width:700px){
+ .retomar-sections{width:100%;margin:0 0 22px}
+ .retomar-section{flex:1;justify-content:center;padding:10px 12px}
+ .gym-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:18px}
+ .gym-tab{padding:13px 14px}
+ .gym-overview{padding:18px;margin-bottom:22px}
+ .gym-workout-heading{align-items:flex-start}
+ .gym-workout-heading .btn{padding:9px 11px;min-height:44px}
+ .gym-workout-heading .btn svg{display:none}
+ .gym-workout-heading h2{font-size:24px}
+ .gym-stages{grid-template-columns:1fr;gap:16px}
+ .gym-stages strong{margin-top:1px}
+ .gym-exercises{grid-template-columns:1fr;gap:14px}
+ .gym-exercise-main{padding:16px}
+ .gym-exercise-head{gap:8px}
+ .gym-section-heading{align-items:flex-start;flex-direction:column;gap:12px}
+ .gym-section-actions{width:100%}
+ .gym-section-heading .btn{flex:1;padding:10px 12px}
+ .gym-note{padding:18px}
+ .gym-top-actions{gap:10px;align-items:flex-start}
+ .gym-top-actions .btn{white-space:nowrap;padding:9px 12px}
+ .gym-progress-head{gap:8px;font-size:14px}
+}

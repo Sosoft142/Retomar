@@ -1,6 +1,9 @@
 # Estado atual — Retomar
 
-- Versão **1.9.0**, cache offline **v50**. Produção: https://sosoft142.github.io/Retomar/
+- Versão **1.10.0**, cache offline **v51**. Produção: https://sosoft142.github.io/Retomar/
+- **Academia integrada**: aba própria com o roteiro original publicado em 13/11/2026 (Pernas A, Superiores, Pernas B e Pernas C), orientações, caminhadas e demonstrações. Treinos e exercícios podem ser criados, editados, excluídos e reordenados; séries, repetições, descanso, carga e descrição são editáveis. Links de YouTube (incluindo Shorts) e Vimeo no texto geram miniaturas, com prévia no formulário e opção de imagem própria.
+- Revisão da Academia: edição e salvamento conferidos no navegador em PC e iframe de 360 px, sem rolagem horizontal; miniaturas YouTube carregadas. Testes exercitam concorrência entre janelas, recuperação, backup, links e integração com o Planejamento. Não equivale a testar gestos/teclado nativos no Android.
+- **Dados da Academia**: chave independente `entrelinhas-vida:gym:v1`, backup/restauração próprios e marcações por data local. Não faz parte do Gist ou do JSON do Planejamento; essa limitação aparece na interface. Mantém esquema 4 e dados históricos do Planejamento. Formulários recusam sobrescrever treino alterado em outra janela; falhas de gravação preservam o formulário, e dados corrompidos permitem cópia para recuperação. Módulos incluídos no cache offline; vídeos e miniaturas dependem de rede.
 - Repositório `Sosoft142/Retomar`, branch `main`, app estático em `dist/`, sem framework ou dependências de execução.
 - Em 15/11/2026, a titular pediu a remoção integral da integração Google Agenda. SDK, consultas, OAuth, compartilhamento da agenda, opções de conexão, serviço e comando de implantação foram removidos do código atual.
 - **Meu dia foi removido**, incluindo navegação, ajustes, módulos e preferências. Links e histórico antigos voltam ao Planejamento.
