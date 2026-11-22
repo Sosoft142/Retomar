@@ -13,7 +13,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.10.0';
+const VERSION='1.10.1';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,gymUI,lastUndo=null,undoBusy=false;
@@ -394,7 +394,7 @@ if(fatal)syncUI.localFailure(fatal);
 planningUI=createPlanningUI({storage,getState:()=>state,icon,esc,openModal,closeModal,toast,
   onOpen:open=>{if(open){page='reminders';window.scrollTo(0,0)}render()},
   onEdit:id=>{const t=state.items[id];if(!t||t.deleted)return;if(fatal){toast('Recupere os dados antes de editar.');return}itemModal(id)},
-  onClockChange:()=>{if(page==='plan'||page==='agenda'){const focus=document.hasFocus()?document.activeElement:null;refreshResults();if(focus&&!focus.isConnected)restoreUIFocus(focus)}},
+  onClockChange:()=>{if(page==='gym'){gymUI.refreshDate();return}if(page==='plan'||page==='agenda'){const focus=document.hasFocus()?document.activeElement:null;refreshResults();if(focus&&!focus.isConnected)restoreUIFocus(focus)}},
   onComplete:id=>{if(fatal)return;const current=state.items[id];if(!current||current.deleted)return;return mutate(s=>updateItem(s,id,{status:'done',expectedRevision:JSON.stringify(current.revision)},deviceId),'Tarefa concluída. O lembrete foi retirado.')}
 });
 const linkedId=new URLSearchParams(location.search).get('item'),linked=linkedId&&state.items[linkedId];if(linked&&!linked.deleted){page='plan';archiveMode=isArchived(state,linked);area=linked.areaId;if(linked.parentId)collapsedItems.delete(linked.parentId)}

@@ -1,19 +1,20 @@
 import {GymRepository,GYM_KEY,gymDate,moveGymEntry,validateGym,safeURL} from './gym.js';
-import {descriptionLinks,videoInfo,createGymMedia} from './gym-media.js';
+import {descriptionLinks,descriptionURLs,videoInfo,createGymMedia} from './gym-media.js';
 import {uid} from './domain.js';
 import {checkForm,submitOnce} from './forms.js';
 
-export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,download,target=window}){
+export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,download,target=window,now=()=>new Date()}){
   const repo=new GymRepository(storage,target),media=createGymMedia();
-  let selected='',error='',orderMode=false;
+  let selected='',error='',orderMode=false,renderedDate='';
+  const date=()=>gymDate(now());
   function load(){try{const s=repo.load();error='';return s}catch(e){error=e.message;return null}}
   const current=s=>s.workouts.find(w=>w.id===selected)||s.workouts[0];
   const expected=w=>({id:w.id,value:JSON.stringify(w)});
   function workout(s,id){const w=s.workouts.find(w=>w.id===id);if(!w)throw Error('Este treino não está mais disponível.');return w}
-  async function save(operation,message,options={}){try{await repo.commit(operation,options);render();toast(message);return true}catch(e){const el=document.querySelector('dialog[open] .formerror');if(el)el.textContent=e.message;else toast(e.message);return false}}
+  async function save(operation,message,{scope=null,...options}={}){try{await repo.commit(operation,options);render();toast(message);return true}catch(e){const el=scope?.isConnected?scope.querySelector('.formerror'):null;if(el)el.textContent=e.message;else toast(e.message);return false}}
   function links(text){
-    let result='',offset=0;const re=/https:\/\/[^\s<>"']+/gi;
-    for(const match of text.matchAll(re)){result+=esc(text.slice(offset,match.index));const url=safeURL(match[0].replace(/[.,;!?]+$/,''));result+=url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(match[0])}</a>`:esc(match[0]);offset=match.index+match[0].length}
+    let result='',offset=0;
+    for(const link of descriptionURLs(text)){result+=esc(text.slice(offset,link.start));result+=`<a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a>`;offset=link.end}
     return result+esc(text.slice(offset));
   }
   function thumbnails(e){
@@ -23,13 +24,13 @@ export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,
   }
   function card(w,e,index,s,date){
     const done=s.sessions[date]?.[e.id]===true;
-    return `<article class="gym-exercise ${done?'gym-done':''}" data-gym-exercise="${esc(e.id)}"><div class="gym-exercise-main"><div class="gym-exercise-head"><label class="gym-check"><input type="checkbox" data-gym-check="${esc(e.id)}" data-workout="${esc(w.id)}" ${done?'checked':''}><span class="sr-only">Marcar ${esc(e.name)} como feito hoje</span></label><div class="gym-exercise-title"><h3>${esc(e.name)}</h3><div class="gym-prescription">${[[e.sets,'séries'],[e.reps,'repetições'],[e.rest,'descanso'],[e.load,'carga']].filter(([v])=>v).map(([v,label])=>`<span><b>${esc(v)}</b> ${label}</span>`).join('')}</div></div><button class="iconbtn" data-action="gym-edit-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" aria-label="Editar ${esc(e.name)}">${icon('edit')}</button></div>${thumbnails(e)}${e.description?`<details class="gym-description"><summary>Execução e descrição</summary><p>${links(e.description)}</p></details>`:''}</div>${orderMode?`<div class="gym-order"><span>Posição ${index+1} de ${w.exercises.length}</span><div><button class="iconbtn" data-action="gym-move-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" data-delta="-1" aria-label="Subir ${esc(e.name)}" ${index===0?'disabled':''}>${icon('up')}</button><button class="iconbtn" data-action="gym-move-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" data-delta="1" aria-label="Descer ${esc(e.name)}" ${index===w.exercises.length-1?'disabled':''}>${icon('down')}</button></div></div>`:''}</article>`;
+    return `<article class="gym-exercise ${done?'gym-done':''}" data-gym-exercise="${esc(e.id)}"><div class="gym-exercise-main"><div class="gym-exercise-head"><label class="gym-check"><input type="checkbox" id="gym-check-${esc(e.id)}" data-gym-date="${date}" data-gym-check="${esc(e.id)}" data-workout="${esc(w.id)}" ${done?'checked':''}><span class="sr-only">Marcar ${esc(e.name)} como feito hoje</span></label><div class="gym-exercise-title"><h3>${esc(e.name)}</h3><div class="gym-prescription">${[[e.sets,'séries'],[e.reps,'repetições'],[e.rest,'descanso'],[e.load,'carga']].filter(([v])=>v).map(([v,label])=>`<span><b>${esc(v)}</b> ${label}</span>`).join('')}</div></div><button class="iconbtn" data-action="gym-edit-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" aria-label="Editar ${esc(e.name)}">${icon('edit')}</button></div>${thumbnails(e)}${e.description?`<details class="gym-description"><summary>Execução e descrição</summary><p>${links(e.description)}</p></details>`:''}</div>${orderMode?`<div class="gym-order"><span>Posição ${index+1} de ${w.exercises.length}</span><div><button class="iconbtn" data-action="gym-move-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" data-delta="-1" aria-label="Subir ${esc(e.name)}" ${index===0?'disabled':''}>${icon('up')}</button><button class="iconbtn" data-action="gym-move-exercise" data-workout="${esc(w.id)}" data-id="${esc(e.id)}" data-delta="1" aria-label="Descer ${esc(e.name)}" ${index===w.exercises.length-1?'disabled':''}>${icon('down')}</button></div></div>`:''}</article>`;
   }
   function page(){
     const s=load();
     const heading='<div class="page-heading"><h1>Academia</h1><p>Seu roteiro de treinos, um exercício por vez.</p></div>';
     if(!s)return `${heading}<div class="errorbanner" role="alert">${esc(error)}</div>${backup()}`;
-    const w=current(s),date=gymDate();if(w)selected=w.id;
+    const w=current(s),date=gymDate(now());renderedDate=date;if(w)selected=w.id;
     const done=w?w.exercises.filter(e=>s.sessions[date]?.[e.id]).length:0;
     return `<div class="gym-page">${heading}<div class="gym-top-actions"><span class="gym-caption">Roteiro editável · ${s.workouts.length} treinos</span><button class="btn secondary" data-action="gym-new-workout">${icon('plus')} Novo treino</button></div><nav class="gym-tabs" aria-label="Escolher treino">${s.workouts.map(x=>`<button data-action="gym-select" data-id="${esc(x.id)}" class="gym-tab ${w?.id===x.id?'active':''}" aria-pressed="${w?.id===x.id}"><strong>${esc(x.name)}</strong><span>${esc(x.day||x.focus||'Sem dia fixo')}</span></button>`).join('')}</nav>${w?`<section class="gym-overview"><div class="gym-workout-heading"><div><span class="gym-caption">${esc(w.focus)}</span><h2>${esc(w.name)}</h2></div><button class="btn secondary" data-action="gym-edit-workout" data-id="${esc(w.id)}">${icon('edit')} Editar treino</button></div>${w.description?`<p class="gym-intro">${esc(w.description)}</p>`:''}<div class="gym-stages">${w.warmup?`<div>${icon('resume')}<span>Aquecimento<strong>${esc(w.warmup)}</strong></span></div>`:''}<div>${icon('gym')}<span>Exercícios<strong>${w.exercises.length} no roteiro</strong></span></div>${w.cardio?`<div>${icon('clock')}<span>Caminhada<strong>${esc(w.cardio)}</strong></span></div>`:''}</div><div class="gym-progress-head"><span>${done} de ${w.exercises.length} feitos hoje</span><time datetime="${date}">${new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long'})}</time></div><progress class="gym-progress" max="${Math.max(1,w.exercises.length)}" value="${done}" aria-label="Exercícios feitos hoje"></progress></section><div class="gym-section-heading"><h2>Exercícios</h2><div class="gym-section-actions"><button class="btn secondary" data-action="gym-order" aria-pressed="${orderMode}">${icon('sort')} ${orderMode?'Concluir ordem':'Organizar'}</button><button class="btn primary" data-action="gym-new-exercise" data-workout="${esc(w.id)}">${icon('plus')} Exercício</button></div></div>${orderMode?'<p class="gym-order-help">Use os botões para subir ou descer cada exercício. A ordem é salva automaticamente.</p>':''}<div class="gym-exercises">${w.exercises.map((e,i)=>card(w,e,i,s,date)).join('')||'<p class="gym-empty">Adicione o primeiro exercício deste treino.</p>'}</div>${w.cardio||w.cardioNotes?`<section class="gym-note"><h3>Caminhada ${esc(w.cardio)}</h3><p>${esc(w.cardioNotes)}</p></section>`:''}${w.notice?`<aside class="gym-note gym-guidance"><h3>Orientações do treino</h3><p>${esc(w.notice)}</p></aside>`:''}`:'<p class="gym-empty">Crie um treino para começar seu roteiro.</p>'}${backup()}</div>`;
   }
@@ -37,9 +38,10 @@ export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,
   const field=(name,label,value,max=200,multiline=false)=>`<div class="field"><label for="gym-${name}">${label}</label><${multiline?'textarea':'input'} id="gym-${name}" name="${name}" maxlength="${max}" ${name==='name'?'required':''} ${multiline?'rows="4"':`value="${esc(value)}"`}>${multiline?esc(value)+'</textarea>':''}</div>`;
   function formActions(remove=false){return `<div class="formerror" role="alert"></div><div class="dialogactions">${remove?'<button type="button" class="btn danger" id="gym-delete">Excluir</button>':''}<button type="button" class="btn secondary" id="gym-cancel">Cancelar</button><button type="submit" class="btn primary">Salvar</button></div>`}
   function bindForm(root,operation,{remove,options}={}){
+    const form=root.querySelector('form');
     root.querySelector('#gym-cancel').onclick=()=>closeModal();
-    root.querySelector('form').onsubmit=submitOnce(async e=>{e.preventDefault();if(!checkForm(e.target))return;const values=Object.fromEntries(new FormData(e.target));if(!values.name.trim()){root.querySelector('.formerror').textContent='Informe um nome para continuar.';return}const btn=e.target.querySelector('[type=submit]');btn.disabled=true;if(await save(s=>operation(s,values),'Academia salva neste aparelho.',options))closeModal(true);else btn.disabled=false;});
-    const del=root.querySelector('#gym-delete');if(del)del.onclick=submitOnce(async()=>{if(!target.confirm('Excluir este '+(remove.kind==='workout'?'treino e todos os seus exercícios':'exercício')+'?'))return;del.disabled=true;if(await save(remove.run,'Exclusão salva.',options))closeModal(true);else del.disabled=false;});
+    form.onsubmit=submitOnce(async e=>{e.preventDefault();if(!checkForm(form))return;const values=Object.fromEntries(new FormData(form));if(!values.name.trim()){form.querySelector('.formerror').textContent='Informe um nome para continuar.';return}const btn=form.querySelector('[type=submit]');btn.disabled=true;const ok=await save(s=>operation(s,values),'Academia salva neste aparelho.',{...options,scope:form});if(form.isConnected){if(ok)closeModal(true);else btn.disabled=false}});
+    const del=root.querySelector('#gym-delete');if(del)del.onclick=submitOnce(async()=>{if(!target.confirm('Excluir este '+(remove.kind==='workout'?'treino e todos os seus exercícios':'exercício')+'?'))return;del.disabled=true;const ok=await save(remove.run,'Exclusão salva.',{...options,scope:form});if(form.isConnected){if(ok)closeModal(true);else del.disabled=false}});
   }
   function editWorkout(id){
     const s=load();if(!s){toast(error);return}const w=id?workout(s,id):{id:uid(),name:'',focus:'',day:'',description:'',warmup:'',cardio:'',cardioNotes:'',notice:'',exercises:[]},options=id?{expected:expected(w)}:{};
@@ -55,9 +57,11 @@ export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,
   }
   async function importFile(event){
     const file=event.target.files[0];event.target.value='';if(!file)return;if(file.size>5*1024*1024){toast('O arquivo excede o limite de 5 MB.');return}let candidate;try{candidate=validateGym(JSON.parse(await file.text()))}catch(e){toast('Treinos não restaurados. '+e.message);return}
+    if(document.querySelector('dialog[open]')){toast('Feche o formulário aberto antes de restaurar a Academia.');return}
+    let base;try{base=storage.getItem(GYM_KEY)}catch{toast('Não foi possível acessar os treinos neste navegador. A restauração foi cancelada.');return}
     const root=openModal('Restaurar Academia',`<p class="confirmtext">Este arquivo contém ${candidate.workouts.length} treinos. A restauração substitui os treinos e as marcações da Academia neste aparelho. Primeiro, baixe uma cópia dos dados atuais.</p><div class="formerror" role="alert"></div><div class="dialogactions"><button class="btn secondary" id="gym-cancel">Cancelar</button><button class="btn secondary" id="gym-copy">Baixar cópia atual</button><button class="btn primary" id="gym-restore" disabled>Restaurar Academia</button></div>`);
-    const base=storage.getItem(GYM_KEY);root.querySelector('#gym-cancel').onclick=()=>closeModal();root.querySelector('#gym-copy').onclick=()=>{download(base||JSON.stringify(repo.load(),null,2),'retomar-academia-antes-da-restauracao-'+Date.now()+'.json');root.querySelector('#gym-restore').disabled=false;};
-    root.querySelector('#gym-restore').onclick=submitOnce(async()=>{const btn=root.querySelector('#gym-restore');btn.disabled=true;if(await save(()=>{},'Academia restaurada neste aparelho.',{replace:candidate,expectedRaw:base})){selected='';closeModal(true)}else btn.disabled=false;});
+    const dialog=root.querySelector('dialog'),copy=dialog.querySelector('#gym-copy'),restore=dialog.querySelector('#gym-restore');root.querySelector('#gym-cancel').onclick=()=>closeModal();copy.onclick=()=>{try{download(base!==null?base:JSON.stringify(repo.load(),null,2),'retomar-academia-antes-da-restauracao-'+Date.now()+'.json');restore.disabled=false;dialog.querySelector('.formerror').textContent=''}catch(e){restore.disabled=true;dialog.querySelector('.formerror').textContent=e.message}};
+    restore.onclick=submitOnce(async()=>{restore.disabled=true;const ok=await save(()=>{},'Academia restaurada neste aparelho.',{replace:candidate,expectedRaw:base,scope:dialog});if(ok){selected='';render();if(dialog.isConnected)closeModal(true)}else if(dialog.isConnected)restore.disabled=false;});
   }
   async function action(name,d){
     try{
@@ -66,15 +70,15 @@ export function createGymUI({storage,esc,icon,openModal,closeModal,toast,render,
       else if(name==='gym-new-workout'||name==='gym-edit-workout')editWorkout(d.id);
       else if(name==='gym-new-exercise'||name==='gym-edit-exercise')editExercise(d.workout,d.id);
       else if(name==='gym-move-exercise'){await save(s=>moveGymEntry(workout(s,d.workout).exercises,d.id,Number(d.delta)),'Ordem dos exercícios salva.');document.querySelector(`[data-gym-exercise="${d.id}"] [data-action="gym-move-exercise"]:not(:disabled)`)?.focus({preventScroll:true})}
-      else if(name==='gym-export'){const s=load();const raw=s?JSON.stringify(s,null,2):repo.raw;if(raw)download(raw,'retomar-academia-'+gymDate()+'.json');else toast(error)}
+      else if(name==='gym-export'){const s=load();const raw=s?JSON.stringify(s,null,2):repo.raw;if(raw!==null)download(raw,'retomar-academia-'+date()+'.json');else toast(error)}
       else if(name==='gym-import')document.querySelector('#gym-backup-file')?.click();
     }catch(e){toast(e.message)}
   }
   function bind(){
     const root=document.querySelector('.gym-page');if(root)media.hydrate(root);
-    document.querySelectorAll('[data-gym-check]').forEach(input=>{input.onchange=async()=>{const date=gymDate(),checked=input.checked;input.disabled=true;const ok=await save(s=>{const w=workout(s,input.dataset.workout);if(!w.exercises.some(e=>e.id===input.dataset.gymCheck))throw Error('Este exercício foi removido em outra janela.');s.sessions[date]||={};if(checked)s.sessions[date][input.dataset.gymCheck]=true;else delete s.sessions[date][input.dataset.gymCheck];},checked?'Exercício marcado como feito hoje.':'Marcação de hoje removida.');if(!ok){input.checked=!checked;input.disabled=false;}}});
+    document.querySelectorAll('[data-gym-check]').forEach(input=>{input.onchange=async()=>{const day=date();if(input.dataset.gymDate!==day){render();toast('Um novo dia começou. Confira as marcações de hoje.');return}const checked=input.checked,doc=input.ownerDocument,hadFocus=doc.activeElement===input;input.disabled=true;const ok=await save(s=>{const w=workout(s,input.dataset.workout);if(!w.exercises.some(e=>e.id===input.dataset.gymCheck))throw Error('Este exercício foi removido em outra janela.');s.sessions[day]||={};if(checked)s.sessions[day][input.dataset.gymCheck]=true;else delete s.sessions[day][input.dataset.gymCheck];},checked?'Exercício marcado como feito hoje.':'Marcação de hoje removida.');if(!ok){input.checked=!checked;input.disabled=false;}if(hadFocus&&doc.activeElement===doc.body)doc.getElementById(input.id)?.focus({preventScroll:true});}});
     const file=document.querySelector('#gym-backup-file');if(file)file.onchange=importFile;
   }
   target.addEventListener('storage',event=>{if(event.key===GYM_KEY){render();if(document.querySelector('dialog[open] #gym-exercise-form,dialog[open] #gym-workout-form'))toast('A Academia mudou em outra janela. Seu formulário foi preservado.')}});
-  return {page,bind,action};
+  return {page,bind,action,refreshDate(){if(renderedDate&&renderedDate!==date())render()}};
 }

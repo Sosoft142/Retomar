@@ -38,6 +38,18 @@ test('links reconhecem YouTube, Shorts, embed e Vimeo sem aceitar domínios fals
   for(const url of ['javascript:alert(1)','https://youtube.com.evil.example/watch?v=lltSvOW-wfI','https://youtu.be/invalid','https://user:secret@vimeo.com/123'])assert.equal(videoInfo(url),null);
   assert.deepEqual(descriptionLinks('Veja https://youtu.be/lltSvOW-wfI.\nhttps://youtu.be/lltSvOW-wfI'),['https://youtu.be/lltSvOW-wfI']);
 });
+test('links entre parênteses, colchetes ou em Markdown geram miniaturas válidas',()=>{
+  for(const description of ['Veja (https://youtu.be/lltSvOW-wfI).','[Demonstração](https://youtu.be/lltSvOW-wfI)','Vídeo [https://youtu.be/lltSvOW-wfI].'])assert.equal(videoInfo(descriptionLinks(description)[0]).id,'lltSvOW-wfI');
+  assert.equal(videoInfo(descriptionLinks('[Vídeo](https://vimeo.com/1098109686).')[0]).id,'1098109686');
+  assert.equal(descriptionLinks('Fonte https://example.org/exercise_(machine).')[0],'https://example.org/exercise_(machine)');
+});
+test('backup recusa nomes compostos apenas por caracteres invisíveis',()=>{
+  for(const kind of ['workout','exercise']){const s=initialGym();(kind==='workout'?s.workouts[0]:s.workouts[0].exercises[0]).name='\u200b';assert.throws(()=>validateGym(s))}
+});
+test('erro síncrono na rede permite tentar carregar a miniatura novamente',async()=>{
+  let calls=0;const media=createGymMedia({fetcher:()=>{if(++calls===1)throw Error('indisponível');return Promise.resolve({ok:true,json:async()=>({thumbnail_url:'https://i.vimeocdn.com/video/123.jpg'})})}}),info=videoInfo('https://vimeo.com/123');
+  assert.equal(await media.thumbnail(info),'');assert.equal(await media.thumbnail(info),'https://i.vimeocdn.com/video/123.jpg');assert.equal(calls,2);
+});
 test('Vimeo usa só metadados de imagem, conserva URL não listada e permite nova tentativa após falha',async()=>{
   let calls=0;const info=videoInfo('https://vimeo.com/1098109686/unlistedHash'),media=createGymMedia({fetcher:async url=>{calls++;assert.ok(url.includes('unlistedHash'));if(calls===1)throw Error('offline');return {ok:true,json:async()=>({thumbnail_url:'https://i.vimeocdn.com/video/123_640.jpg',html:'<script>ignored</script>'})}}});
   assert.equal(await media.thumbnail(info),'');assert.equal(await media.thumbnail(info),'https://i.vimeocdn.com/video/123_640.jpg');assert.equal(await media.thumbnail(info),'https://i.vimeocdn.com/video/123_640.jpg');assert.equal(calls,2);

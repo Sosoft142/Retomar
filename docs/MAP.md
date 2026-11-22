@@ -4,7 +4,7 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
-| Academia, roteiro, edição, links e miniaturas | `dist/src/gym*.js`, `retomar.css` e integração em `app.js` | `gym`, `workflow-ui`; navegador em PC e 360 px |
+| Academia, roteiro, edição, links e miniaturas | `dist/src/gym*.js`, `retomar.css` e integração em `app.js` | `gym`, `gym-ui-regressions`, `workflow-ui`; navegador em PC e 360 px |
 | Itens e subitens reunidos, filtros, arquivo e paginação | `dist/src/app.js`, `domain.js`, `collections.js`, `retomar.css` | `subitems`, `workflow-ui`, `responsive-ui` |
 | Limpeza local de recursos retirados | `dist/src/retired-preferences.js` | `integration-removal`, `workflow-ui` |
 | Limpeza das contas da integração removida | `docs/REMOVER-GOOGLE-AGENDA.md`, migração de exclusão em `server/wrangler.jsonc` | `integration-removal`, `push`, `push-deployment` |
