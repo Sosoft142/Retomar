@@ -5,13 +5,13 @@ import {bindDrag} from '../dist/src/drag.js';
 
 test('alças preservam rolagem, arraste por mouse/toque e alternativa por teclado',async t=>{
   const dom=new JSDOM('<main id="root"><article data-drag-item="a" data-drag-label="Primeira"><p>Conteúdo</p><button data-drag-handle>Mover</button></article><article data-drag-item="b"><button data-drag-handle>Mover</button></article></main>'),w=dom.window;
-  const originals=new Map(),scheduled=new Map();let timer=0;w.scrollBy=()=>{};
-  for(const [key,value] of Object.entries({window:w,document:w.document,innerHeight:900,requestAnimationFrame:()=>1,cancelAnimationFrame:()=>{},setTimeout:(fn,ms)=>{scheduled.set(++timer,{fn,ms});return timer;},clearTimeout:id=>scheduled.delete(id)})){
+  const originals=new Map(),scheduled=new Map(),frames=new Map();let timer=0,frameId=0;w.scrollBy=()=>{};
+  for(const [key,value] of Object.entries({window:w,document:w.document,innerHeight:900,requestAnimationFrame:fn=>{frames.set(++frameId,fn);return frameId;},cancelAnimationFrame:id=>frames.delete(id),setTimeout:(fn,ms)=>{scheduled.set(++timer,{fn,ms});return timer;},clearTimeout:id=>scheduled.delete(id)})){
     originals.set(key,Object.getOwnPropertyDescriptor(globalThis,key));Object.defineProperty(globalThis,key,{value,writable:true,configurable:true});
   }
   const root=w.document.querySelector('#root'),a=root.querySelector('[data-drag-item="a"]'),b=root.querySelector('[data-drag-item="b"]'),handle=a.querySelector('button'),drops=[],moves=[];
   b.getBoundingClientRect=()=>({top:200,height:100});w.document.elementFromPoint=()=>b;
-  const pointer=(node,type,pointerType='mouse',x=10,y=10)=>{const e=new w.Event(type,{bubbles:true,cancelable:true});Object.assign(e,{button:0,pointerId:1,pointerType,clientX:x,clientY:y});node.dispatchEvent(e);return e;};
+  const pointer=(node,type,pointerType='mouse',x=10,y=10,extra={})=>{const e=new w.Event(type,{bubbles:true,cancelable:true});Object.assign(e,{button:0,pointerId:1,pointerType,clientX:x,clientY:y,...extra});node.dispatchEvent(e);return e;};
   const hold=()=>{const pending=[...scheduled.values()];scheduled.clear();assert.equal(pending.length,1);assert.equal(pending[0].ms,300);pending[0].fn();};
   try{
     bindDrag(root,{onDrop:data=>drops.push(data),onMove:data=>moves.push(data)});
@@ -30,6 +30,18 @@ test('alças preservam rolagem, arraste por mouse/toque e alternativa por teclad
     await t.test('setas oferecem alternativa e Escape/blur cancelam sem mover',()=>{
       handle.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));assert.deepEqual(moves,[{type:'item',id:'a',delta:1}]);
       for(const cancel of ['Escape','blur']){pointer(handle,'pointerdown','touch');hold();if(cancel==='Escape')handle.dispatchEvent(new w.KeyboardEvent('keydown',{key:cancel,bubbles:true}));else w.dispatchEvent(new w.Event('blur'));assert.equal(w.document.querySelector('.drag-ghost'),null);assert.equal(drops.length,0);}
+    });
+    await t.test('outro ponteiro não move ou encerra arraste; segundo dedo cancela',()=>{
+      pointer(handle,'pointerdown','touch');hold();pointer(root,'pointermove','touch',20,220);
+      pointer(root,'pointermove','touch',20,270,{pointerId:2});pointer(root,'pointerup','touch',20,270,{pointerId:2});assert.ok(w.document.querySelector('.drag-ghost'));
+      pointer(root,'pointerdown','touch',20,270,{pointerId:2,isPrimary:false});assert.equal(w.document.querySelector('.drag-ghost'),null);pointer(root,'pointerup','touch',20,220);assert.equal(drops.length,0);assert.equal(frames.size,0);
+    });
+    await t.test('rolagem nas bordas atualiza destino e usa tempo decorrido entre quadros',()=>{
+      const c=w.document.createElement('article');c.dataset.dragItem='c';root.append(c);c.getBoundingClientRect=()=>({top:800,height:100});let hit=b;const scroll=[];w.document.elementFromPoint=()=>hit;w.scrollBy=(x,y)=>scroll.push(y);
+      pointer(handle,'pointerdown','mouse',20,500);pointer(root,'pointermove','mouse',20,880);assert.ok(b.classList.contains('drop-after'));hit=c;
+      const step=stamp=>{const next=frames.entries().next().value;assert.ok(next);frames.delete(next[0]);next[1](stamp);};
+      const stamp=performance.now()+100;step(stamp);step(stamp+10);assert.equal(scroll.at(-1),6);assert.equal(b.classList.contains('drop-after'),false);assert.ok(c.classList.contains('drop-after'));
+      step(stamp+1010);assert.equal(scroll.at(-1),19.2);pointer(root,'pointerup','mouse',20,880);assert.equal(drops.pop().target.id,'c');assert.equal(frames.size,0);c.remove();
     });
   }finally{
     root._dragCleanup?.();dom.window.close();

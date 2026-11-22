@@ -193,6 +193,16 @@ test('fluxos integrados de ações rápidas, seleção, reversão e favoritas',a
       assert.equal(w.localStorage.getItem(DATA_KEY),raw);assert.equal(w.document.querySelectorAll('button button').length,0);await click('[data-action="page"][data-page="plan"]');
     });
 
+    await t.test('deslizes integrados alternam guias e treinos, preservando formulários e seleção',async()=>{
+      const raw=w.localStorage.getItem(DATA_KEY);
+      const gesture=async(selector,dx=150,dy=0)=>{const el=node(selector);for(const [type,x,y] of [['pointerdown',300,300],['pointermove',300+dx,300+dy],['pointerup',300+dx,300+dy]]){const e=new w.Event(type,{bubbles:true,cancelable:true});Object.assign(e,{pointerId:1,pointerType:'touch',button:0,isPrimary:true,clientX:x,clientY:y});el.dispatchEvent(e);}await settle();};
+      await gesture('.retomar-sections',-150);assert.equal(w.document.title,'Academia · Retomar');const first=node('.gym-page').dataset.gymWorkout;
+      await gesture('.gym-workout-content',-150);const second=node('.gym-page').dataset.gymWorkout;assert.notEqual(second,first);await gesture('.gym-workout-content',0,180);assert.equal(node('.gym-page').dataset.gymWorkout,second);
+      await new Promise(resolve=>nativeTimeout(resolve,410));await click('[data-action="gym-personalize"]');await gesture('.retomar-sections');assert.equal(w.document.title,'Academia · Retomar');assert.ok(node('dialog[open]'));await click('#gym-cancel');
+      await gesture('.gym-workout-content');assert.equal(node('.gym-page').dataset.gymWorkout,first);await gesture('.retomar-sections');assert.equal(w.document.title,'Planejamento · Retomar');
+      await new Promise(resolve=>nativeTimeout(resolve,410));await click('[data-action="workflow-mode"]');await gesture('.retomar-sections',-150);assert.equal(w.document.title,'Planejamento · Retomar');await click('[data-action="workflow-mode"]');assert.equal(w.localStorage.getItem(DATA_KEY),raw);
+    });
+
   }finally{
     dom.window.close();for(const h of intervals)clearInterval(h);for(const h of timeouts)clearTimeout(h);globalThis.setInterval=nativeInterval;globalThis.setTimeout=nativeTimeout;
     for(const [key,descriptor] of originals){if(descriptor)Object.defineProperty(globalThis,key,descriptor);else delete globalThis[key];}

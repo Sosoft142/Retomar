@@ -1,3 +1,4 @@
+import {bindSwipe} from './swipe.js';
 import {createGymUI} from './gym-ui.js';
 import {clearRetiredPreferences} from './retired-preferences.js';
 import {captureChange,undoChange,cleanView} from './workflows.js';
@@ -13,7 +14,7 @@ import {bindFormErrors,checkForm,submitOnce,bindItemSchedule,bindSelectHint,refr
 import {createInstallation} from './pwa.js';
 import {createPlanningUI} from './planning-ui.js';
 import {createDeadlineContext,dateInZone} from './planning.js';
-const VERSION='1.10.1';
+const VERSION='1.11.0';
 const collections=new CollectionWindow();
 const installation=createInstallation({onChange:updateInstallControls});
 let syncUI,planningUI,navigation,workflowUI,gymUI,lastUndo=null,undoBusy=false;
@@ -73,7 +74,7 @@ function render(){
   workflowUI?.reconcile();
   const areas=activeAreas(state);if(area!==''&&area!=='all'&&!areas.some(a=>a.id===area))area='all';
   navigation?.record();
-  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><nav class="retomar-sections" aria-label="Seções do Retomar">${[['plan','Planejamento','list'],['gym','Academia','gym']].map(([id,label,glyph])=>`<button class="retomar-section ${page===id?'active':''}" data-action="page" data-page="${id}" ${page===id?'aria-current="page"':''}>${icon(glyph)} ${label}</button>`).join('')}</nav><main>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='gym'?gymUI.page():page==='plan'?renderPlan():page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
+  document.querySelector('#app').innerHTML=`<div class="tracker-shell ${workflowUI?.selecting?'is-selecting':''}" data-page="${page}"><header class="masthead"><button type="button" class="brand" data-action="home" aria-label="Retomar, voltar ao planejamento"><span class="brandmark">${icon('resume')}</span><div class="brand-copy"><span class="brandname">Retomar</span><span class="brandcaption">Planejamento de vida</span></div></button><div class="header-actions">${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<button class="btn primary desktop-add" data-action="new">${icon('plus')} Adicionar item</button>`:''}<div class="header-tools">${planningUI?.header()||''}${syncUI?.header()||''}<button type="button" class="settings-trigger ${page==='settings'?'selected':''}" data-action="page" data-page="settings" aria-label="Configurações" title="Configurações" ${page==='settings'?'aria-current="page"':''}>${icon('gear')}</button></div></div></header><nav class="retomar-sections" data-swipe-scope="sections" aria-label="Seções do Retomar">${[['plan','Planejamento','list'],['gym','Academia','gym']].map(([id,label,glyph])=>`<button class="retomar-section ${page===id?'active':''}" data-action="page" data-page="${id}" ${page===id?'aria-current="page"':''}>${icon(glyph)} ${label}</button>`).join('')}</nav><main ${page==='plan'?'data-swipe-scope="sections"':''}>${fatal?`<div class="errorbanner" role="alert">${esc(fatal)}<br>Os dados existentes serão preservados. <button data-action="raw">Baixar cópia para recuperação</button> <button data-action="page" data-page="settings">Restaurar backup</button></div>`:''}${page==='gym'?gymUI.page():page==='plan'?renderPlan():page==='agenda'?renderAgenda():page==='areas'?renderAreas():page==='reminders'?planningUI.page():renderSettings()}</main></div>${['plan','agenda'].includes(page)&&!workflowUI?.selecting?`<div class="mobile-actions"><button class="btn primary" data-action="new" aria-label="Adicionar tarefa">${icon('plus')}<span>Adicionar</span></button></div>`:''}`;
   bindApp();gymUI?.bind();
   navigation?.record();
   syncVisualMotion();
@@ -414,6 +415,12 @@ function restoreView(view){
   render();enterView();
 }
 gymUI=createGymUI({storage,esc,icon,openModal,closeModal,toast,render,download});
+bindSwipe(document.querySelector('#app'),{
+  isBlocked:()=>!!document.querySelector('dialog[open]')||document.documentElement.classList.contains('drag-active')||!!workflowUI?.selecting,
+  motion:motionEnabled,
+  canMove:(scope,delta)=>scope==='workouts'?page==='gym'&&gymUI.canSwipe(delta):scope==='sections'&&((page==='plan'&&delta===1)||(page==='gym'&&delta===-1)),
+  onMove:async(scope,delta)=>{if(scope==='workouts')gymUI.swipe(delta);else await action('page',{page:delta===1?'gym':'plan'});enterView()}
+});
 navigation=createNavigation({capture:captureView,restore:restoreView,hasModal:()=>!!document.querySelector('dialog[open]'),canCloseModal,dismissModal:()=>closeModal(true,true)});
 navigation.start();
 workflowUI=createWorkflowUI({storage,getState:()=>state,getView:captureView,getSelectable:()=>filtered().flatMap(t=>[...(!archiveMode||isArchived(state,t)?[t]:[]),...matchingSubitems(t)]),getUndo:()=>lastUndo,onUndo:undoLast,

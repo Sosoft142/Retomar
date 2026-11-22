@@ -59,3 +59,23 @@ test('erro de salvamento atrasado não aparece no formulário de outro treino',(
 test('reaplicar miniaturas simultaneamente mantém uma imagem por vídeo',()=>fixture(async f=>{
   const media=createGymMedia(),root=f.node('#app');await Promise.all([media.hydrate(root),media.hydrate(root)]);for(const video of root.querySelectorAll('[data-gym-video]'))assert.equal(video.querySelectorAll('img').length,1);
 }));
+test('marcar exercício preserva os cartões, descrições abertas e imagens já carregadas',()=>fixture(async f=>{
+  await Promise.resolve();const card=f.node('[data-gym-exercise="segunda-hip"]'),other=f.node('[data-gym-exercise="segunda-abd"]'),details=card.querySelector('details'),image=card.querySelector('img');details.open=true;
+  const input=card.querySelector('input');input.checked=true;await input.onchange();assert.equal(f.node('[data-gym-exercise="segunda-hip"]'),card);assert.equal(f.node('[data-gym-exercise="segunda-abd"]'),other);assert.equal(card.querySelector('details'),details);assert.equal(details.open,true);assert.equal(card.querySelector('img'),image);assert.match(f.node('.gym-progress-head').textContent,/1 de 4/);
+}));
+test('painel personaliza visual, oculta blocos e conserva preferências no backup',()=>fixture(async f=>{
+  await f.ui.action('gym-personalize',{});f.node('[data-gym-color="#ec4899"]').onclick();f.fill('[name="layout"]','list');f.fill('[name="thumbnails"]','hidden');f.fill('[name="descriptions"]','open');f.node('[name="showCardio"]').checked=false;f.node('[name="showGuidance"]').checked=false;await f.submit();
+  const s=JSON.parse(f.values.get(GYM_KEY));assert.equal(s.preferences.accent,'#ec4899');assert.equal(s.preferences.layout,'list');assert.ok(f.node('.gym-layout-list'));assert.equal(f.w.document.querySelector('.gym-video'),null);assert.ok(f.node('.gym-video-links a'));assert.equal(f.node('.gym-description').open,true);assert.equal(f.w.document.querySelector('.gym-note'),null);await f.ui.action('gym-export',{});assert.deepEqual(JSON.parse(f.downloads[0].content).preferences,s.preferences);
+}));
+test('cores individuais e restaurar aparência não mudam o conteúdo dos treinos',()=>fixture(async f=>{
+  const initial=initialGym().workouts;await f.ui.action('gym-edit-workout',{id:'segunda'});f.node('[data-gym-color="#8b5cf6"]').onclick();await f.submit();assert.equal(JSON.parse(f.values.get(GYM_KEY)).preferences.workoutColors.segunda,'#8b5cf6');
+  await f.ui.action('gym-edit-exercise',{workout:'segunda',id:'segunda-hip'});f.node('[data-gym-color="#3b82f6"]').onclick();await f.submit();assert.equal(JSON.parse(f.values.get(GYM_KEY)).preferences.exerciseColors['segunda-hip'],'#3b82f6');
+  await f.ui.action('gym-personalize',{});f.node('#gym-pref-reset').onclick();await f.submit();const next=JSON.parse(f.values.get(GYM_KEY));assert.deepEqual(next.preferences.workoutColors,{});assert.deepEqual(next.preferences.exerciseColors,{});assert.deepEqual(next.workouts,initial);
+}));
+test('ocultar feitos conserva os dados e o gesto só troca para um treino disponível',()=>fixture(async f=>{
+  assert.equal(f.ui.canSwipe(-1),false);assert.equal(f.ui.canSwipe(1),true);f.ui.swipe(1);assert.equal(f.node('.gym-page').dataset.gymWorkout,'terca');
+  await f.ui.action('gym-personalize',{});f.node('[name="showCompleted"]').checked=false;f.node('[name="swipe"]').checked=false;await f.submit();assert.equal(f.ui.canSwipe(1),false);const input=f.node('[data-gym-check="terca-reverse"]');input.checked=true;await input.onchange();assert.equal(f.w.document.querySelector('[data-gym-exercise="terca-reverse"]'),null);assert.equal(f.node('.gym-progress').value,1);
+}));
+test('cancelar uma personalização e recusar conflito não grava o rascunho',()=>fixture(async f=>{
+  await f.ui.action('gym-personalize',{});f.fill('[name="layout"]','list');f.close();assert.equal(f.values.get(GYM_KEY),undefined);await f.ui.action('gym-personalize',{});const next=initialGym();next.preferences.thumbnails='compact';f.values.set(GYM_KEY,JSON.stringify(next));await f.submit();assert.match(f.node('.formerror').textContent,/outra janela/);assert.equal(JSON.parse(f.values.get(GYM_KEY)).preferences.thumbnails,'compact');
+}));

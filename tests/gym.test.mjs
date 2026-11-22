@@ -1,8 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialGym,validateGym,GymRepository,GYM_KEY,gymDate,moveGymEntry} from '../dist/src/gym.js';
+import {initialGym,validateGym,migrateGym,GymRepository,GYM_KEY,gymDate,moveGymEntry} from '../dist/src/gym.js';
 import {descriptionLinks,videoInfo,createGymMedia} from '../dist/src/gym-media.js';
 const memory=()=>{const values=new Map();return {getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)}};
+test('roteiro antigo migra com cores e visual padrão sem alterar treino, histórico ou bytes ao ler',async()=>{
+  const current=initialGym(),legacy={appId:current.appId,schemaVersion:1,workouts:current.workouts,sessions:{'2026-11-21':{'segunda-hip':true}}},raw=JSON.stringify(legacy),storage=memory();storage.setItem(GYM_KEY,raw);const repo=new GymRepository(storage),next=repo.load();
+  assert.equal(next.schemaVersion,2);assert.deepEqual(next.workouts,legacy.workouts);assert.deepEqual(next.sessions,legacy.sessions);assert.equal(next.preferences.layout,'cards');assert.equal(storage.getItem(GYM_KEY),raw);
+  await repo.commit(s=>{s.preferences.accent='#8b5cf6'});assert.equal(repo.load().preferences.accent,'#8b5cf6');assert.deepEqual(repo.load().sessions,legacy.sessions);
+  assert.throws(()=>migrateGym({...legacy,unexpected:true}));
+});
+test('personalização participa do backup e recusa cores ou opções inválidas',()=>{
+  const s=initialGym();s.preferences.layout='list';s.preferences.thumbnails='compact';s.preferences.workoutColors.segunda='#ec4899';s.preferences.exerciseColors['segunda-hip']='#3b82f6';assert.deepEqual(migrateGym(JSON.parse(JSON.stringify(s))),s);
+  for(const change of [s=>s.preferences.layout='script',s=>s.preferences.accent='red;display:none',s=>s.preferences.showCardio='false',s=>s.preferences.exerciseColors['bad id']='#3b82f6']){const s=initialGym();change(s);assert.throws(()=>validateGym(s))}
+});
+test('edição concorrente de preferências é recusada sem perder marcações ou outras escolhas',async()=>{
+  const storage=memory(),repo=new GymRepository(storage),snapshot=JSON.stringify(repo.load().preferences);await repo.commit(s=>{s.sessions['2026-11-21']={'segunda-hip':true}});await repo.commit(s=>s.preferences.layout='list',{expectedPreferences:snapshot});
+  await assert.rejects(repo.commit(s=>s.preferences.layout='cards',{expectedPreferences:snapshot}),/personalização mudou/);assert.equal(repo.load().preferences.layout,'list');assert.equal(repo.load().sessions['2026-11-21']['segunda-hip'],true);
+});
 test('roteiro original conserva os quatro treinos, séries, vídeos e caminhada',()=>{
   const s=validateGym(initialGym());assert.deepEqual(s.workouts.map(w=>w.name),['Pernas A','Superiores','Pernas B','Pernas C']);assert.deepEqual(s.workouts.map(w=>w.exercises.length),[4,4,5,4]);
   assert.equal(s.workouts[0].exercises[0].sets,'2');assert.equal(s.workouts[0].exercises[2].sets,'1');assert.equal(s.workouts[3].cardio,'20–25 min');
