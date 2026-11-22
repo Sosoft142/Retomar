@@ -1538,3 +1538,44 @@ html:has(dialog[open]),body:has(dialog[open]){overflow:hidden}
  .gym-top-actions .btn{white-space:nowrap;padding:9px 12px}
  .gym-progress-head{gap:8px;font-size:14px}
 }
+
+/* Personalização e deslocamento horizontal da Academia. */
+[data-swipe-scope]{touch-action:pan-y pinch-zoom}
+.swiping .tracker-shell{overflow-x:clip}
+.swiping [data-swipe-scope]{user-select:none;-webkit-user-select:none}
+.gym-top-actions>.gym-section-actions{justify-content:flex-end}
+.gym-colored{border-left:4px solid var(--gym-color)}
+.gym-overview[style]{border-top:4px solid var(--gym-color)}
+.gym-tab[style]{border-top:4px solid var(--gym-color)}
+.gym-tab[style].active{background:color-mix(in srgb,var(--gym-color) 16%,white);color:var(--ink);border-color:var(--gym-color)}
+.gym-gesture-hint{font-size:14px;color:var(--muted);margin-top:6px}
+.gym-layout-list .gym-exercises{grid-template-columns:1fr}
+.gym-layout-list .gym-exercise-main{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,320px);gap:0 22px}
+.gym-layout-list .gym-description{grid-column:1/-1}
+.gym-layout-list .gym-videos{margin:0}
+.gym-layout-list .gym-exercise-head{align-self:start}
+.gym-layout-list.gym-thumbnails-hidden .gym-exercise-main{display:block}
+.gym-thumbnails-compact .gym-videos{grid-template-columns:repeat(auto-fit,minmax(120px,170px));justify-content:start}
+.gym-thumbnails-compact .gym-video-label{font-size:14px;padding:7px 9px}
+.gym-video-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.gym-video-links a{display:flex;align-items:center;gap:7px;font-size:14px;min-height:44px}
+.gym-video-links svg{width:17px;height:17px}
+.gym-option{display:flex;align-items:center;gap:12px;margin:12px 0;min-height:44px;font-size:16px;cursor:pointer}
+.gym-option input{width:22px;height:22px;min-height:22px;padding:0;margin:0;flex-shrink:0;accent-color:var(--accent)}
+.gym-preference-group,.gym-color-picker{border:1px solid var(--line);border-radius:14px;padding:14px 16px 8px;margin:0 0 20px;min-width:0}
+.gym-preference-group legend,.gym-color-picker legend{font-family:var(--heading);font-weight:650;font-size:17px;padding:0 7px}
+.gym-palette{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin:12px 0 18px}
+.gym-palette button{width:100%;min-height:44px;display:grid;place-items:center;border-radius:9px;border:2px solid transparent;padding:6px}
+.gym-palette button span{display:block;width:25px;height:25px;border-radius:7px;background:var(--choice-color);border:1px solid rgba(20,40,55,.12)}
+.gym-palette button[aria-pressed=true]{border-color:var(--ink);background:var(--glass-strong)}
+.gym-color-picker input[type=color]{max-width:160px;padding:5px;min-height:44px}
+#gym-personalize-form .dialogactions{flex-wrap:wrap}
+@media(max-width:700px){
+ .gym-top-actions{flex-direction:column;align-items:stretch}
+ .gym-top-actions>.gym-section-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+ .gym-top-actions .btn{white-space:normal}
+ .gym-layout-list .gym-exercise-main{grid-template-columns:1fr;gap:14px}
+ .gym-layout-list.gym-thumbnails-compact .gym-exercise-main{grid-template-columns:minmax(0,1fr)}
+ .gym-palette{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .gym-preference-group,.gym-color-picker{padding:12px 12px 6px}
+}

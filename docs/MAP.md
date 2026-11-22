@@ -5,6 +5,7 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 | Objetivo | Fonte | Testes relacionados |
 | --- | --- | --- |
 | Academia, roteiro, edição, links e miniaturas | `dist/src/gym*.js`, `retomar.css` e integração em `app.js` | `gym`, `gym-ui-regressions`, `workflow-ui`; navegador em PC e 360 px |
+| Personalização da Academia e gestos entre guias/treinos | `gym.js`, `gym-ui.js`, `swipe.js`, integração em `app.js`, `retomar.css` | `gym`, `gym-ui-regressions`, `swipe`, `workflow-ui`, `drag`; navegador em PC e 360 px |
 | Itens e subitens reunidos, filtros, arquivo e paginação | `dist/src/app.js`, `domain.js`, `collections.js`, `retomar.css` | `subitems`, `workflow-ui`, `responsive-ui` |
 | Limpeza local de recursos retirados | `dist/src/retired-preferences.js` | `integration-removal`, `workflow-ui` |
 | Limpeza das contas da integração removida | `docs/REMOVER-GOOGLE-AGENDA.md`, migração de exclusão em `server/wrangler.jsonc` | `integration-removal`, `push`, `push-deployment` |
@@ -14,7 +15,7 @@ Lista de melhorias acordadas e próximas etapas: [IMPROVEMENTS.md](IMPROVEMENTS.
 | Validação, prioridades e hierarquia | `dist/src/domain.js` | `core`, `subitems`, `extreme`, `checkup` |
 | Persistência e recuperação | `dist/src/repository.js` | `core`, `extreme`, `checkup` |
 | Voltar, janelas e rolagem | `dist/src/navigation.js` | `navigation` |
-| Arraste e listas extensas | `dist/src/drag.js`, `collections.js` | `subitems`, `extreme` |
+| Arraste e listas extensas | `dist/src/drag.js`, `collections.js` | `drag`, `subitems`, `extreme` |
 | Lembretes internos e fuso | `dist/src/planning.js`, `planning-ui.js` | `planning`, `planning-ui` |
 | Preferências e ajustes push | `dist/src/push.js`, `push-ui.js` | `push`, `push-customization` |
 | Envio e implantação push — endpoint publicado | `server/`, `server/deployment.mjs` | `push`, `push-customization`, `push-deployment` |

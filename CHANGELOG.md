@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.11.0 — 22/11/2026
+
+- Personalizar Academia: cores da guia, treinos e exercícios; cartões/lista, tamanhos de miniatura e opções de descrição, progresso, caminhada, orientações e exercícios feitos.
+- Preferências no backup da Academia, com migração compatível do formato anterior, proteção contra edição concorrente e restauração da aparência padrão.
+- Deslize entre Planejamento/Academia e entre treinos, com retorno visual, movimento reduzido e proteção de rolagem, bordas, campos, links, alças e formulários.
+- Marcar exercícios preserva os cartões, as miniaturas e as descrições abertas. Arraste atualiza destino durante a rolagem e mantém velocidade baseada em tempo; segundo dedo cancela.
+- Revisão visual em PC e 360 px e testes automatizados de gestos, integração, migração e personalização. Cache offline v53.
+
 ## 1.10.1 — 22/11/2026
 
 - Corrige cópia e restauração de dados vazios da Academia e apresenta erros de download sem liberar uma restauração insegura.
