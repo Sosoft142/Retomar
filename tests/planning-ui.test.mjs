@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
 import {initialState,activeAreas,updateItem} from '../dist/src/domain.js';
 import {PLANNING_KEY,defaults} from '../dist/src/planning.js';
 import {createPlanningUI} from '../dist/src/planning-ui.js';
 
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+test('caixa de exercício com foco não impede atualização do relógio; busca continua protegida',()=>{
+  const dom=new JSDOM('<input id="done" type="checkbox"><input id="search" type="search">'),f=fixture();
+  try{f.ui.start();const tick=[...f.timers.values()].find(t=>t.delay===30000).fn;f.target.document.activeElement=dom.window.document.querySelector('#done');tick();assert.equal(f.calls.clocks,1);f.target.document.activeElement=dom.window.document.querySelector('#search');tick();assert.equal(f.calls.clocks,1)}finally{f.ui.dispose();dom.window.close()}
+});
 function fixture(mode='web'){
   const state=initialState(),areaId=activeAreas(state)[0].id;
   updateItem(state,'parent',{areaId,title:'Projeto',date:'2026-11-07',time:'',priority:'normal',status:'pending',notes:''},'qa');

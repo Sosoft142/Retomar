@@ -28,7 +28,8 @@ export function createPlanningUI({storage,getState,icon,esc,openModal,closeModal
   function reload(){preferences.reload();refresh()}
 
   const refreshWhenIdle=()=>{
-    if(target.document.hidden||target.document.querySelector('dialog[open]')||target.document.documentElement.classList.contains('drag-active')||target.document.activeElement?.matches('input,textarea,select'))return;
+    const active=target.document.activeElement;
+    if(target.document.hidden||target.document.querySelector('dialog[open]')||target.document.documentElement.classList.contains('drag-active')||(active?.matches('input,textarea,select')&&!['checkbox','radio'].includes(active.type)))return;
     refresh();onClockChange();
   };
   const storageChanged=e=>{if(e.key===PLANNING_KEY){reload();if(!target.document.querySelector('dialog[open]'))onOpen?.(false)}};

@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.10.1 — 22/11/2026
+
+- Corrige cópia e restauração de dados vazios da Academia e apresenta erros de download sem liberar uma restauração insegura.
+- Preserva outro rascunho quando um salvamento ou a leitura de arquivo termina depois de abrir outro formulário.
+- Reconhece vídeos em links entre parênteses/Markdown, evita miniaturas duplicadas e permite tentar novamente após falhas de rede.
+- Atualiza a Academia na virada do dia e mantém o foco após marcar exercícios, sem bloquear o relógio por uma caixa de seleção focada.
+- Rejeita nomes invisíveis em backups e atualiza o cache offline para v52.
+
+
 ## 1.10.0 — 21/11/2026
 
 - Academia integrada ao Retomar com quatro treinos do roteiro original e edição de exercícios, séries, repetições, descanso, carga, caminhada e orientações.

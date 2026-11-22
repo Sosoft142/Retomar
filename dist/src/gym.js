@@ -1,4 +1,5 @@
 import {DEFAULT_WORKOUTS} from './gym-data.js';
+import {hasVisibleText} from './domain.js';
 export const GYM_KEY='entrelinhas-vida:gym:v1';
 const text=(v,max)=>typeof v==='string'&&v.length<=max;
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
@@ -11,10 +12,10 @@ export function validateGym(s){
   if(!shape(s,['appId','schemaVersion','workouts','sessions'])||s.appId!=='retomar-academia'||s.schemaVersion!==1||!Array.isArray(s.workouts)||s.workouts.length>50||!object(s.sessions))throw Error('Este arquivo não é um backup válido da Academia.');
   const ids=new Set();
   for(const w of s.workouts){
-    if(!shape(w,['id','name','focus','day','description','warmup','cardio','cardioNotes','notice','exercises'])||!id(w.id)||ids.has(w.id)||!text(w.name,100)||!w.name.trim()||!['focus','day','warmup','cardio'].every(k=>text(w[k],200))||!['description','cardioNotes','notice'].every(k=>text(w[k],5000))||!Array.isArray(w.exercises)||w.exercises.length>200)throw Error('Há um treino inválido no arquivo da Academia.');
+    if(!shape(w,['id','name','focus','day','description','warmup','cardio','cardioNotes','notice','exercises'])||!id(w.id)||ids.has(w.id)||!text(w.name,100)||!hasVisibleText(w.name)||!['focus','day','warmup','cardio'].every(k=>text(w[k],200))||!['description','cardioNotes','notice'].every(k=>text(w[k],5000))||!Array.isArray(w.exercises)||w.exercises.length>200)throw Error('Há um treino inválido no arquivo da Academia.');
     ids.add(w.id);
     for(const e of w.exercises){
-      if(!shape(e,['id','name','sets','reps','rest','load','description','thumbnail'])||!id(e.id)||ids.has(e.id)||!text(e.name,200)||!e.name.trim()||!['sets','reps','rest','load'].every(k=>text(e[k],100))||!text(e.description,10000)||!text(e.thumbnail,2000)||(e.thumbnail&&!safeURL(e.thumbnail)))throw Error('Há um exercício inválido no arquivo da Academia.');
+      if(!shape(e,['id','name','sets','reps','rest','load','description','thumbnail'])||!id(e.id)||ids.has(e.id)||!text(e.name,200)||!hasVisibleText(e.name)||!['sets','reps','rest','load'].every(k=>text(e[k],100))||!text(e.description,10000)||!text(e.thumbnail,2000)||(e.thumbnail&&!safeURL(e.thumbnail)))throw Error('Há um exercício inválido no arquivo da Academia.');
       ids.add(e.id);
     }
   }
@@ -23,8 +24,8 @@ export function validateGym(s){
   return s;
 }
 export class GymRepository{
-  constructor(storage,target=globalThis){this.storage=storage;this.target=target;this.raw='';}
-  load(){let raw;try{raw=this.storage.getItem(GYM_KEY)}catch{throw Error('Não foi possível acessar os treinos neste navegador.');}this.raw=raw||'';try{return raw===null?initialGym():validateGym(JSON.parse(raw))}catch{throw Error('Os dados da Academia precisam de recuperação. Baixe uma cópia antes de restaurar um backup.');}}
+  constructor(storage,target=globalThis){this.storage=storage;this.target=target;this.raw=null;}
+  load(){let raw;this.raw=null;try{raw=this.storage.getItem(GYM_KEY)}catch{throw Error('Não foi possível acessar os treinos neste navegador.');}this.raw=raw;try{return raw===null?initialGym():validateGym(JSON.parse(raw))}catch{throw Error('Os dados da Academia precisam de recuperação. Baixe uma cópia antes de restaurar um backup.');}}
   async commit(operation,{expected,expectedRaw,replace}={}){
     const run=()=>{
       if(expectedRaw!==undefined&&this.storage.getItem(GYM_KEY)!==expectedRaw)throw Error('A Academia mudou em outra janela. Reabra a restauração para preservar as alterações.');
